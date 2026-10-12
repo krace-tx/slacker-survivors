@@ -29,23 +29,31 @@
 ```text
 src/framework/util/
 ├── _doc_util.md                  # 本模块架构与使用文档
+├── async/                        # 异步并发编排
+│   └── async_utils.gd            # (AsyncUtils) gather / wait_first / sleep
 ├── codec/                        # 编解码工具库
-│   ├── file/                     # 二进制/贴图文件底层 Codec
-│   │   ├── file_codec.gd         # 文件 Codec 抽象基类
-│   │   ├── file_codec_type.gd    # 编码格式枚举 (IMAGE / TEXTURE_2D)
-│   │   ├── image_file_codec.gd   # Image 格式编解码
-│   │   └── texture_2d_file_codec.gd # Texture2D 格式编解码
+│   ├── file_codec.gd             # 文件 Codec 抽象基类
+│   ├── file_codec_type.gd        # 编码格式枚举 (IMAGE / TEXTURE_2D)
 │   ├── file_codec_utils.gd       # 统一文件编解码门面
-│   └── resource_codec_utils.gd   # 资源 (Resource) 与 Dictionary 互转
-├── async_utils.gd                # 异步并发编排 (gather / wait_first / sleep)
-├── coord_utils.gd                # 坐标数学与网格换算 (world_to_grid / grid_to_world)
-├── file_utils.gd                 # 安全文件 I/O (write_text / read_text / md5)
-├── memory_utils.gd               # 内存与显存字节估算 (estimate_bytes)
-├── node_utils.gd                 # 场景树操作 (mount / spawn / clone / safe_free)
-├── spine_utils.gd                # Spine 骨骼动画预热与播放 (warmup / play_oneshot)
-├── time_utils.gd                 # 时间字符串格式化与安全等待 (format_mm_ss / wait_safe)
-├── uuid_utils.gd                 # UUID v4 生成与短码互转
-└── version_utils.gd              # 语义化版本号对比 (compare)
+│   ├── image_file_codec.gd       # Image 格式编解码
+│   ├── resource_codec_utils.gd   # 资源 (Resource) 与 Dictionary 互转
+│   └── texture_2d_file_codec.gd  # Texture2D 格式编解码
+├── coord/                        # 坐标数学与网格换算
+│   └── coord_utils.gd            # (CoordUtils) world_to_grid / grid_to_world
+├── file/                         # 安全文件 I/O
+│   └── file_utils.gd             # (FileUtils) write_text / read_text / md5
+├── memory/                       # 内存与显存字节估算
+│   └── memory_utils.gd           # (MemoryUtils) estimate_bytes
+├── node/                         # 场景树操作与预制体挂载
+│   └── node_utils.gd             # (NodeUtils) mount / spawn / clone / safe_free
+├── spine/                        # Spine 骨骼动画预热与播放
+│   └── spine_utils.gd            # (SpineUtils) warmup / play_oneshot
+├── time/                         # 时间格式化与安全等待
+│   └── time_utils.gd             # (TimeUtils) format_mm_ss / wait_safe
+├── uuid/                         # UUID v4 生成与短码互转
+│   └── uuid_utils.gd             # (UuidUtils) generate_v4 / to_base64
+└── version/                      # 语义化版本号对比
+	└── version_utils.gd          # (VersionUtils) compare / is_valid
 ```
 
 ---

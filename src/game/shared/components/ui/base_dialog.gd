@@ -1,9 +1,9 @@
 class_name BaseDialog
 extends Control
 
-## 模态弹窗/对话框基类。
-## 配合 UIService 的 POPUP 层管理生命周期与层级遮罩。
-## 提供打开/关闭动画、参数传递、点击空白关闭以及物理返回键拦截。
+## 模态弹窗业务基类。
+## 位于业务共享组件层 (src/game/shared/components/ui/)。
+## 提供打开/关闭生命周期钩子、弹性补间动画、入参获取以及点击背景遮罩自闭能力。
 
 signal opened
 signal closed
@@ -22,15 +22,13 @@ signal closed
 
 #region State
 var _params: Dictionary = {}
-var _ui_service: BaseUISystem = null
 var _is_closing: bool = false
 #endregion
 
 #region Public API
-## 打开弹窗（由 UISystem 自动调用）
-func open(params: Dictionary = {}, ui_service: BaseUISystem = null) -> void:
+## 打开弹窗（由 DialogManager 或调用端驱动）
+func open(params: Dictionary = {}) -> void:
 	_params = params
-	_ui_service = ui_service
 	_is_closing = false
 	visible = true
 
@@ -54,22 +52,22 @@ func close() -> void:
 		_play_exit_animation()
 	else:
 		_finish_close()
-#endregion
-
-#region Lifecycle Hooks (Subclass Overrides)
-## 弹窗打开时调用（入场动画前，用于绑定数据、填充文本）
-func _on_open(_data: Dictionary) -> void:
-	pass
-
-
-## 弹窗关闭时调用（退场动画前，用于注销监听、保存临时态）
-func _on_close() -> void:
-	pass
 
 
 ## 获取入参字典
 func get_params() -> Dictionary:
 	return _params
+#endregion
+
+#region Lifecycle Hooks (Subclass Overrides)
+## 弹窗打开时回调（入场动画前，用于绑定数据、填充文本）
+func _on_open(_data: Dictionary) -> void:
+	pass
+
+
+## 弹窗关闭时回调（退场动画前，用于注销监听、保存临时态）
+func _on_close() -> void:
+	pass
 #endregion
 
 #region Animation & Internal
@@ -109,8 +107,5 @@ func _play_exit_animation() -> void:
 
 func _finish_close() -> void:
 	closed.emit()
-	if _ui_service != null:
-		_ui_service.close_popup(self)
-	else:
-		queue_free()
+	DialogManager.close(self)
 #endregion

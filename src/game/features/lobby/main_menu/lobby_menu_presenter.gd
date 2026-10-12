@@ -51,8 +51,8 @@ func _on_unbind() -> void:
 func _on_start_battle_pressed() -> void:
 	if _menu_service != null:
 		var res := _menu_service.request_start_battle()
-		if res.is_err() and App != null and App.ui != null:
-			App.ui.show_toast("无法进入战斗: %s" % res.error_message())
+		if res.is_err():
+			ToastManager.show("无法进入战斗: %s" % res.error_message())
 
 
 func _on_add_gold_pressed() -> void:

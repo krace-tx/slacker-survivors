@@ -27,7 +27,7 @@ src/framework/modules/asset/
 
 ```gdscript
 # 异步加载资源 (需 await)
-var res := await App.asset.load("res://src/assets/art/player.png")
+var res := await App.asset.load("res://src/assets/textures/characters/player.png")
 if res.is_ok():
     var texture: Texture2D = res.value
 ```

@@ -5,7 +5,7 @@
 ```text
 src/framework/modules/network/
 ├── _doc_network.md             # 本文档
-├── base_network_client.gd      # 公开门面契约 BaseNetworkClient (App.network / App.net，详尽注释)
+├── base_network_client.gd      # 公开门面契约 BaseNetworkClient (App.net，详尽注释)
 │
 ├── types/                      # [公开契约]
 │   └── network_request.gd      # 数据对象：单次请求配置与策略参数 (NetworkRequest)
@@ -15,7 +15,7 @@ src/framework/modules/network/
     └── request_queue.gd        # 队列调度：HTTPRequest 节点池、超时控制与指数退避重试
 ```
 
-> 模块名保持完整的 `network`；`App.net` 只是访问别名，内部实现类为 `NetworkClient`。
+> 模块目录名保持完整的 `network`；全局访问门面统一使用 `App.net`，内部实现类为 `NetworkClient`。
 
 ---
 
@@ -37,5 +37,5 @@ var res := await App.net.get_request("https://api.game.com/config")
 if res.is_ok():
     var data: Dictionary = res.value
 else:
-    App.log.error("Network", "Request failed: %s" % res.error_message())
+    App.logger.error("Network", "Request failed: %s" % res.error_message())
 ```

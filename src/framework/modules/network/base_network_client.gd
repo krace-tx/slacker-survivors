@@ -10,7 +10,7 @@ extends NodeSubsystem
 ## - 统一鉴权注入：管理用户会话 Bearer Token，并在请求发出时自动向 Header 注入鉴权；[br]
 ## - 二进制与文件流支持：大文件断点/流式下载与上传（支持进度回调与 MD5 完整性校验）。[br]
 ##
-## 业务代码应统一通过 [code]App.network[/code] 或快捷别名 [code]App.net[/code] 访问本契约提供的方法。
+## 业务代码应统一通过 [code]App.net[/code] 访问本契约提供的方法。
 
 
 ## 返回该子系统的全局唯一注册标识符。

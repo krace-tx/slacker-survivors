@@ -40,7 +40,7 @@ var res := await App.storage.read_async("user_profile")
 if res.is_ok():
 	var data = res.value
 else:
-	App.log.error("Core", "Load error: %s (%s)" % [res.error_code(), res.error_message()])
+	App.logger.error("Core", "Load error: %s (%s)" % [res.error_code(), res.error_message()])
 ```
 
 ---
@@ -50,7 +50,7 @@ else:
 全工程唯一 Autoload 服务门面聚合根。它不实例化具体服务，启动和释放交给 `FrameworkRuntime`：
 
 ```gdscript
-App.log.info("Boot", "Engine started.")
+App.logger.info("Boot", "Engine started.")
 App.audio.play_sfx_by_path("res://assets/audio/click.wav")
 ```
 

@@ -9,7 +9,7 @@ extends Subsystem
 ## - Tag 分类追踪与控制台 ANSI 颜色染色；[br]
 ## - 内存回溯缓冲区（Dump）记录，供崩溃报错或用户反馈上报提取。[br]
 ##
-## 业务代码应统一通过 [code]App.log[/code] 访问本契约提供的方法。
+## 业务代码应统一通过 [code]App.logger[/code] 访问本契约提供的方法。
 
 
 ## 当前最低输出级别过滤阈值（参见 [LogLevel] 枚举常量，低于此级别的日志将被静默丢弃）。
@@ -18,7 +18,7 @@ var min_level: int = LogLevel.DEBUG
 
 ## 返回该子系统的全局唯一注册标识符。
 func get_id() -> String:
-	return "log"
+	return "logger"
 
 
 #region Public Logging APIs

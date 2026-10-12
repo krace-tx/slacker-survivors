@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://b8y4k2splash00"]
+[gd_scene format=3 uid="uid://ca6r1t3bodl40"]
 
-[ext_resource type="Script" path="res://src/game/bootstrap/splash_scene.gd" id="1_splash"]
+[ext_resource type="Script" path="res://src/game/bootstrap/scene/splash_scene.gd" id="1_splash"]
 
 [node name="SplashScene" type="Node"]
 script = ExtResource("1_splash")

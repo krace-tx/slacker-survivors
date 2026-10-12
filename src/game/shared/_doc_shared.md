@@ -12,8 +12,14 @@ src/game/shared/
 │   └── game_view_contract.gd     # View 规范契约
 ├── constants/
 │   └── game_constants.gd         # 全局静态场景路径、存档 Key、音频分组常量
-└── events/
-    └── game_events.gd            # 跨模块解耦事件字符串常量
+├── events/
+│   └── game_events.gd            # 跨模块解耦事件字符串常量
+└── components/                   # 业务通用可复用控件库 (UI / 交互组件)
+    └── ui/
+        ├── base_texture_button.gd # 通用贴图按钮 (缩放/音效/震动/滑动中继)
+        ├── base_dialog.gd         # 模态弹窗业务基类 (进退场补间/点击背景遮罩自闭)
+        ├── dialog_manager.gd      # 模态弹窗调度器 (暗色遮罩/LIFO堆栈/返回键监听)
+        └── toast_manager.gd       # 轻量飘字提示组件 (居中浮动与渐变销毁)
 ```
 
 ## 核心设计要点

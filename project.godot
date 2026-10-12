@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Slacker Survivors"
-run/main_scene="res://src/test/video/video_player_test.tscn"
+run/main_scene="res://src/game/bootstrap/scene/splash_scene.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -32,6 +32,22 @@ window/stretch/aspect="expand"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/ffmpeg/plugin.cfg", "res://addons/godot_mcp/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg", "res://addons/video_player_android/plugin.cfg", "res://addons/video_player_ios/plugin.cfg")
+
+[file_customization]
+
+folder_colors={
+"res://addons/": "gray",
+"res://docs/": "blue",
+"res://docs/architecture/": "purple",
+"res://docs/deployment/": "teal",
+"res://docs/design/": "orange",
+"res://src/": "green",
+"res://src/assets/": "yellow",
+"res://src/framework/": "red",
+"res://src/game/": "purple",
+"res://src/resources/": "teal",
+"res://src/test/": "pink"
+}
 
 [physics]
 

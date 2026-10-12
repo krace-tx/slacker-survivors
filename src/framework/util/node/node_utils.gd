@@ -27,7 +27,7 @@ static func mount(node: Node, parent: Node, child_name: String = "") -> Result:
 
 
 ## 挂载必须成功的节点。失败 [code]push_error[/code] + [code]assert[/code]，并返回 [param node]。[br]
-## 不走 App.log：本工具不依赖任何服务。
+## 不走 App.logger：本工具不依赖任何服务。
 static func mount_required(node: Node, parent: Node, child_name: String = "") -> Node:
 	var res := mount(node, parent, child_name)
 	if res.is_err():

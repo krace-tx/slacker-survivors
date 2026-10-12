@@ -27,7 +27,7 @@ func _on_enter(_params: Dictionary = {}) -> void:
 		Bus.on(GameEvents.BATTLE_FINISHED, _on_battle_finished)
 	
 	_is_battle_active = true
-	App.log.info("Battle", "Battle scene started.")
+	App.logger.info("Battle", "Battle scene started.")
 
 
 func _on_exit() -> void:
@@ -52,13 +52,11 @@ func _process(delta: float) -> void:
 
 
 func _on_level_up(_payload: Dictionary) -> void:
-	App.log.info("Battle", "Opening UpgradeSelectionDialog for level up.")
+	App.logger.info("Battle", "Opening UpgradeSelectionDialog for level up.")
 	
-	# 唤起升级选卡弹窗 (通过 App.ui.open_dialog)
+	# 唤起升级选卡弹窗 (通过 DialogManager.open)
 	var dialog_path := "res://src/game/features/battle/upgrade_selection/upgrade_selection_dialog.tscn"
-	var dialog: UpgradeSelectionDialog = null
-	if App.ui != null:
-		dialog = App.ui.open_dialog(dialog_path) as UpgradeSelectionDialog
+	var dialog := (await DialogManager.open(dialog_path)) as UpgradeSelectionDialog
 	
 	if dialog != null:
 		var up_model := UpgradeSelectionModel.new()
@@ -69,10 +67,9 @@ func _on_level_up(_payload: Dictionary) -> void:
 
 func _on_battle_finished(payload: Dictionary) -> void:
 	var is_victory: bool = payload.get("is_victory", false)
-	App.log.info("Battle", "Battle finished: Victory=%s" % is_victory)
+	App.logger.info("Battle", "Battle finished: Victory=%s" % is_victory)
 	
-	if App.ui != null:
-		App.ui.show_toast("战斗结束！正在返回大厅...")
+	ToastManager.show("战斗结束！正在返回大厅...")
 	
 	# 延迟 1 秒平滑返回大厅
 	await get_tree().create_timer(1.0).timeout

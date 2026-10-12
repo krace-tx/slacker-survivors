@@ -50,7 +50,7 @@ src/framework/modules/scene/
 # 1. 默认智能流式切场（Replace 自动触发 Apple 景深弹性缩放）
 var replace_res := await App.scene.replace("res://src/game/scenes/gallery/gallery.tscn")
 if replace_res.is_err():
-    App.log.error("Scene", replace_res.error_message())
+    App.logger.error("Scene", replace_res.error_message())
 
 # 2. 压入新场景并带参（必须采用多行展开字典书写风格）
 var push_res := await App.scene.push(SceneCatalog.LEVEL, {

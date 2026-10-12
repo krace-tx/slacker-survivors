@@ -41,8 +41,7 @@ func _on_unbind() -> void:
 
 
 func _on_pause_pressed() -> void:
-	if App != null and App.ui != null:
-		App.ui.show_toast("游戏已暂停")
+	ToastManager.show("游戏已暂停")
 
 
 func _on_model_data_changed() -> void:

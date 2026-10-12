@@ -18,3 +18,6 @@ const BATTLE_FINISHED: StringName = &"game:battle_finished"
 
 ## 局内角色升级触发展示选卡: {"current_level": int, "choices": Array}
 const BATTLE_LEVEL_UP: StringName = &"game:battle_level_up"
+
+## 游戏业务层启动与状态加载完毕
+const BOOTSTRAP_COMPLETED: StringName = &"game:bootstrap_completed"

@@ -126,14 +126,14 @@ var options := VideoPlayOptions.new() \
     .with_volume(0.9)
 
 # 打开并播放视频
-var result := App.video.open("res://src/assets/video/intro.mp4", options)
+var result := App.video.open("res://src/assets/videos/intro.mp4", options)
 if result.is_err():
-    App.log.error("Video", "打开视频失败 [%s]: %s" % [result.error_code(), result.error_message()])
+    App.logger.error("Video", "打开视频失败 [%s]: %s" % [result.error_code(), result.error_message()])
     return
 
 # 监听播放完成
 App.video.playback_finished.connect(func():
-    App.log.info("Video", "剧情视频播放完毕，进入主界面")
+    App.logger.info("Video", "剧情视频播放完毕，进入主界面")
     App.scene.replace("res://src/game/scenes/lobby/lobby.tscn")
 , CONNECT_ONE_SHOT)
 ```
@@ -146,9 +146,9 @@ var cutscene_opts := VideoPlayOptions.new() \
     .with_duck_bgm(true, 0.4)
 
 # 过场调用是异步的；完成或玩家跳过之后自动继续后续业务流程
-var result := await App.video.play_cutscene("res://src/assets/video/cg_opening.mp4", cutscene_opts)
+var result := await App.video.play_cutscene("res://src/assets/videos/cg_opening.mp4", cutscene_opts)
 if result.is_err():
-    App.log.error("Video", "过场播放异常: %s" % result.error_message())
+    App.logger.error("Video", "过场播放异常: %s" % result.error_message())
     return
 
 App.scene.replace("res://src/game/scenes/battle/battle.tscn")
@@ -170,7 +170,7 @@ func _process(_delta: float) -> void:
 ```gdscript
 # 状态机监听
 App.video.state_changed.connect(func(new_state: int, old_state: int):
-    App.log.debug("Video", "状态跃迁: %s -> %s" % [
+    App.logger.debug("Video", "状态跃迁: %s -> %s" % [
         VideoPlaybackState.to_string_name(old_state),
         VideoPlaybackState.to_string_name(new_state)
     ])

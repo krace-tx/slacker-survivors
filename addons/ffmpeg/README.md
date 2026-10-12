@@ -73,7 +73,7 @@ addons/ffmpeg/
 
 ```gdscript
 # 播放任意视频文件（全平台自适应选择最优解码器）
-var result := App.video.open("res://src/assets/video/intro.mp4")
+var result := App.video.open("res://src/assets/videos/intro.mp4")
 if result.is_ok():
     App.video.play()
 ```

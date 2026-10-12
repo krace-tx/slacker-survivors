@@ -17,7 +17,7 @@ src/framework/modules/env/
 
 ```gdscript
 if App.env.is_dev():
-    App.log.debug("DebugTool", "Dev mode enabled.")
+    App.logger.debug("DebugTool", "Dev mode enabled.")
 
 var env_name := App.env.get_name() # "LOCAL" / "DEV" / "PROD"
 ```

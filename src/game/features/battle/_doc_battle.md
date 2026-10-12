@@ -25,5 +25,5 @@ src/game/features/battle/
    - 击杀怪物获取经验时调用 `BattleHudService.add_experience(exp)`；
    - 经验达标升级，Service 触发事件 `Bus.emit(GameEvents.BATTLE_LEVEL_UP)`；
 2. **弹窗激活与 Presenter 组装**：
-   - `BattleScene` 监听该事件，调用 `App.ui.open_dialog()` 打开 `UpgradeSelectionDialog`；
+   - `BattleScene` 监听该事件，调用 `DialogManager.open()` 打开 `UpgradeSelectionDialog`；
    - 动态装配 `UpgradeSelectionPresenter`，驱动选卡并自动应用卡牌加成。

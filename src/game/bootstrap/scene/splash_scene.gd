@@ -21,14 +21,14 @@ func _on_enter(_params: Dictionary = {}) -> void:
 		_progress_bar.value = 0.0
 	if _status_label != null:
 		_status_label.text = "Loading..."
-	
+
 	_run_bootstrap()
 
 
 func _run_bootstrap() -> void:
 	var result := await _bootstrapper.start_boot_sequence()
 	if result.is_ok():
-		# 稍微延迟 0.1 秒让进度条拉满动效自然平滑
+		# 稍微延迟 0.15 秒让进度条拉满动效自然平滑
 		await get_tree().create_timer(0.15).timeout
 		if App.scene != null:
 			App.scene.replace(GameConstants.SCENE_LOBBY)
@@ -37,8 +37,8 @@ func _run_bootstrap() -> void:
 			_status_label.text = "Startup Error: %s" % result.error_message()
 
 
-func _on_progress_updated(progress: float, step_name: String) -> void:
+func _on_progress_updated(progress: float, _phase: int, status_text: String) -> void:
 	if _progress_bar != null:
 		_progress_bar.value = progress * 100.0
 	if _status_label != null:
-		_status_label.text = step_name
+		_status_label.text = status_text

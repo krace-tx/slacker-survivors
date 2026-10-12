@@ -21,8 +21,8 @@
 - **构造即解析**：构造函数 `_init(dict: Dictionary = {})` 支持直接传入 Dictionary 完成快速实例化。
 
 ```text
-src/framework/infra/params/
-├── _doc_params.md            # 本模块说明文档
+src/framework/infra/param/
+├── _doc_param.md             # 本模块说明文档
 └── base_params.gd            # 参数契约实体基类 (自动反射序列化/反序列化)
 ```
 

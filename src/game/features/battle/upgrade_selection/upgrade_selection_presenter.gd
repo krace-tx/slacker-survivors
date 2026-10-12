@@ -56,8 +56,8 @@ func _on_card_chosen(card_id: String) -> void:
 func _on_reroll_pressed() -> void:
 	if _upgrade_service != null:
 		var res := _upgrade_service.reroll()
-		if res.is_err() and App != null and App.ui != null:
-			App.ui.show_toast("无法刷新: %s" % res.error_message())
+		if res.is_err():
+			ToastManager.show("无法刷新: %s" % res.error_message())
 
 
 func _on_model_data_changed() -> void:

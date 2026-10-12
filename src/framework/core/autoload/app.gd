@@ -5,11 +5,8 @@ extends Node
 
 #region Core Subsystems
 var env:		BaseRuntimeEnvironment	## 基础：运行环境 (Local/Emulator/Dev/Test/Prod)
-@warning_ignore("shadowed_global_identifier")
-var log:		BaseFrameworkLogger		## 基础：日志与诊断
-var network:	BaseNetworkClient		## 通讯：HTTP连接池、断线重连、Token鉴权
-var net:		BaseNetworkClient:		## network 的快速访问别名
-	get: return network
+var logger:		BaseFrameworkLogger		## 基础：日志与诊断
+var net:		BaseNetworkClient		## 通讯：HTTP连接池、断线重连、Token鉴权
 var storage:	BaseStorageSystem		## 存储：内存/磁盘/远端三级读写
 var time:		BaseTimeSystem			## 校验：服务器权威时间校准
 var locale:		BaseLocalizationSystem	## 表现：多语言与区域格式化
@@ -29,10 +26,12 @@ var _runtime: FrameworkRuntime = null
 var _is_app_paused := false
 
 
-## 初始化 Framework。App 只负责生命周期，具体服务装配由 FrameworkRuntime 完成。
-## [method _ready] 会调一次；其它入口可以 [code]await App.bootstrap()[/code] 等待同一个结果。
-func bootstrap() -> Result:
+## 初始化 Framework 内核。App 只负责生命周期，具体服务装配由 FrameworkRuntime 完成。
+## [param on_progress] 内核组件安装进度回调: Callable(step_idx: int, total_steps: int, service_key: String)
+func bootstrap(on_progress: Callable = Callable()) -> Result:
 	if _boot_done:
+		if on_progress.is_valid():
+			on_progress.call(12, 12, "ready")
 		return _boot_result
 	if _booting:
 		while _booting:
@@ -41,7 +40,7 @@ func bootstrap() -> Result:
 	_booting = true
 	_boot_result = null
 	_runtime = FrameworkRuntime.new()
-	_boot_result = await _runtime.initialize(self)
+	_boot_result = await _runtime.initialize(self, on_progress)
 	_boot_done = _boot_result.is_ok()
 	_booting = false
 	if _boot_result.is_err():
@@ -54,9 +53,15 @@ func bootstrap() -> Result:
 func _ready() -> void:
 	# 禁用引擎的“收到退出信号立刻强制关闭”行为，交由 _on_app_quit 统一处理
 	get_tree().set_auto_accept_quit(false)
-	var result := await bootstrap()
-	if result.is_err():
-		push_error("Framework bootstrap failed: %s" % result.error_message())
+	# 延迟保底：若独立调试非 SplashScene 场景（按 F6 运行），保证底层内核服务按需就绪
+	call_deferred("_ensure_standalone_bootstrap")
+
+
+func _ensure_standalone_bootstrap() -> void:
+	if not _boot_done and not _booting:
+		var current := get_tree().current_scene
+		if current == null or current.scene_file_path != "res://src/game/bootstrap/scene/splash_scene.tscn":
+			await bootstrap()
 
 
 func _notification(what: int) -> void:
@@ -83,8 +88,8 @@ func _on_app_paused() -> void:
 	if _is_app_paused:
 		return
 	_is_app_paused = true
-	if log != null:
-		log.info("app", "App paused.")
+	if logger != null:
+		logger.info("app", "App paused.")
 	Bus.app_paused.emit()
 
 
@@ -93,15 +98,15 @@ func _on_app_resumed() -> void:
 	if not _is_app_paused:
 		return
 	_is_app_paused = false
-	if log != null:
-		log.info("app", "App resumed.")
+	if logger != null:
+		logger.info("app", "App resumed.")
 	Bus.app_resumed.emit()
 
 
 ## 窗口失焦（PC/桌面端）：暂停音频并触发 App 挂起逻辑。
 func _on_app_focus_out() -> void:
-	if log != null:
-		log.info("app", "App focus out.")
+	if logger != null:
+		logger.info("app", "App focus out.")
 	if audio != null:
 		audio.set_paused(true)
 	_on_app_paused()
@@ -109,27 +114,24 @@ func _on_app_focus_out() -> void:
 
 ## 窗口获焦（PC/桌面端）：恢复音频并触发 App 恢复逻辑。
 func _on_app_focus_in() -> void:
-	if log != null:
-		log.info("app", "App focus in.")
+	if logger != null:
+		logger.info("app", "App focus in.")
 	if audio != null:
 		audio.set_paused(false)
 	_on_app_resumed()
 
 
-## 返回键 / ESC / 侧滑返回：优先关闭顶层弹窗，否则广播 Bus.app_back_pressed。
+## 返回键 / ESC / 侧滑返回：广播 Bus.app_back_pressed。
 func _on_app_go_back() -> void:
-	if ui != null and ui.has_modal():
-		ui.close_top_popup()
-		return
-	if log != null:
-		log.info("app", "App back pressed.")
+	if logger != null:
+		logger.info("app", "App back pressed.")
 	Bus.app_back_pressed.emit()
 
 
 ## 关闭请求：flush 后允许退出（auto_accept_quit 已关闭）。
 func _on_app_quit() -> void:
-	if log != null:
-		log.info("app", "App quit.")
+	if logger != null:
+		logger.info("app", "App quit.")
 	if _runtime != null:
 		_runtime.dispose()
 		_runtime = null
@@ -140,8 +142,8 @@ func _on_app_quit() -> void:
 
 ## 系统内存警告：释放资源缓存。
 func _on_app_low_memory() -> void:
-	if log != null:
-		log.warn("app", "App low memory: flushing asset cache.")
+	if logger != null:
+		logger.warn("app", "App low memory: flushing asset cache.")
 	if asset != null:
 		asset.clear()
 #endregion

@@ -13,30 +13,30 @@ src/
 │   ├── audio/                   # 音效与音乐 (bgm/, sfx/)
 │   ├── textures/                # 纹理贴图 (ui/, characters/)
 │   ├── fonts/                   # 字体文件
-│   └── video/                   # CG 与动画过场视频 (.mp4, .ogv)
+│   └── videos/                  # CG 与动画过场视频 (.mp4, .ogv)
 │
 ├── resources/                   # [Godot 资源与静态配置表]
 │   ├── configs/                 # 游戏策划数值配置、关卡表、物品表
-│   ├── themes/                  # UI 主题与样式盒 (.tres)
 │   └── data/                    # 静态数据定义
 │
 ├── framework/                   # [通用游戏引擎基建层]
-│   └── (core, modules, infra, util, components)
+│   └── (core, modules, infra, util)
 │
 └── game/                        # [游戏玩法与业务逻辑层]
     ├── _doc_game.md             # 本架构规范文档
     │
     ├── bootstrap/               # 启动装配与首发场景
     │   ├── _doc_bootstrap.md
-    │   ├── game_bootstrapper.gd # 启动流水线调度
-    │   ├── splash_scene.gd      # 首发闪屏场景 (继承 BaseScene)
-    │   └── splash_scene.tscn
+    │   ├── game_bootstrapper.gd # 两阶段启动总控门面
+    │   ├── pipeline/            # 启动管线域 (boot_context.gd, phases/)
+    │   └── scene/               # 启动场景呈现 (splash_scene.gd, splash_scene.tscn)
     │
     ├── shared/                  # 业务层跨模块共享基础
     │   ├── _doc_shared.md
     │   ├── msvp/                # MSVP 架构四要素核心基类 (GameModel, GameService, GamePresenter)
     │   ├── constants/           # 业务全局常量 (GameConstants)
-    │   └── events/              # 跨模块领域事件 (GameEvents)
+    │   ├── events/              # 跨模块领域事件 (GameEvents)
+    │   └── components/          # 业务共享通用可复用控件库 (BaseTextureButton 等)
     │
     └── features/                # 核心功能模块集合
         ├── lobby/               # 大厅功能模块
@@ -68,7 +68,7 @@ flowchart LR
     end
 
     subgraph Domain_Layer ["领域服务层 (Service)"]
-        Service["Service (GameService)<br>• 业务逻辑、规则校验、数学公式<br>• 读写 App.storage / App.network<br>• 修改 Model 状态"]
+        Service["Service (GameService)<br>• 业务逻辑、规则校验、数学公式<br>• 读写 App.storage / App.net<br>• 修改 Model 状态"]
     end
 
     subgraph Data_Layer ["数据模型层 (Model)"]
@@ -86,18 +86,18 @@ flowchart LR
 
 | 角色 | 推荐基类 | 核心职责 | 硬性禁止事项 (Strict Anti-Patterns) |
 | :--- | :--- | :--- | :--- |
-| **Model** | [`GameModel`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/msvp/game_model.gd) | 持有状态数据；在数据变动时发射 `data_changed` | **严禁**引用任何 UI 控件节点；**严禁**处理网络或存储请求。 |
-| **Service** | [`GameService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/msvp/game_service.gd) | 纯粹业务逻辑、数值公式、玩法规则校验；读写 `App.*` 门面；修改 Model | **严禁**直接操作或修改 View 节点控件；**严禁**写进退场补间动画。 |
-| **View** | [`BaseUIView`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/ui/base_ui_view.gd) / [`BaseDialog`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/ui/base_dialog.gd) | UI 节点排版、播放补间动画、安全区适配；捕获点击并以 signal 抛出 | **严禁**写业务逻辑（如金币扣减、胜负判定）；**严禁**直接修改 Model。 |
-| **Presenter**| [`GamePresenter`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/msvp/game_presenter.gd) | 充当 View 与 Model/Service 的粘合胶水；生命周期注册与反注册 | **保持薄层**。不写复杂游戏规则算法（归 Service），不手写节点动画（归 View）。 |
+| **Model** | [`GameModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/msvp/game_model.gd) | 持有状态数据；在数据变动时发射 `data_changed` | **严禁**引用任何 UI 控件节点；**严禁**处理网络或存储请求。 |
+| **Service** | [`GameService`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/msvp/game_service.gd) | 纯粹业务逻辑、数值公式、玩法规则校验；读写 `App.*` 门面；修改 Model | **严禁**直接操作或修改 View 节点控件；**严禁**写进退场补间动画。 |
+| **View** | [`BaseUIView`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/ui/base_ui_view.gd) / [`BaseDialog`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/components/ui/base_dialog.gd) | UI 节点排版、播放补间动画、安全区适配；捕获点击并以 signal 抛出 | **严禁**写业务逻辑（如金币扣减、胜负判定）；**严禁**直接修改 Model。 |
+| **Presenter**| [`GamePresenter`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/msvp/game_presenter.gd) | 充当 View 与 Model/Service 的粘合胶水；生命周期注册与反注册 | **保持薄层**。不写复杂游戏规则算法（归 Service），不手写节点动画（归 View）。 |
 
 ---
 
 ## 三、 启动与跨模块协作
 
 1. **统一启动入口**：
-   - 游戏默认启动主场景配置为 [`res://src/game/bootstrap/splash_scene.tscn`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/splash_scene.tscn)；
-   - 闪屏场景由 [`GameBootstrapper`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/game_bootstrapper.gd) 自动完成 `await App.bootstrap()` 框架初始化与玩家存档加载，完成后平滑跳转至大厅；
+   - 游戏默认启动主场景配置为 [`res://src/game/bootstrap/splash_scene.tscn`](file:///d:/code/GodotProject/slacker-survivors/src/game/bootstrap/splash_scene.tscn)；
+   - 闪屏场景由 [`GameBootstrapper`](file:///d:/code/GodotProject/slacker-survivors/src/game/bootstrap/game_bootstrapper.gd) 自动完成 `await App.bootstrap()` 框架初始化与玩家存档加载，完成后平滑跳转至大厅；
 2. **跨模块通讯**：
    - 模块与模块之间杜绝直接交叉 import 对方的内部 Presenter 或 Service；
-   - 统一使用全局事件总线 [`Bus.emit(GameEvents.XXX, payload)`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/events/game_events.gd) 进行异步解耦通讯。
+   - 统一使用全局事件总线 [`Bus.emit(GameEvents.XXX, payload)`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/events/game_events.gd) 进行异步解耦通讯。
