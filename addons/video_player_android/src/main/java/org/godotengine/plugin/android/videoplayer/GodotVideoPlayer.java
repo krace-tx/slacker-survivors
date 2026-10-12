@@ -95,7 +95,7 @@ public class GodotVideoPlayer extends GodotPlugin {
                         @Override
                         public void onPlayerError(@NonNull PlaybackException error) {
                             stopVideo();
-                            emitSignal("video_error", error.getMessage());
+                            emitSignal("video_error", error.getMessage() != null ? error.getMessage() : "Unknown playback error");
                         }
 
                         @Override

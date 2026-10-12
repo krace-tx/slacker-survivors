@@ -6,7 +6,7 @@ extends VideoPlayerAdapter
 ## 针对移动端（Android / iOS）进行专属适配优化：[br]
 ## - Android：通过 Godot Android Plugin (.gdap) 桥接 Android 原生 ExoPlayer / MediaPlayer；[br]
 ## - iOS：通过 Godot iOS Plugin (.gdip) 桥接 Apple 原生 AVPlayerViewController；[br]
-## - 特点：零 CPU 软解消耗、全硬件 VPU 芯片级解码、零发热、不增加任何额外包体。[br]
+## - 特点：优先使用平台硬件解码；实际能力由导出的原生插件和设备编解码器决定。[br]
 ## - 兼容性：广泛兼容社区主流开源插件单例（GodotVideoPlayer, godot-exoplayer, AVPlayer 等）。
 
 const KNOWN_ANDROID_SINGLETONS: Array[StringName] = [

@@ -8,7 +8,7 @@ extends NodeSubsystem
 ## - 极简纯粹的播放控制：[method open]、[method play]、[method pause]、[method stop]、[method seek]；[br]
 ## - 状态与生命周期驱动：提供基于 [VideoPlaybackState] 的完整状态机迁移通知；[br]
 ## - 画面纹理输出：通过 [method get_video_texture] 暴露当前解码帧，支持 UI（[TextureRect]）或 3D 材质渲染；[br]
-## - 音画避让协同：与 [BaseAudioSystem] 联动，视频播放期间自动平滑避让游戏 BGM；[br]
+## - 音画避让协同：与 [BaseAudioSystem] 联动，视频播放期间避让游戏 BGM；[br]
 ## - 底层适配器隔离：透明桥接 [code]addons/[/code] 中的开源专业插件（如 [code]EIRTeam.FFmpeg[/code]）与引擎内置软解播放器。[br]
 ##
 ## 业务代码应统一通过 [code]App.video[/code] 访问本契约提供的方法。
@@ -52,7 +52,7 @@ func open(file_path: String, options: VideoPlayOptions = null) -> Result
 
 ## 播放全屏剧情/片头 CG 视频（全平台一体化便捷接口）。[br]
 ## 针对当前运行环境进行智能路由调度：[br]
-## - 移动端（Android / iOS）：优先唤起系统原生硬件播放器（0发热、0额外内存）；[br]
+## - 移动端（Android / iOS）：在原生插件可用时唤起系统播放器；[br]
 ## - 桌面端（Windows / macOS / Linux）：在顶层画幅上渲染播放，并支持跳过交互；[br]
 ## - 全局联动：自动完成 BGM 避让、生命周期等待并在结束时返回 [Result]。[br]
 ##

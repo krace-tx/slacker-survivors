@@ -4,8 +4,8 @@
 
 ## 特性
 * **零发热、极省电**：芯片内置 VPU 硬解，不占用游戏 CPU/GPU 渲染循环；
-* **零多余包体**：依赖系统自带库与 AndroidX Media3，无需在 APK 中打包 20MB+ 的 FFmpeg 二进制；
-* **全格式兼容**：原生支持 Android 平台上所有受硬件认证的 H.264 / H.265 / VP9 视频；
+* **硬件优先**：通过 AndroidX Media3 ExoPlayer 使用平台硬件解码；Media3 依赖会由 Gradle 合并进 Android 导出包；
+* **常见格式硬件加速**：优先使用 Android 设备支持的 H.264 / H.265 / VP9 编解码器，具体能力取决于设备；
 * **Godot 4 官方规范**：提供标准的 `plugin.cfg`、`export_plugin.gd` 与 `.gdap` 插件描述。
 
 ## 目录结构
@@ -22,7 +22,18 @@ addons/video_player_android/
 └── README.md                   # 本文档
 ```
 
-## 导出说明
+## 构建与导出说明
+
+`godot_video_player.aar` 必须由 Gradle 构建。`build_android.sh` 会拒绝空的
+`classes.jar`，避免把只有 Manifest 的占位 AAR 带入导出包：
+
+```bash
+./addons/video_player_android/build_android.sh
+```
+
+构建完成后应能在 AAR 的 `classes.jar` 中找到
+`org/godotengine/plugin/android/videoplayer/GodotVideoPlayer.class`。
+
 在 Godot 导出 Android APK 时：
 1. 打开 **Project -> Export...**，选择 Android 导出预设；
 2. 勾选 **Use Gradle Build**；
