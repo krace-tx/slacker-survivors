@@ -142,6 +142,14 @@ func open(file_path: String, options: VideoPlayOptions = null) -> Result:
 	
 	_active_adapter = adapter
 	var stream_res := _active_adapter.create_stream(clean_path)
+	if stream_res.is_err() and _active_adapter == _addon_adapter and _engine_adapter.can_handle(clean_path):
+		# An extension may advertise a container it cannot decode in the current
+		# build. Give the built-in Theora path a chance before surfacing the
+		# error, especially for .ogv assets.
+		var fallback_res := _engine_adapter.create_stream(clean_path)
+		if fallback_res.is_ok():
+			_active_adapter = _engine_adapter
+			stream_res = fallback_res
 	if stream_res.is_err():
 		_emit_error(stream_res.error_code(), stream_res.error_message())
 		_set_state(VideoPlaybackState.ERROR)
