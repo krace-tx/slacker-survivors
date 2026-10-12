@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Generated build and dependency files
+.idea/
+**/.gradle/
+**/build/
+**/node_modules/
+*.hprof

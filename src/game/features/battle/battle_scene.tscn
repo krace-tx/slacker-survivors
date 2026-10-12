@@ -1,0 +1,99 @@
+[gd_scene format=3 uid="uid://bat_scene_001"]
+
+[ext_resource type="Script" path="res://src/game/features/battle/battle_scene.gd" id="1_scene"]
+[ext_resource type="Script" path="res://src/game/features/battle/hud/battle_hud_view.gd" id="2_hud"]
+
+[node name="BattleScene" type="Node"]
+script = ExtResource("1_scene")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="ArenaBackground" type="ColorRect" parent="World"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.14, 0.12, 1)
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_hud")
+
+[node name="MarginContainer" type="MarginContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="TopBox" type="VBoxContainer" parent="UI/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ExpBar" type="ProgressBar" parent="UI/MarginContainer/TopBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+value = 30.0
+show_percentage = false
+
+[node name="StatsBar" type="HBoxContainer" parent="UI/MarginContainer/TopBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="LevelLabel" type="Label" parent="UI/MarginContainer/TopBox/StatsBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Lv.1"
+
+[node name="HpBox" type="HBoxContainer" parent="UI/MarginContainer/TopBox/StatsBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="HpBar" type="ProgressBar" parent="UI/MarginContainer/TopBox/StatsBar/HpBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 16)
+layout_mode = 2
+size_flags_vertical = 4
+value = 100.0
+show_percentage = false
+
+[node name="HpLabel" type="Label" parent="UI/MarginContainer/TopBox/StatsBar/HpBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "100 / 100"
+
+[node name="TimerLabel" type="Label" parent="UI/MarginContainer/TopBox/StatsBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "00:00"
+horizontal_alignment = 1
+
+[node name="KillsLabel" type="Label" parent="UI/MarginContainer/TopBox/StatsBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "💀 0"
+
+[node name="PauseButton" type="Button" parent="UI/MarginContainer/TopBox/StatsBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 32)
+layout_mode = 2
+text = "⏸ 暂停"
