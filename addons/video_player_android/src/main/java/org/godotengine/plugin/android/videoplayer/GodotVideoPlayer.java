@@ -75,6 +75,10 @@ public class GodotVideoPlayer extends GodotPlugin {
 
         activity.runOnUiThread(() -> {
             try {
+                if (path.startsWith("res://")) {
+                    emitSignal("video_error", "Packed res:// videos must be copied to a filesystem path before native Android playback.");
+                    return;
+                }
                 if (player == null) {
                     player = new ExoPlayer.Builder(activity).build();
                     playerView = new PlayerView(activity);
@@ -219,7 +223,7 @@ public class GodotVideoPlayer extends GodotPlugin {
 
     @UsedByGodot
     public float getDuration() {
-        if (player == null) return 0.0f;
+        if (player == null) return -1.0f;
         long dur = player.getDuration();
         return dur > 0 ? (float) dur / 1000.0f : -1.0f;
     }

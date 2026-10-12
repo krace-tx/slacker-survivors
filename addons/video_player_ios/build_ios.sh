@@ -4,6 +4,20 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+if [[ "${1:-}" == "--check" || "${1:-}" == "check" ]]; then
+	echo "==> Verifying existing godot_video_player.a..."
+	if [[ ! -f "$SCRIPT_DIR/godot_video_player.a" ]]; then
+		echo "error: godot_video_player.a does not exist" >&2
+		exit 1
+	fi
+	if ! nm -gU "$SCRIPT_DIR/godot_video_player.a" | grep -q '_register_avplayer_types'; then
+		echo "error: registration entry point was not exported by the archive" >&2
+		exit 1
+	fi
+	echo "==> godot_video_player.a is valid and exports _register_avplayer_types."
+	exit 0
+fi
+
 if ! command -v xcrun >/dev/null 2>&1; then
 	echo "error: xcrun is required to build the iOS plugin" >&2
 	exit 1
@@ -15,6 +29,7 @@ fi
 GODOT_HEADERS="${GODOT_HEADERS:-${GODOT_SOURCE:-}}"
 if [[ -z "$GODOT_HEADERS" ]]; then
 	for candidate in \
+		"/tmp/godot-source" \
 		"$SCRIPT_DIR/../../godot" \
 		"$SCRIPT_DIR/../../../godot" \
 		"${HOME}/src/godot"; do
@@ -42,6 +57,7 @@ TARGET="${IOS_TARGET:-release}"
 BUILD_FLAGS=(
 	"-arch" "$ARCH"
 	"-isysroot" "$SDK_PATH"
+	"-fmodules-cache-path=${TMPDIR:-/tmp}/clang-module-cache"
 	"-fobjc-arc"
 	"-fobjc-exceptions"
 	"-fmodules"
@@ -51,6 +67,13 @@ BUILD_FLAGS=(
 	"-DTYPED_METHOD_BIND"
 )
 
+if [[ ! -f "$GODOT_HEADERS/core/disabled_classes.gen.h" ]]; then
+	touch "$GODOT_HEADERS/core/disabled_classes.gen.h"
+fi
+if [[ ! -f "$GODOT_HEADERS/core/object/gdvirtual.gen.inc" && -f "$GODOT_HEADERS/core/object/make_virtuals.py" ]]; then
+	(cd "$GODOT_HEADERS/core/object" && python3 -c "import make_virtuals; make_virtuals.run(['gdvirtual.gen.inc'], [], {})")
+fi
+
 # Keep the old archive intact if compilation fails.
 TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/godot-video-ios.XXXXXX")"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -58,6 +81,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 echo "==> Compiling GodotVideoPlayer.mm for iOS ($ARCH, $TARGET)..."
 clang++ -c \
 	"${BUILD_FLAGS[@]}" \
+	-I"$GODOT_HEADERS/platform/ios" \
 	-I"$GODOT_HEADERS" \
 	-I"$GODOT_HEADERS/thirdparty" \
 	src/GodotVideoPlayer.mm \

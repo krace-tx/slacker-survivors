@@ -18,17 +18,17 @@ src/framework/core/
 │   ├── _doc_runtime.md
 │   └── framework_runtime.gd
 └── autoload/
-    ├── _doc_autoload.md
-    ├── app.gd
-    └── event_bus.gd
+	├── _doc_autoload.md
+	├── app.gd
+	└── event_bus.gd
 ```
 
 ## 初始化顺序
 
 ```text
 Env → Log → Time → Asset → Haptic
-    → Network → Storage → Locale
-    → Scene → UI → Audio
+	→ Network → Storage → Locale
+	→ Scene → UI → Audio
 ```
 
 顺序表达真实依赖关系：`Log` 依赖 `Env`，`Storage` 依赖 `Log + Network`，表现层服务依赖 `Asset + Log`。新增服务时应先判断它属于纯逻辑服务还是节点服务，再把它放到依赖完成之后的单一装配点。
@@ -38,7 +38,7 @@ Env → Log → Time → Asset → Haptic
 ```gdscript
 var result := await App.bootstrap()
 if result.is_err():
-    App.log.error("Core", result.error_message())
+	App.log.error("Core", result.error_message())
 ```
 
 - `App.bootstrap()` 可被多个入口等待，重复调用不会重复创建服务。

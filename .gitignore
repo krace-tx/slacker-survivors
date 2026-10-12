@@ -1,10 +1,133 @@
-# Godot 4+ specific ignores
+# ==============================================================================
+# Godot 4 引擎与编辑器生成文件
+# ==============================================================================
+# Godot 4 资源导入缓存、着色器编译产物与编辑器用户配置
 .godot/
+
+# 由 CSV 等源文件自动导入生成的二进制翻译文件
+*.translation
+
+# 导出构建凭证（包含 Android 签名密钥、iOS Team ID 等隐私凭据）
+export_credentials.cfg
+
+# 游戏导出产物与安装包
+*.pck
+*.apk
+*.aab
+*.ipa
+
+# 项目导出输出目录
+/build/
+/export/
+/exports/
+/bin/
+
+# Godot 菜单安装的 Android 原生构建模板目录
 /android/
 
-# Generated build and dependency files
-.idea/
+
+# ==============================================================================
+# 编译与构建临时文件 (C/C++, Gradle, SCons, Python)
+# ==============================================================================
+# C/C++ 目标文件与依赖项
+*.o
+*.obj
+*.os
+*.d
+
+# SCons 编译签名数据库与配置探测目录
+.sconsign.dblite
+.sconf_temp/
+
+# Python 运行时字节码与缓存
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Gradle 缓存与构建输出
+.gradle/
 **/.gradle/
 **/build/
-**/node_modules/
+
+# Android 本地 SDK 路径配置与分析转储
+local.properties
 *.hprof
+.cxx/
+captures/
+
+
+# ==============================================================================
+# 操作系统元数据与临时文件
+# ==============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+
+# ==============================================================================
+# IDE 与编辑器配置
+# ==============================================================================
+# JetBrains (IDEA, Rider, Android Studio, CLion)
+.idea/
+*.iml
+*.iws
+
+# Visual Studio Code
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Apple Xcode
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+DerivedData/
+
+# 文本编辑器临时交换文件与日志
+*.swp
+*.swo
+*.bak
+*.tmp
+*.log
+
+
+# ==============================================================================
+# Node.js (用于内置 MCP 服务与辅助工具链)
+# ==============================================================================
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# ==============================================================================
+# 关键白名单：保护 addons/ 跨平台预编译插件二进制不被误忽略
+# ==============================================================================
+!addons/**/*.dll
+!addons/**/*.so
+!addons/**/*.so.*
+!addons/**/*.dylib
+!addons/**/*.framework/
+!addons/**/*.a
+!addons/**/*.aar

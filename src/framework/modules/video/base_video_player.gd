@@ -2,17 +2,17 @@
 class_name BaseVideoPlayer
 extends NodeSubsystem
 
-## 视频播放器门面契约（Video Player Facade Contract）。[br]
+## 视频播放器门面契约接口（Video Player Facade Contract）。[br]
 ##
 ## 本抽象基类作为业务层与 UI 层控制视频播放的统一规范入口，核心职责：[br]
-## - 极简纯粹的播放控制：[method open]、[method play]、[method pause]、[method stop]、[method seek]；[br]
-## - 状态与生命周期驱动：提供基于 [VideoPlaybackState] 的完整状态机迁移通知；[br]
-## - 画面纹理输出：通过 [method get_video_texture] 暴露当前解码帧，支持 UI（[TextureRect]）或 3D 材质渲染；[br]
-## - 音画避让协同：与 [BaseAudioSystem] 联动，视频播放期间避让游戏 BGM；[br]
-## - 底层适配器隔离：透明桥接 [code]addons/[/code] 中的开源专业插件（如 [code]EIRTeam.FFmpeg[/code]）与引擎内置软解播放器。[br]
+## - [b]极简纯粹的播放控制[/b]：[method open]、[method play]、[method pause]、[method stop]、[method seek]；[br]
+## - [b]全平台过场管线[/b]：[method play_cutscene] 提供一体化剧情 CG 播放与跳过调度；[br]
+## - [b]状态与生命周期驱动[/b]：提供基于 [VideoPlaybackState] 的完整状态机迁移通知；[br]
+## - [b]画面纹理输出[/b]：通过 [method get_video_texture] 暴露当前解码帧，支持 UI（[TextureRect]）或 3D 材质渲染；[br]
+## - [b]音画避让协同[/b]：与 [BaseAudioSystem] 联动，视频播放期间自动淡出避让游戏 BGM；[br]
+## - [b]底层适配器隔离[/b]：透明桥接 [code]addons/ffmpeg[/code]、移动端原生插件与引擎内置软解。[br]
 ##
 ## 业务代码应统一通过 [code]App.video[/code] 访问本契约提供的方法。
-
 
 #region Signals
 ## 当视频资源成功打开并装载就绪时触发。[br]
@@ -29,7 +29,7 @@ signal state_changed(new_state: int, old_state: int)
 signal playback_finished()
 
 ## 当打开视频或播放过程中出现异常故障时触发。[br]
-## [param error_code] 标准化错误码（如 "Video.NotFound"、"Video.CodecUnsupported"）。[br]
+## [param error_code] 标准化错误码（见 [VideoError]，如 [constant VideoError.FILE_NOT_FOUND]）。[br]
 ## [param message] 详尽的错误诊断说明。
 signal error_occurred(error_code: String, message: String)
 #endregion
@@ -45,7 +45,7 @@ func get_id() -> String:
 ##
 ## [param file_path] 视频文件路径（支持 [code]res://[/code] 或本地绝对路径）。[br]
 ## [param options] 播放行为配置项，为 null 时采用默认配置。[br]
-## @return 返回 [Result] 对象。成功时包含有效状态，失败时携带标准错误码。
+## @return 返回 [Result] 对象。成功时包含有效状态，失败时携带 [VideoError] 标准错误码。
 @abstract
 func open(file_path: String, options: VideoPlayOptions = null) -> Result
 

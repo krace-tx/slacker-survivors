@@ -96,12 +96,34 @@ static UIViewController *active_root_view_controller() {
 
 @end
 
+// AVPlayerViewController's Done/Back control dismisses the controller without
+// emitting AVPlayerItemDidPlayToEndTimeNotification. Track that dismissal so
+// an allowed native skip can complete the Framework operation instead of
+// waiting for the timeout.
+@interface GodotVideoPlayerViewController : AVPlayerViewController
+@property(nonatomic, assign) GodotVideoPlayerIOS *godotOwner;
+@end
+
+@implementation GodotVideoPlayerViewController
+
+- (void)viewDidDisappear:(BOOL)animated {
+	[super viewDidDisappear:animated];
+	GodotVideoPlayerIOS *owner = self.godotOwner;
+	self.godotOwner = nullptr;
+	if (owner != nullptr) {
+		owner->notify_video_completed();
+		[[GodotVideoPlayerIOSBridge sharedBridge] stop];
+	}
+}
+
+@end
+
 @implementation GodotVideoPlayerIOSBridge
 
 + (instancetype)sharedBridge {
 	static GodotVideoPlayerIOSBridge *bridge = nil;
 	static dispatch_once_t once_token;
-	 dispatch_once(&once_token, ^{
+	dispatch_once(&once_token, ^{
 		bridge = [[GodotVideoPlayerIOSBridge alloc] init];
 		bridge.volume = 1.0f;
 		bridge.speedScale = 1.0f;
@@ -200,7 +222,8 @@ static UIViewController *active_root_view_controller() {
 			return;
 		}
 
-		AVPlayerViewController *controller = [[AVPlayerViewController alloc] init];
+		GodotVideoPlayerViewController *controller = [[GodotVideoPlayerViewController alloc] init];
+		controller.godotOwner = p_owner;
 		controller.player = self.player;
 		controller.showsPlaybackControls = p_allow_skip;
 		controller.videoGravity = AVLayerVideoGravityResizeAspect;
@@ -359,6 +382,9 @@ static UIViewController *active_root_view_controller() {
 	AVPlayerViewController *controller = self.playerViewController;
 	self.playerViewController = nil;
 	self.owner = nullptr;
+	if ([controller isKindOfClass:[GodotVideoPlayerViewController class]]) {
+		((GodotVideoPlayerViewController *)controller).godotOwner = nullptr;
+	}
 	if (controller.presentingViewController != nil) {
 		[controller dismissViewControllerAnimated:YES completion:nil];
 	}

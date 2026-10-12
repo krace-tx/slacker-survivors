@@ -14,7 +14,7 @@ addons/video_player_android/
 ├── plugin.cfg                  # Godot 插件配置
 ├── export_plugin.gd            # Godot 导出插件 (自动注册 .gdap 库)
 ├── godot_video_player.gdap     # Godot Android 插件清单
-├── godot_video_player.aar      # 预打包 AAR 二进制库
+├── godot_video_player.aar      # 由 build_android.sh 生成的 AAR 二进制库
 ├── src/                        # 完整原生源码
 │   └── main/
 │       ├── AndroidManifest.xml
@@ -24,15 +24,19 @@ addons/video_player_android/
 
 ## 构建与导出说明
 
-`godot_video_player.aar` 必须由 Gradle 构建。`build_android.sh` 会拒绝空的
-`classes.jar`，避免把只有 Manifest 的占位 AAR 带入导出包：
+> **默认已打包**：本仓库中已预置经过严格编译与验证的 `godot_video_player.aar`（内含包含完整字节码的 `classes.jar`、`AndroidManifest.xml` 及 `R.txt`），可直接用于导出，无需再次打包。
+
+若修改了 Java 源码需重新构建，或需校验现有包的完整性：
 
 ```bash
+# 校验现有 AAR 包完整性
+./addons/video_player_android/build_android.sh --check
+
+# 重新构建 AAR（支持 Gradle 或 JDK javac/jar 自动回退构建）
 ./addons/video_player_android/build_android.sh
 ```
 
-构建完成后应能在 AAR 的 `classes.jar` 中找到
-`org/godotengine/plugin/android/videoplayer/GodotVideoPlayer.class`。
+构建脚本会自动验证 `classes.jar` 非空并包含 `GodotVideoPlayer.class`。
 
 在 Godot 导出 Android APK 时：
 1. 打开 **Project -> Export...**，选择 Android 导出预设；
