@@ -170,6 +170,26 @@ func pin(key: StringName) -> void:
 ## 解除 [param key] 的钉住。未钉住则空操作。
 func unpin(key: StringName) -> void:
 	_pinned.erase(key)
+
+
+## 当前缓存中的条目数量。
+func size() -> int:
+	return _cache.size()
+
+
+## 当前缓存是否为空。
+func is_empty() -> bool:
+	return _cache.is_empty()
+
+
+## 当前缓存已占用的估算总字节数。
+func total_bytes() -> int:
+	return _total_bytes
+
+
+## 当前缓存配置的字节容量上限。
+func max_bytes() -> int:
+	return _max_bytes
 #endregion
 
 #region Internal

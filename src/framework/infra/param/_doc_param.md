@@ -10,15 +10,13 @@
 ## 细节
 
 - **零样板声明**：业务子类仅需 `extends BaseParams` 并声明强类型变量与默认值，无需重写序列化方法。
-- **自动反射遍历**：内部通过 `get_property_list()` 配合 `PROPERTY_USAGE_SCRIPT_VARIABLE` 精准过滤，仅处理开发者自定义声明的字段，不污染原生底层属性。
-- **全类型适配**：
-  - **基础标量**：`int / float / bool / String` 宽容度类型转换与空值安全。
-  - **强类型与 Packed 数组**：`Array[String]`、`Array[int]`、`PackedByteArray` 等自动转换与类型保持。
-  - **复合容器**：`Array`、`Dictionary`、`Vector2/3`、`Color`、`Rect2` 原生引擎结构体直接映射。
-  - **嵌套 BaseParams**：多级嵌套子对象自动递归 `from_dict` 填充与递归 `to_dict` 导出。
-  - **自定义 Resource 业务实体**：对包含 `encode()`/`decode()` 的实体（如 `AssetEntry`、`UserProfile`）自动解码与序列化。
-  - **内存 Resource 引用**：`Texture2D`、`ShaderMaterial`、`Resource` 引用实例安全传递。
-- **构造即解析**：构造函数 `_init(dict: Dictionary = {})` 支持直接传入 Dictionary 完成快速实例化。
+- **预编译 Schema 缓存（O(1) 零反射开销）**：每个派生类全生命周期仅扫描 1 次 `get_property_list()`，将公开脚本变量（自动忽略 `_` 前缀的内部私有变量）预编译为静态描述符表，消除高频实例化时的跨界反射损耗。
+- **全栈递归模具推导**：
+  - **基础标量与结构体**：`int / float / bool / String / StringName` 防漂移转换；`Vector2/3`、`Color`、`Rect2`、`Packed*Array` 既支持内存原值映射，也支持从 JSON 字典/数组/字符串宽容还原。
+  - **强类型嵌套容器**：利用 Godot 4.7 原生容器自省（`Array.get_typed_script()`、`Dictionary.get_typed_value_script()`），全自动递归映射 `Array[SubParams]`、`Dictionary[String, SubParams]` 等任意深度组合。
+  - **嵌套 BaseParams 与自定义 Resource**：单字段子对象（含初始值为 `null` 的静态类型属性）及多态子类（按需最小信息熵标记 `_type`）自动递归填充与导出。
+  - **原生引擎资源引用透传**：`Texture2D`、`ShaderMaterial`、`AudioStream` 等无脚本原生资源引用在内存传参时无损透传持有。
+- **构造即解析与原生深拷贝**：构造函数 `_init(dict: Dictionary = {})` 支持传入 Dictionary 快速实例化；内置 `clone()` 提供免字典中转的高速内存深拷贝。
 
 ```text
 src/framework/infra/param/

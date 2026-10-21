@@ -179,5 +179,5 @@ func _get_remaining_sec() -> float:
 
 #region Logging Helpers
 func _log(message: String) -> void:
-	LogService.print_raw(LogLevel.DEBUG, tag, message)
+	FrameworkLogger.print_raw(LogLevel.DEBUG, tag, message)
 #endregion
