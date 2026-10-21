@@ -34,10 +34,10 @@ flowchart TD
 		SceneFace["BaseSceneRouter"]
 		NetFace["BaseNetworkClient"]
 		EnvFace["BaseRuntimeEnvironment"]
-		TimeFace["BaseTimeSystem"]
+		ClockFace["BaseClockSystem"]
 		HapticFace["BaseHapticFeedback"]
 		InputFace["BaseInputSystem"]
-		UIFace["BaseUISystem"]
+		DisplayFace["BaseDisplaySystem"]
 		VideoFace["BaseVideoPlayer"]
 	end
 
@@ -86,7 +86,7 @@ flowchart TD
 | **生命周期明确 (Lifecycle Control)** | 摒弃随意乱写全局常驻节点。核心服务统一挂载在 `App` 节点下，由 `FrameworkRuntime` 按依赖拓扑顺序初始化并逆序释放。 |
 | **结果导向与容错 (Result-Oriented)** | 可预期失败绝不静默吞没，统一返回不可变强类型 `Result` 并携带标准错误码 `{Module}.{Reason}`。 |
 | **约定优于配置 (Convention over Configuration)** | 提供合理的智能默认行为（如 Locale 无翻译表时安全降级、Scene 自动压栈唤醒、Storage 自动穿透回灌）。 |
-| **纯基建无业务耦合 (Zero Asset Coupling)** | 框架内不硬编码业务音频路径与贴图；业务级通用控件（如 `BaseTextureButton`、`BaseDialog`）收敛在 `src/game/shared/components/`。 |
+| **纯基建无业务耦合 (Zero Asset Coupling)** | 框架内不硬编码业务音频路径与贴图；业务级通用控件（如 `BaseTextureButton`、`BaseDialog`）收敛在 `src/game/shared/component/`。 |
 
 ---
 
@@ -106,7 +106,7 @@ flowchart TD
 | **驱动** | `<backend>_<domain>_driver` (收敛在 `impl/drivers/`) | `memory_storage_driver.gd`、`disk_storage_driver.gd` |
 | **引擎适配器** | `<engine>_adapter` (收敛在 `impl/`) | `resource_loader_adapter.gd`、`translation_server_adapter.gd`、`input_map_adapter.gd` |
 
-`Base` 只用于真正允许业务继承的类型（如 `BaseScene`、`BaseDialog`、`BaseUIView`、`BaseTextureButton`）及抽象门面契约（如 `BaseStorageSystem`、`BaseRuntimeEnvironment` 等）。内部实现直接表达职责，绝不前缀 `Base`。
+`Base` 只用于真正允许业务继承的类型（如 `BaseScene`、`BaseDialog`、`BaseView`、`BaseTextureButton`）及抽象门面契约（如 `BaseStorageSystem`、`BaseRuntimeEnvironment` 等）。内部实现直接表达职责，绝不前缀 `Base`。
 
 ---
 
@@ -124,13 +124,14 @@ flowchart TD
 | **Scene** | `src/framework/modules/scene/` | `BaseSceneRouter` (`App.scene`) / `BaseScene` | 4大场景动词（Load/Push/Pop/Replace）、场景历史栈、Apple 级流式转场路由 | [_doc_scene.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/_doc_scene.md) |
 | **Network** | `src/framework/modules/network/` | `BaseNetworkClient` (`App.net`) | HTTP 请求队列调度、指数退避重试、Token 鉴权注入网络通信客户端 | [_doc_network.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/network/_doc_network.md) |
 | **Env** | `src/framework/modules/env/` | `BaseRuntimeEnvironment` (`App.env`) | 运行环境（Local/Emulator/Dev/Test/Prod）判定与只读诊断上下文 | [_doc_env.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/_doc_env.md) |
-| **Time** | `src/framework/modules/time/` | `BaseTimeSystem` (`App.time`) | 防作弊单调权威时钟、服务器 Unix 毫秒校准与时间系统 | [_doc_time.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/time/_doc_time.md) |
+| **Clock** | `src/framework/modules/clock/` | `BaseClockSystem` (`App.clock`) | 防作弊单调权威时钟、服务器 Unix 毫秒校准与时钟系统 | [_doc_clock.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/clock/_doc_clock.md) |
 | **Haptic** | `src/framework/modules/haptic/` | `BaseHapticFeedback` (`App.haptic`) | 触觉振动统一裁决、振动节奏模式、硬件震动执行器（含手柄马达联动） | [_doc_haptic.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/haptic/_doc_haptic.md) |
 | **Input** | `src/framework/modules/input/` | `BaseInputSystem` (`App.input`) | 键鼠/手柄双轨双槽隔离映射、`InputChord` 组合键优先消费、二段式免勾选录制与增量持久化 | [_doc_input.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/input/_doc_input.md) |
-| **UI** | `src/framework/modules/ui/` | `BaseUISystem` (`App.ui`) / `BaseUIView` | CanvasLayer 五大分层管理与屏幕安全区（Safe Area）适配纯基建 | [_doc_ui.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/ui/_doc_ui.md) |
+| **Display** | `src/framework/modules/display/` | `BaseDisplaySystem` (`App.display`) / `BaseView` | 窗口/全屏状态机、分辨率钳制、宽高比拉伸策略、异形屏安全区（Safe Area）投影与五大 CanvasLayer 分层管理 | [_doc_display.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/display/_doc_display.md) |
 | **Video** | `src/framework/modules/video/` | `BaseVideoPlayer` (`App.video`) | 视频播放控制、开源专业插件（EIRTeam.FFmpeg）动态桥接与 BGM 避让播放器 | [_doc_video.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/video/_doc_video.md) |
-| **Infra** | `src/framework/infra/` | `BudgetCache` / `CooldownScheduler` / `BaseParams` | 通用基建组件：LRU 缓存预算、异步冷却防抖调度、强类型参数契约 | [_doc_param.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/_doc_param.md) |
-| **Util** | `src/framework/util/` | `NodeUtils` / `FileUtils` / `AsyncUtils` 等 | 跨平台无状态纯函数工具集与资源编解码器 | [_doc_util.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/util/_doc_util.md) |
+| **Infra** | `src/framework/infra/` | `TaskScope` / `CancellationToken` / `BudgetCache` / `CooldownScheduler` / `BaseParams` / `SpineController` / `SpinePool` | 通用基建组件：异步任务生命周期作用域与并发编排、LRU 缓存预算、异步冷却防抖调度、强类型参数契约、Spine 骨骼流式控制与享元对象池/分频错峰调度 | [_doc_async.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/async/_doc_async.md) / [_doc_param.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/_doc_param.md) / [_doc_spine.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/_doc_spine.md) |
+| **Util** | `src/framework/util/` | `NodeUtils` / `FileUtils` / `ResourceCodecUtils` / `FileCodecUtils` 等 | 跨平台无状态纯函数工具集与资源编解码器 | [_doc_util.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/util/_doc_util.md) |
+| **Governance** | `src/framework/` | `_doc_module_standard.md` | 模块依赖矩阵、12 维设计模板与五大完成验收标准 | [_doc_module_standard.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/_doc_module_standard.md) |
 
 ---
 

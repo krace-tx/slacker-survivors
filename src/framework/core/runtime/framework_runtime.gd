@@ -1,174 +1,209 @@
 class_name FrameworkRuntime
 extends RefCounted
 
-## Framework 唯一组合根。
+## Framework 唯一组合根（Composition Root）与生命周期状态机。
 ##
-## Runtime 只负责三件事：按依赖顺序创建服务、把服务挂到 App、在失败时回滚。
-## 业务代码不参与装配，也不需要知道具体实现类；App 只暴露已经完成初始化的门面。
+## Runtime 负责四件事：
+## 1. 委托 [RuntimeManifest] 校验模块依赖有向无环图（DAG）与拓扑初始化顺序；
+## 2. 按依赖顺序创建服务、显式注入依赖，并委托 [RuntimeServiceHost] 挂载与采集启动耗时；
+## 3. 维护运行时状态机（[enum RuntimeState.Value]）；
+## 4. 在初始化失败时自动逆序回滚，在退出时按逆序执行优雅关闭协议。
 
-var _app: Node
-var _owned_services: Array = []
-var _initialized := false
+#region Public Contract Constants
+const MODULE_MANIFEST: Array[Dictionary] = RuntimeManifest.MODULES
+#endregion
+
+#region Runtime State
+var _app: Node = null
+var _host: RuntimeServiceHost = RuntimeServiceHost.new()
+var _state: RuntimeState.Value = RuntimeState.Value.UNINITIALIZED
+var _task_scope: TaskScope = null
+var _total_boot_ms: int = 0
+#endregion
 
 
+#region State & Diagnostics Queries
+func get_state() -> RuntimeState.Value:
+	return _state
+
+
+func get_state_name() -> String:
+	return RuntimeState.to_name(_state)
+
+
+func is_initialized() -> bool:
+	return _state == RuntimeState.Value.READY
+
+
+func get_task_scope() -> TaskScope:
+	if _task_scope == null or _task_scope.is_disposed():
+		_task_scope = TaskScope.new(null, "FrameworkRuntime", false)
+	return _task_scope
+
+
+func get_diagnostics() -> Dictionary:
+	return {
+		"state": get_state_name(),
+		"initialized": is_initialized(),
+		"total_boot_ms": _total_boot_ms,
+		"modules": _host.get_boot_metrics(),
+		"task_scope": _task_scope.get_diagnostics() if _task_scope != null else {},
+	}
+
+
+## 校验模块依赖有向无环图（DAG）与启动拓扑顺序合法性。
+static func validate_dependency_graph() -> Result:
+	return RuntimeManifest.validate_dag()
+#endregion
+
+
+#region Lifecycle - Initialize / Rollback / Shutdown
 ## 按依赖顺序初始化全部 Framework 服务。
-## 依赖关系固定在这里，服务实现本身不反向读取 App。
 ## [param on_step] 阶段汇报回调: Callable(step_index: int, total_steps: int, service_key: String)
 func initialize(app: Node, on_step: Callable = Callable()) -> Result:
 	if not is_instance_valid(app):
 		return Result.err_code("Core.InvalidOwner", "FrameworkRuntime requires a valid App node.")
-	if _initialized:
+	var total := RuntimeManifest.total_steps()
+	if _state == RuntimeState.Value.READY:
 		if on_step.is_valid():
-			on_step.call(13, 13, "ready")
+			on_step.call(total, total, "ready")
 		return Result.ok()
+	if _state == RuntimeState.Value.INITIALIZING:
+		return Result.err_code("Core.AlreadyInitializing", "FrameworkRuntime is currently initializing.")
+	if _state == RuntimeState.Value.SHUTTING_DOWN or _state == RuntimeState.Value.ROLLING_BACK:
+		return Result.err_code("Core.BusyState", "Cannot initialize while in state %s." % get_state_name())
+
+	var graph_res := validate_dependency_graph()
+	if graph_res.is_err():
+		_state = RuntimeState.Value.INITIALIZATION_FAILED
+		return graph_res
+
+	_state = RuntimeState.Value.INITIALIZING
+	_total_boot_ms = 0
+	var boot_start_msec := Time.get_ticks_msec()
 
 	_app = app
-	_clear_app_services()
+	_task_scope = TaskScope.new(_app, "FrameworkRuntime", false)
+	_host.bind_app(_app)
 
-	const TOTAL_STEPS: int = 13
-
-	# 基础服务：没有其它 Framework 依赖。
-	var env := RuntimeEnvironment.new()
-	var result := await _install_ref("env", env)
+	var result := await _assemble_modules_async(total, on_step)
 	if result.is_err():
-		return _rollback(result)
-	_notify_step(1, TOTAL_STEPS, "env", on_step)
+		return await _rollback_async(result)
+
+	_total_boot_ms = Time.get_ticks_msec() - boot_start_msec
+	_state = RuntimeState.Value.READY
+	_log_info("Framework runtime ready in %d ms." % _total_boot_ms)
+	return Result.ok()
+
+
+## 异步优雅关闭协议：逆序等待支持 `shutdown_async()` 的服务（如 Storage 落盘完成），再统一释放。
+func shutdown_async() -> Result:
+	if _state == RuntimeState.Value.STOPPED or _state == RuntimeState.Value.UNINITIALIZED:
+		return Result.ok()
+	if _state == RuntimeState.Value.SHUTTING_DOWN or _state == RuntimeState.Value.ROLLING_BACK:
+		return Result.ok()
+	if _state == RuntimeState.Value.INITIALIZING:
+		_host.request_shutdown()
+		return Result.ok()
+
+	_state = RuntimeState.Value.SHUTTING_DOWN
+	if _task_scope != null:
+		_task_scope.dispose("FrameworkRuntime shutting down.")
+
+	await _host.teardown_async()
+	_app = null
+	_state = RuntimeState.Value.STOPPED
+	return Result.ok()
+
+
+## 同步逆序释放服务，并清空 App 门面，支持重启或测试环境重复初始化。
+func dispose() -> void:
+	if _state == RuntimeState.Value.STOPPED or _state == RuntimeState.Value.UNINITIALIZED:
+		return
+	if _state == RuntimeState.Value.INITIALIZING:
+		_host.request_shutdown()
+
+	_state = RuntimeState.Value.SHUTTING_DOWN
+	if _task_scope != null:
+		_task_scope.dispose("FrameworkRuntime disposed.")
+
+	_host.teardown_sync()
+	_app = null
+	_state = RuntimeState.Value.STOPPED
+#endregion
+
+
+#region Explicit Dependency Wiring
+func _assemble_modules_async(total: int, on_step: Callable) -> Result:
+	# 1. Env -> 2. Logger -> 3. Clock -> 4. Asset
+	var env := RuntimeEnvironment.new()
+	var res := await _host.install_ref("env", env, 1, total, on_step)
+	if res.is_err(): return res
 
 	var logger := FrameworkLogger.new(env)
-	result = await _install_ref("logger", logger)
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(2, TOTAL_STEPS, "logger", on_step)
+	res = await _host.install_ref("logger", logger, 2, total, on_step)
+	if res.is_err(): return res
 
-	var time := TimeSystem.new()
-	result = await _install_ref("time", time)
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(3, TOTAL_STEPS, "time", on_step)
+	var clock := ClockSystem.new()
+	res = await _host.install_ref("clock", clock, 3, total, on_step)
+	if res.is_err(): return res
 
 	var asset := AssetSystem.new()
-	result = await _install_ref("asset", asset)
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(4, TOTAL_STEPS, "asset", on_step)
+	res = await _host.install_ref("asset", asset, 4, total, on_step)
+	if res.is_err(): return res
 
-	var haptic := HapticFeedback.new()
-	result = await _install_ref("haptic", haptic)
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(5, TOTAL_STEPS, "haptic", on_step)
-
-	# 节点服务：先挂载，再初始化，确保 _ready 已完成。
+	# 5. Input -> 6. Haptic
 	var input := InputSystem.new(logger)
-	result = await _install_node("input", input, "InputSystem")
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(6, TOTAL_STEPS, "input", on_step)
+	res = await _host.install_node("input", input, "InputSystem", 5, total, on_step)
+	if res.is_err(): return res
 
-	var net := NetworkClient.new()
-	result = await _install_node("net", net, "NetworkClient")
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(7, TOTAL_STEPS, "net", on_step)
+	var haptic := HapticFeedback.new(input)
+	res = await _host.install_ref("haptic", haptic, 6, total, on_step)
+	if res.is_err(): return res
+
+	# 7. Network -> 8. Storage -> 9. Locale
+	var net := NetworkClient.new(logger, env)
+	res = await _host.install_node("net", net, "NetworkClient", 7, total, on_step)
+	if res.is_err(): return res
 
 	var storage := StorageSystem.new(logger, net)
-	result = await _install_ref("storage", storage)
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(8, TOTAL_STEPS, "storage", on_step)
+	res = await _host.install_ref("storage", storage, 8, total, on_step)
+	if res.is_err(): return res
 
 	var locale := LocalizationSystem.new()
-	result = await _install_ref("locale", locale)
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(9, TOTAL_STEPS, "locale", on_step)
+	res = await _host.install_ref("locale", locale, 9, total, on_step)
+	if res.is_err(): return res
 
+	# 10. Scene -> 11. Display -> 12. Audio -> 13. Video
 	var scene := SceneRouter.new(asset, logger)
-	result = await _install_node("scene", scene, "SceneRouter")
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(10, TOTAL_STEPS, "scene", on_step)
+	res = await _host.install_node("scene", scene, "SceneRouter", 10, total, on_step)
+	if res.is_err(): return res
 
-	var ui := UISystem.new(asset, logger)
-	result = await _install_node("ui", ui, "UISystem")
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(11, TOTAL_STEPS, "ui", on_step)
+	var display := DisplaySystem.new(logger)
+	res = await _host.install_node("display", display, "DisplaySystem", 11, total, on_step)
+	if res.is_err(): return res
 
 	var audio := AudioSystem.new(asset, logger)
-	result = await _install_node("audio", audio, "AudioSystem")
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(12, TOTAL_STEPS, "audio", on_step)
+	res = await _host.install_node("audio", audio, "AudioSystem", 12, total, on_step)
+	if res.is_err(): return res
 
 	var video := VideoPlayer.new(audio, logger)
-	result = await _install_node("video", video, "VideoPlayer")
-	if result.is_err():
-		return _rollback(result)
-	_notify_step(13, TOTAL_STEPS, "video", on_step)
+	res = await _host.install_node("video", video, "VideoPlayer", 13, total, on_step)
+	if res.is_err(): return res
 
-	_initialized = true
-	_log_info("Framework runtime ready.")
 	return Result.ok()
 
 
-func _notify_step(step_idx: int, total_steps: int, key: String, callback: Callable) -> void:
-	if callback.is_valid():
-		callback.call(step_idx, total_steps, key)
-
-
-## 逆序释放服务，并清空 App 门面，支持重启或测试环境重复初始化。
-func dispose() -> void:
-	for i in range(_owned_services.size() - 1, -1, -1):
-		var service = _owned_services[i]
-		if service == null or not is_instance_valid(service):
-			continue
-		if service.has_method("dispose"):
-			service.dispose()
-		if service is Node and (service as Node).is_inside_tree():
-			(service as Node).queue_free()
-	_owned_services.clear()
-	_clear_app_services()
-	_initialized = false
+func _rollback_async(failure: Result) -> Result:
+	_state = RuntimeState.Value.INITIALIZATION_FAILED
+	_log_error("Framework runtime initialization failed (%s), rolling back..." % failure.error_message())
+	_state = RuntimeState.Value.ROLLING_BACK
+	if _task_scope != null:
+		_task_scope.dispose("FrameworkRuntime rollback.")
+	await _host.teardown_async()
 	_app = null
-
-
-func is_initialized() -> bool:
-	return _initialized
-
-
-func _install_ref(key: String, service: RefCounted) -> Result:
-	_owned_services.append(service)
-	var result: Result = await service.initialize() if service.has_method("initialize") else Result.ok()
-	if result.is_err():
-		return Result.err_code("Core.SubsystemInitFailed", "%s: %s" % [key, result.error_message()])
-	_app.set(key, service)
-	return Result.ok()
-
-
-func _install_node(key: String, service: Node, node_name: String) -> Result:
-	var mount_result := NodeUtils.mount(service, _app, node_name)
-	if mount_result.is_err():
-		return Result.err_code("Core.SubsystemMountFailed", "%s: %s" % [key, mount_result.error_message()])
-	_owned_services.append(service)
-	var result: Result = await service.initialize() if service.has_method("initialize") else Result.ok()
-	if result.is_err():
-		return Result.err_code("Core.SubsystemInitFailed", "%s: %s" % [key, result.error_message()])
-	_app.set(key, service)
-	return Result.ok()
-
-
-func _rollback(failure: Result) -> Result:
-	_log_error("Framework runtime failed: %s" % failure.error_message())
-	dispose()
+	_state = RuntimeState.Value.STOPPED
 	return failure
-
-
-func _clear_app_services() -> void:
-	if not is_instance_valid(_app):
-		return
-	for key in ["env", "logger", "net", "storage", "time", "locale", "asset", "input", "scene", "ui", "audio", "haptic", "video"]:
-		_app.set(key, null)
 
 
 func _log_info(message: String) -> void:
@@ -185,3 +220,4 @@ func _log_error(message: String) -> void:
 		logger.error("Runtime", message)
 	else:
 		FrameworkLogger.print_raw(LogLevel.ERROR, "Runtime", message)
+#endregion

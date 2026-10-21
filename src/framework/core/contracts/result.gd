@@ -48,6 +48,21 @@ static func err_code(code: String, message: String = "") -> Result:
 	r._ok = false
 	r._error = FrameworkError.new(code, message)
 	return r
+
+
+## 构造携带完整上下文、可重试标记与底层原因的标准化失败结果。
+static func err_ex(
+	code: String,
+	message: String = "",
+	context: Dictionary = {},
+	retryable: bool = false,
+	cause: Variant = null,
+	category: StringName = &""
+) -> Result:
+	var r := Result.new()
+	r._ok = false
+	r._error = FrameworkError.new(code, message, category, retryable, cause, context)
+	return r
 #endregion
 
 #region Public API - Query & Unpack
@@ -73,6 +88,27 @@ func error_message() -> String:
 	if error is FrameworkError:
 		return (error as FrameworkError).message
 	return str(error)
+
+
+## 获取错误所属模块名（如 "Scene"、"Storage"）。
+func error_module() -> String:
+	if error is FrameworkError:
+		return (error as FrameworkError).module
+	return "Core"
+
+
+## 该失败结果是否建议调用方重试。
+func is_retryable() -> bool:
+	if error is FrameworkError:
+		return (error as FrameworkError).retryable
+	return false
+
+
+## 获取失败时附带的诊断上下文字典。
+func error_context() -> Dictionary:
+	if error is FrameworkError:
+		return (error as FrameworkError).context
+	return {}
 
 
 ## 成功时返回负载，失败时返回 [param default]，不触发错误。
