@@ -10,6 +10,12 @@ extends BaseFrameworkLogger
 ## WARN / ERROR 另外 [code]push_warning[/code] / [code]push_error[/code]，进调试器面板。
 ## 缓冲 [method dump] 仍是纯文本。级别、标签与颜色定义见 [LogLevel]。
 
+#region Module Dependency Manifest
+const MODULE_ID: StringName = &"logger"
+const REQUIRED_MODULES: Array[StringName] = []
+const OPTIONAL_MODULES: Array[StringName] = [&"env"]
+#endregion
+
 const _MAX_ENTRIES: int = 1000   ## 环形缓冲容量,超出丢弃最旧一条
 
 var _entries: PackedStringArray = PackedStringArray()

@@ -9,6 +9,12 @@ extends BaseInputSystem
 ## 3. [InputRebindCapturer]：二段式免勾选录制状态机（按住修饰等主键、松开修饰算单键）；[br]
 ## 4. 高阶组合键优先消费管线（Highest-Order Chord Consumption）+ 双帧号（Process/Physics）独立对齐。
 
+#region Module Dependency Manifest
+const MODULE_ID: StringName = &"input"
+const REQUIRED_MODULES: Array[StringName] = []
+const OPTIONAL_MODULES: Array[StringName] = [&"logger"]
+#endregion
+
 #region Dependencies & Subcomponents
 var _logger: BaseFrameworkLogger
 var _tracker: InputDeviceTracker

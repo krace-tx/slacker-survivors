@@ -21,6 +21,13 @@ extends Node
 func current() -> BaseScene
 
 
+## 获取当前栈顶场景对应的资源路径。[br]
+##
+## @return 返回栈顶场景路径；若当前无激活场景则返回空字符串。
+@abstract
+func current_path() -> String
+
+
 ## 获取当前场景历史栈的深度深度（层数）。[br]
 ##
 ## @return 返回大于等于 0 的整数。
@@ -43,13 +50,13 @@ func is_empty() -> bool
 ## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果。[br]
 ##
 ## [param path] 新场景的 [code].tscn[/code] 资源绝对路径（[code]res://[/code] 开头）。[br]
-## [param params] 跨场景传递的动态参数字典（在新场景的 [_on_enter] 中接收）。[br]
+## [param params] 跨场景传递的强类型参数契约实例（继承自 [BaseParams]，在新场景的 [_on_enter] 中接收）。[br]
 ## [param transition] 转场动画类型（见 [SceneTransitionType] 常量，默认 [code]SceneTransitionType.AUTO[/code]）。[br]
 ## @return 返回 [Result] 对象，表示切换是否成功完成。
 @abstract
 func replace(
 	path: String,
-	params: Dictionary = {},
+	params: BaseParams = null,
 	transition: int = SceneTransitionType.AUTO
 ) -> Result
 
@@ -61,13 +68,13 @@ func replace(
 ## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果。[br]
 ##
 ## [param path] 新场景的 [code].tscn[/code] 路径。[br]
-## [param params] 传递给新场景的参数字典。[br]
+## [param params] 传递给新场景的强类型参数契约实例（继承自 [BaseParams]）。[br]
 ## [param transition] 转场动画类型。[br]
 ## @return 返回 [Result] 对象。
 @abstract
 func push(
 	path: String,
-	params: Dictionary = {},
+	params: BaseParams = null,
 	transition: int = SceneTransitionType.AUTO
 ) -> Result
 
@@ -77,12 +84,12 @@ func push(
 ## 当前场景触发 [_on_exit] 并销毁出栈，下层被压住的旧场景重见天日并触发 [_on_resume]。[br]
 ## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果。[br]
 ##
-## [param params] 回传给被恢复场景的参数字典（在下层场景的 [_on_resume] 中接收）。[br]
+## [param params] 回传给被恢复场景的强类型参数契约实例（在下层场景的 [_on_resume] 中接收）。[br]
 ## [param transition] 转场动画类型。[br]
 ## @return 返回 [Result] 对象（若当前栈深度为 1 则禁止出栈并返回错误）。
 @abstract
 func pop(
-	params: Dictionary = {},
+	params: BaseParams = null,
 	transition: int = SceneTransitionType.AUTO
 ) -> Result
 
@@ -91,8 +98,8 @@ func pop(
 ##
 ## [param path] 场景对应的源路径标识。[br]
 ## [param scene] 已实例化并就绪的 [BaseScene] 节点。[br]
-## [param params] 初始入参字典。[br]
+## [param params] 初始入参契约实例（继承自 [BaseParams]）。[br]
 ## @return 返回 [Result] 对象。
 @abstract
-func bind(path: String, scene: BaseScene, params: Dictionary = {}) -> Result
+func bind(path: String, scene: BaseScene, params: BaseParams = null) -> Result
 #endregion

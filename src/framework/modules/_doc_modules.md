@@ -6,7 +6,7 @@ Framework 的业务技术基建按四层架构划分：**模块名、公开门�
 src/framework/modules/
 ├── env/          # 运行环境
 ├── logger/       # 日志与诊断
-├── time/         # 权威时间
+├── clock/        # 权威时钟
 ├── asset/        # 资源加载与缓存
 ├── storage/      # 内存/磁盘/远端存储
 ├── network/      # HTTP 通讯
@@ -28,7 +28,7 @@ src/framework/modules/
 | **模块目录** | 单数表达垂直技术领域能力 | 单数名词 | `asset/`、`scene/`、`storage/`、`env/`、`input/` |
 | **能力门面基类** | 系统对外契约与全量注释门面 | `base_<role>` / PascalCase | `base_storage_system.gd` (`BaseStorageSystem`), `base_input_system.gd` (`BaseInputSystem`) |
 | **能力系统实现** | 完整运行能力入口 / 核心编排 | `<role>` / PascalCase | `storage_system.gd` (`StorageSystem`), `input_system.gd` (`InputSystem`) |
-| **业务承载基类** | 业务扩展/继承基类 | `base_<entity>` | `base_scene.gd` (`BaseScene`), `base_ui_view.gd` (`BaseUIView`) |
+| **业务承载基类** | 业务扩展/继承基类 | `base_<entity>` | `base_scene.gd` (`BaseScene`), `base_view.gd` (`BaseView`) |
 | **动作角色实现** | 专注特定行为的执行者 | `<action_role>` | `scene_router.gd` (`SceneRouter`), `network_client.gd` (`NetworkClient`), `framework_logger.gd` (`FrameworkLogger`), `haptic_feedback.gd` (`HapticFeedback`) |
 | **公开契约/类型** | 跨层公开类型与枚举（脱离目录自解释） | `<feature>_<type>` | `storage_read_mode.gd` (`StorageReadMode`), `input_chord.gd` (`InputChord`) |
 | **配置对象** | 跨环境/静态配置声明 | `<feature>_config` | `locale_config.gd` (`LocaleConfig`) |
@@ -41,11 +41,11 @@ src/framework/modules/
 ### 核心约束
 
 1. **角色化语义命名（拒绝泛化的 Service）**：
-   - 协调完整运行能力的模块采用 **System**（`AudioSystem`、`AssetSystem`、`UISystem`、`StorageSystem`、`TimeSystem`、`LocalizationSystem`、`InputSystem`）。
+   - 协调完整运行能力的模块采用 **System**（`AudioSystem`、`AssetSystem`、`DisplaySystem`、`StorageSystem`、`ClockSystem`、`LocalizationSystem`、`InputSystem`）。
    - 专注特定功能行为的模块采用具体 **角色名词**（`SceneRouter` 导航路由、`NetworkClient` 通讯客户端、`FrameworkLogger` 框架日志、`HapticFeedback` 震动反馈、`RuntimeEnvironment` 运行环境）。
-   - 界面视图继承基类明确职责：`BaseUISystem`（画布层级门面）、`BaseUIView`（单个界面根节点，带安全区）；业务弹窗统一继承业务共享层 `BaseDialog`。
+   - 显示与视图继承基类明确职责：`BaseDisplaySystem`（显示设备与画布舞台门面）、`BaseView`（单个界面根节点，带安全区）；业务弹窗统一继承业务共享层 `BaseDialog`。
 2. **`Base` 前缀约束**：
-   - `Base` 仅用于对外暴露的抽象基类与契约（如 `BaseAudioSystem`、`BaseStorageSystem`、`BaseUIView`）。
+   - `Base` 仅用于对外暴露的抽象基类与契约（如 `BaseAudioSystem`、`BaseStorageSystem`、`BaseView`）。
    - 内部实现（`impl/`、`drivers/`）直接表达具体职责，绝不冠以 `BaseXxx`。
 3. **架构职责四要素**：
    - **模块目录** 表达能力领域
@@ -61,9 +61,11 @@ src/framework/modules/
 env/
 ├── _doc_env.md
 ├── base_runtime_environment.gd
+├── base_env_profile.gd
+├── types/
+│   └── env_type.gd
 └── impl/
-	├── runtime_environment.gd
-	└── env_detector.gd
+	└── runtime_environment.gd
 
 logger/
 ├── _doc_logger.md
@@ -73,11 +75,11 @@ logger/
 └── impl/
 	└── framework_logger.gd
 
-time/
-├── _doc_time.md
-├── base_time_system.gd
+clock/
+├── _doc_clock.md
+├── base_clock_system.gd
 └── impl/
-	└── time_system.gd
+	└── clock_system.gd
 
 asset/
 ├── _doc_asset.md
@@ -123,12 +125,12 @@ scene/
 	├── scene_stack.gd
 	└── scene_transition.gd
 
-ui/
-├── _doc_ui.md
-├── base_ui_system.gd
-├── base_ui_view.gd
+display/
+├── _doc_display.md
+├── base_display_system.gd
+├── base_view.gd
 └── impl/
-	└── ui_system.gd
+	└── display_system.gd
 
 audio/
 ├── _doc_audio.md
@@ -150,6 +152,8 @@ locale/
 haptic/
 ├── _doc_haptic.md
 ├── base_haptic_feedback.gd
+├── types/
+│   └── haptic_intensity.gd
 └── impl/
 	└── haptic_feedback.gd
 

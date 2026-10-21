@@ -7,6 +7,12 @@ extends BaseLocalizationSystem
 ## 动态文案：直接 [method Object.tr] / [method Object.tr_n]，再 [code]%[/code] 填值。[br]
 ## 切语言后发 [signal EventBus.locale_changed]。
 
+#region Module Dependency Manifest
+const MODULE_ID: StringName = &"locale"
+const REQUIRED_MODULES: Array[StringName] = []
+const OPTIONAL_MODULES: Array[StringName] = []
+#endregion
+
 #region State
 var _config: LocaleConfig
 var _adapter: TranslationServerAdapter

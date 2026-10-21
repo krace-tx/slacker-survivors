@@ -5,20 +5,30 @@ extends RefCounted
 ## 存储系统门面契约（Storage System Facade Contract）。[br]
 ##
 ## 本抽象基类作为业务层与存储子系统交互的唯一规范入口，统一编排：[br]
-## - L1 内存高速缓存（Memory）[br]
-## - L2 本地磁盘原子持久化与双写容灾（Disk user://）[br]
-## - L3 远端云存档/接口（Remote HTTP）[br]
+## - [b]L1 内存高速缓存（Memory）[/b]：基于 [BudgetCache] 的容量水位与 TTL 管理，读写自动执行深拷贝隔离防止引用污染；[br]
+## - [b]L2 本地磁盘持久化（Disk user://）[/b]：内置 [code].tmp[/code] 事务级原子写、[code].bak[/code] 双写容灾自愈，以及可选 ZSTD 压缩与 AES-256 加密；[br]
+## - [b]L3 远端云存档/资源（Remote HTTP）[/b]：通过 [BaseNetworkClient] 透明收发 JSON 或流式下载文件，支持并发写入追踪与版本迁移。[br]
 ##
 ## 业务代码应统一通过 [code]App.storage[/code] 访问本契约提供的方法，而无需感知底层驱动细节。
 
 
 #region Configuration & Cache Management
 ## 绑定一个存储配置项元数据 [StorageItem]。[br]
-## 
-## [param item] 要注册的存储项元数据（包含 key_id、文件路径、编解码类型、默认策略等）。[br]
-## 注册后，后续调用 [method read_async]、[method write_async] 等方法时，可直接传入对应的 [code]key_id[/code] 字符串。
+##
+## [param item] 要注册的存储项元数据（包含 `key_id`、文件路径、加解密/压缩开关、版本演进号等）。[br]
+## 注册后，后续调用 [method read_async]、[method write_async] 等方法时，可直接传入对应的 `key_id`（[StringName] 或 [String]）。
 @abstract
 func bind(item: StorageItem) -> void
+
+
+## 检查指定 [param key_id] 是否已在系统中注册绑定。
+@abstract
+func is_bound(key_id: StringName) -> bool
+
+
+## 获取已绑定的 [StorageItem]（未绑定时返回 [code]null[/code]）。
+@abstract
+func get_bound_item(key_id: StringName) -> StorageItem
 
 
 ## 释放指定 [param key_id] 占用的 L1 内存缓存槽。[br]
@@ -33,58 +43,80 @@ func release(key_id: String) -> void
 ## 通常在玩家登出、账户切换或退出游戏时由框架统一调用。
 @abstract
 func clear() -> void
+
+
+## 为指定 [param key_id] 注册单步存档格式版本迁移函数。[br]
+##
+## 当读取到的旧存档 `_schema_version` 小于 [member StorageItem.schema_version] 时，按版本链自动依次执行迁移。[br]
+## [param key_id] 存储项唯一标识。[br]
+## [param from_version] 起始版本号。[br]
+## [param to_version] 目标版本号。[br]
+## [param migrate_fn] 迁移函数 `func(old_dict: Dictionary) -> Variant`（返回迁移后的 `Dictionary` 或 `Result`）。
+@abstract
+func register_migration(
+	key_id: StringName,
+	from_version: int,
+	to_version: int,
+	migrate_fn: Callable
+) -> Result
+
+
+## 等待所有进行中的异步写入任务（含后台远端同步）完成，用于应用退出或切后台前的优雅落盘保证。
+@abstract
+func flush_async(timeout_seconds: float = 3.0) -> Result
+
+
+## 获取存储系统运行时诊断快照（含内存池占用、已绑定条目数、进行中的写入计数等）。
+@abstract
+func get_diagnostics() -> Dictionary
 #endregion
 
 
-#region Public IO APIs
+#region Public Async IO APIs (Multi-Tier: Memory / Disk / Remote)
 ## 异步读取数据。[br]
 ##
 ## 根据指定的读取策略 [param policy]，在 L1 内存、L2 磁盘、L3 远端之间瀑布穿透查找。[br]
-## 当命中底层介质（如从磁盘或远端取得）后，系统会自动向更上层的内存缓存执行“缓存回灌（Backfill）”。[br]
-## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果。[br]
+## 当命中底层介质（如从磁盘或远端取得）后，系统会自动执行版本迁移并向更上层的本地缓存执行“缓存回灌（Backfill）”。[br]
+## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果；若传入 `key_id`，必须先通过 [method bind] 显式绑定。[br]
 ##
-## [param target] 目标对象，支持传入已绑定的 [code]key_id[/code] 字符串，或直接传入 [StorageItem] 实例。[br]
+## [param target] 目标对象，支持传入已绑定的 `key_id`（[StringName] / [String]）或直接传入 [StorageItem] 实例。[br]
 ## [param policy] 读取策略模式（见 [StorageReadMode] 常量，默认为 [code]StorageReadMode.CACHE_FIRST[/code]）。[br]
 ## @return 返回 [Result] 对象：[br]
-##   - 成功时：[code]result.is_ok()[/code] 为 true，[code]result.value[/code] 包含反序列化后的数据；[br]
-##   - 失败时：[code]result.is_err()[/code] 为 true，包含失败原因描述。
+##   - 成功时：[code]result.value[/code] 在 `JSON` 模式下为深拷贝隔离的 [Dictionary]/[Array]，在 `FILE` 模式下统一为 [PackedByteArray]；[br]
+##   - 失败时：[code]result.error[/code] 为携带 [StorageError] 错误码的 [FrameworkError]。
 @abstract
 func read_async(target: Variant, policy: int = 0) -> Result
 
 
-## 异步写入数据。[br]
+## 异步写入数据（同 `key_id` 并发写入自动串行化排队，防止 `.tmp` 踩踏与数据覆盖）。[br]
 ##
-## 根据指定的写入策略 [param policy]，依次向各级介质执行序列化并落盘/上传。[br]
+## 根据指定的写入策略 [param policy]，依次向各级介质执行版本戳标记、序列化并落盘/上传。[br]
 ## 本地磁盘写入时会自动使用 [code].tmp[/code] 原子重命名与 [code].bak[/code] 容灾备份机制。[br]
-## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果。[br]
+## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果；若传入 `key_id`，必须先通过 [method bind] 显式绑定。[br]
 ##
-## [param target] 目标对象，支持已绑定的 [code]key_id[/code] 字符串或 [StorageItem] 实例。[br]
-## [param data] 需要保存的数据对象（基础类型、Dictionary、Array 或实现了序列化契约的 Resource/Object）。[br]
+## [param target] 目标对象，支持已绑定的 `key_id`（[StringName] / [String]）或 [StorageItem] 实例。[br]
+## [param data] 需要保存的数据对象（`JSON` 模式下为 [Dictionary]/[Array]，`FILE` 模式下为 [PackedByteArray]）。[br]
 ## [param policy] 写入策略模式（见 [StorageWriteMode] 常量，默认为 [code]StorageWriteMode.LOCAL_FIRST[/code]）。[br]
-## @return 返回 [Result] 对象：[br]
-##   - 成功时：[code]result.is_ok()[/code] 为 true；[br]
-##   - 失败时：[code]result.is_err()[/code] 为 true，附带各级介质写入失败信息。
+## @return 返回 [Result] 对象。
 @abstract
 func write_async(target: Variant, data: Variant, policy: int = 0) -> Result
 
 
-## 异步删除本地数据（清理 L1 内存缓存与 L2 本地磁盘文件）。[br]
+## 异步删除本地数据（清理 L1 内存缓存与 L2 本地磁盘主文件、`.bak` 及 `.tmp`）。[br]
 ##
 ## [b]注意：[/b]本方法为异步方法，调用端必须使用 [code]await[/code] 等待结果。[br]
 ## 为防止不可逆灾难，本方法仅清理本地介质，不会物理删除远端云存储文件。[br]
 ##
-## [param target] 目标对象，支持已绑定的 [code]key_id[/code] 字符串或 [StorageItem] 实例。[br]
-## @return 返回 [Result] 对象，表示删除是否成功。
+## [param target] 目标对象，支持已绑定的 `key_id`（[StringName] / [String]）或 [StorageItem] 实例。[br]
+## @return 返回 [Result] 对象，表示删除是否成功（文件原本不存在时亦幂等返回成功）。
 @abstract
 func delete_async(target: Variant) -> Result
 
 
-## 检查指定存储项是否存在本地持久化数据。[br]
+## 检查指定存储项是否存在本地数据（优先探测 L1 内存缓存，未命中则探测 L2 磁盘主文件或 `.bak` 备份）。[br]
 ##
-## 优先探测 L1 内存缓存，若无则探测 L2 磁盘文件是否存在且有效。[br]
-##
-## [param target] 目标对象，支持已绑定的 [code]key_id[/code] 字符串或 [StorageItem] 实例。[br]
-## @return 返回 [Result] 对象：成功时 [code]result.value[/code] 为 bool 类型（true 表示存在数据，false 表示不存在）。
+## [param target] 目标对象，支持已绑定的 `key_id`（[StringName] / [String]）或 [StorageItem] 实例。[br]
+## @return 返回 [Result] 对象：成功时 [code]result.value[/code] 为 [bool]（`true` 表示存在有效数据）。
 @abstract
 func has(target: Variant) -> Result
 #endregion

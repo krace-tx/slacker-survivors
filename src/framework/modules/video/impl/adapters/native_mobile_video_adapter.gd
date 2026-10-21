@@ -224,34 +224,8 @@ func _connect_persistent_signal(target: Object, sig_name: String, callable: Call
 
 
 func _resolve_path(file_path: String) -> String:
-	if not file_path.begins_with("res://") and not file_path.begins_with("user://"):
-		return file_path
-	var global_path := ProjectSettings.globalize_path(file_path)
-	if FileAccess.file_exists(global_path):
-		return global_path
-	if file_path.begins_with("res://"):
-		return _materialize_resource(file_path)
-	return file_path
-
-
-func _materialize_resource(file_path: String) -> String:
-	var extension := file_path.get_extension()
-	var cache_dir := "user://video_cache"
-	var cache_path := "%s/%s%s" % [cache_dir, str(file_path.hash()), "." + extension if not extension.is_empty() else ""]
-	var cache_absolute := ProjectSettings.globalize_path(cache_path)
-	if FileAccess.file_exists(cache_absolute):
-		return cache_absolute
-	if DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(cache_dir)) != OK:
-		return file_path
-	var bytes := FileAccess.get_file_as_bytes(file_path)
-	if bytes.is_empty():
-		return file_path
-	var cache_file := FileAccess.open(cache_path, FileAccess.WRITE)
-	if cache_file == null:
-		return file_path
-	cache_file.store_buffer(bytes)
-	cache_file.close()
-	return cache_absolute
+	var mat_res := FileUtils.materialize_res_file(file_path, "user://video_cache")
+	return str(mat_res.value) if mat_res.is_ok() else file_path
 
 
 func _apply_options(singleton: Object, options: VideoPlayOptions) -> void:

@@ -6,6 +6,12 @@ extends BaseVideoPlayer
 ## 本类统一装配与调度全平台解码适配器、驱动状态机、管理纹理输出，
 ## 并与 [BaseAudioSystem] 进行 BGM 避让联动，向业务层暴露强类型无痛的统一视频操作体验。
 
+#region Module Dependency Manifest
+const MODULE_ID: StringName = &"video"
+const REQUIRED_MODULES: Array[StringName] = []
+const OPTIONAL_MODULES: Array[StringName] = [&"audio", &"logger"]
+#endregion
+
 #region Injected Dependencies
 var _audio_system: BaseAudioSystem
 var _logger: BaseFrameworkLogger
@@ -35,9 +41,6 @@ var _suppress_native_terminal_signal: bool = false
 
 #region Audio Ducking State
 var _was_bgm_ducked: bool = false
-var _previous_bgm_muted: bool = false
-var _previous_bgm_volume: float = 1.0
-var _duck_tween: Tween = null
 #endregion
 
 const DEFAULT_NATIVE_TIMEOUT_SECONDS: float = 300.0
@@ -99,7 +102,6 @@ func dispose() -> void:
 	_active_adapter = null
 	_current_file = ""
 	_current_options = null
-	_cancel_duck_tween()
 	if is_inside_tree():
 		queue_free()
 
@@ -500,9 +502,7 @@ func _apply_stream_options(options: VideoPlayOptions) -> void:
 func _path_exists_or_uri(file_path: String) -> bool:
 	if file_path.begins_with("http://") or file_path.begins_with("https://") or file_path.begins_with("content://"):
 		return true
-	if FileAccess.file_exists(file_path):
-		return true
-	return file_path.begins_with("res://") and ResourceLoader.exists(file_path)
+	return FileUtils.resource_or_file_exists(file_path)
 
 
 func _on_native_playback_completed() -> void:
@@ -559,57 +559,21 @@ func _on_stream_finished() -> void:
 func _duck_bgm() -> void:
 	if _was_bgm_ducked or _audio_system == null:
 		return
-	
-	_previous_bgm_muted = _audio_system.is_bus_muted("BGM")
-	_previous_bgm_volume = _audio_system.get_bus_volume("BGM")
 	_was_bgm_ducked = true
-	if _previous_bgm_muted:
-		return
-	
-	var fade_seconds := _get_duck_fade_seconds()
-	_audio_system.set_bus_mute("BGM", false)
-	if fade_seconds <= 0.0 or not is_inside_tree():
-		_audio_system.set_bus_volume("BGM", 0.0)
-		return
-	
-	_cancel_duck_tween()
-	_duck_tween = create_tween()
-	_duck_tween.tween_method(_set_bgm_volume, _previous_bgm_volume, 0.0, fade_seconds)
+	_audio_system.duck_bgm(0.0, _get_duck_fade_seconds())
 
 
 func _restore_bgm() -> void:
 	if not _was_bgm_ducked or _audio_system == null:
 		return
-
-	_cancel_duck_tween()
-	if _previous_bgm_muted:
-		_audio_system.set_bus_mute("BGM", true)
-	else:
-		_audio_system.set_bus_mute("BGM", false)
-		var fade_seconds := _get_duck_fade_seconds()
-		if fade_seconds <= 0.0 or not is_inside_tree():
-			_audio_system.set_bus_volume("BGM", _previous_bgm_volume)
-		else:
-			_duck_tween = create_tween()
-			_duck_tween.tween_method(_set_bgm_volume, _audio_system.get_bus_volume("BGM"), _previous_bgm_volume, fade_seconds)
 	_was_bgm_ducked = false
+	_audio_system.unduck_bgm(_get_duck_fade_seconds())
 
 
 func _get_duck_fade_seconds() -> float:
 	if _current_options == null:
 		return 0.5
 	return maxf(0.0, _current_options.duck_fade_seconds)
-
-
-func _set_bgm_volume(volume: float) -> void:
-	if _audio_system != null:
-		_audio_system.set_bus_volume("BGM", volume)
-
-
-func _cancel_duck_tween() -> void:
-	if _duck_tween != null and is_instance_valid(_duck_tween):
-		_duck_tween.kill()
-	_duck_tween = null
 
 
 func _set_state(new_state: int) -> void:
