@@ -1,6 +1,6 @@
 @abstract
 class_name BaseSceneRouter
-extends NodeSubsystem
+extends Node
 
 ## 顶层场景路由与转场调度门面契约（Scene Router Facade Contract）。[br]
 ##
@@ -11,11 +11,6 @@ extends NodeSubsystem
 ## - 转场防误触中继：转场动画执行期间自动挂起全局防点击穿透护盾。[br]
 ##
 ## 业务代码应统一通过 [code]App.scene[/code] 访问本契约提供的方法。
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "scene"
 
 
 #region Public Queries

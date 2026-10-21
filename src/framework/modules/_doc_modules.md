@@ -15,6 +15,7 @@ src/framework/modules/
 ├── audio/        # BGM / SFX
 ├── locale/       # 多语言与区域
 ├── haptic/       # 触觉反馈
+├── input/        # 键鼠/手柄双轨映射与复合键输入
 └── video/        # 视频播放与插件桥接
 ```
 
@@ -24,23 +25,23 @@ src/framework/modules/
 
 | 层次 | 职责定位 | 命名规则 | 示例 |
 |---|---|---|---|
-| **模块目录** | 单数表达垂直技术领域能力 | 单数名词 | `asset/`、`scene/`、`storage/`、`env/` |
-| **能力门面基类** | 系统对外契约与全量注释门面 | `base_<role>` / PascalCase | `base_storage_system.gd` (`BaseStorageSystem`), `base_scene_router.gd` (`BaseSceneRouter`) |
-| **能力系统实现** | 完整运行能力入口 / 核心编排 | `<role>` / PascalCase | `storage_system.gd` (`StorageSystem`), `audio_system.gd` (`AudioSystem`) |
+| **模块目录** | 单数表达垂直技术领域能力 | 单数名词 | `asset/`、`scene/`、`storage/`、`env/`、`input/` |
+| **能力门面基类** | 系统对外契约与全量注释门面 | `base_<role>` / PascalCase | `base_storage_system.gd` (`BaseStorageSystem`), `base_input_system.gd` (`BaseInputSystem`) |
+| **能力系统实现** | 完整运行能力入口 / 核心编排 | `<role>` / PascalCase | `storage_system.gd` (`StorageSystem`), `input_system.gd` (`InputSystem`) |
 | **业务承载基类** | 业务扩展/继承基类 | `base_<entity>` | `base_scene.gd` (`BaseScene`), `base_ui_view.gd` (`BaseUIView`) |
 | **动作角色实现** | 专注特定行为的执行者 | `<action_role>` | `scene_router.gd` (`SceneRouter`), `network_client.gd` (`NetworkClient`), `framework_logger.gd` (`FrameworkLogger`), `haptic_feedback.gd` (`HapticFeedback`) |
-| **公开契约/类型** | 跨层公开类型与枚举（脱离目录自解释） | `<feature>_<type>` | `storage_read_mode.gd` (`StorageReadMode`), `scene_transition_type.gd` (`SceneTransitionType`) |
+| **公开契约/类型** | 跨层公开类型与枚举（脱离目录自解释） | `<feature>_<type>` | `storage_read_mode.gd` (`StorageReadMode`), `input_chord.gd` (`InputChord`) |
 | **配置对象** | 跨环境/静态配置声明 | `<feature>_config` | `locale_config.gd` (`LocaleConfig`) |
 | **状态机/栈** | 栈式导航与状态流转 | `<feature>_stack` | `scene_stack.gd` (SceneRouter 历史栈) |
 | **队列** | 请求或任务调度 | `<feature>_queue` | `request_queue.gd` |
 | **缓存** | 容量与过期策略 | `<feature>_cache` | `asset_cache.gd`, `storage_cache.gd` |
 | **驱动** | 可替换存储或底层实现 | `<backend>_<domain>_driver` | `memory_storage_driver.gd`, `disk_storage_driver.gd` |
-| **引擎适配器** | 隔离 Godot 原生 API 边界 | `<engine>_adapter` | `resource_loader_adapter.gd`, `translation_server_adapter.gd` |
+| **引擎适配器** | 隔离 Godot 原生 API 边界 | `<engine>_adapter` | `resource_loader_adapter.gd`, `translation_server_adapter.gd`, `input_map_adapter.gd` |
 
 ### 核心约束
 
 1. **角色化语义命名（拒绝泛化的 Service）**：
-   - 协调完整运行能力的模块采用 **System**（`AudioSystem`、`AssetSystem`、`UISystem`、`StorageSystem`、`TimeSystem`、`LocalizationSystem`）。
+   - 协调完整运行能力的模块采用 **System**（`AudioSystem`、`AssetSystem`、`UISystem`、`StorageSystem`、`TimeSystem`、`LocalizationSystem`、`InputSystem`）。
    - 专注特定功能行为的模块采用具体 **角色名词**（`SceneRouter` 导航路由、`NetworkClient` 通讯客户端、`FrameworkLogger` 框架日志、`HapticFeedback` 震动反馈、`RuntimeEnvironment` 运行环境）。
    - 界面视图继承基类明确职责：`BaseUISystem`（画布层级门面）、`BaseUIView`（单个界面根节点，带安全区）；业务弹窗统一继承业务共享层 `BaseDialog`。
 2. **`Base` 前缀约束**：
@@ -151,6 +152,23 @@ haptic/
 ├── base_haptic_feedback.gd
 └── impl/
 	└── haptic_feedback.gd
+
+input/
+├── _doc_input.md
+├── base_input_system.gd
+├── types/
+│   ├── input_device_type.gd
+│   ├── input_context_type.gd
+│   ├── input_binding_slot.gd
+│   ├── input_conflict_policy.gd
+│   ├── input_error.gd
+│   ├── input_chord.gd
+│   └── input_glyph_info.gd
+└── impl/
+	├── input_system.gd
+	├── input_device_tracker.gd
+	├── input_rebind_capturer.gd
+	└── input_map_adapter.gd
 
 video/
 ├── _doc_video.md

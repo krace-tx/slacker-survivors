@@ -1,6 +1,6 @@
 @abstract
 class_name BaseFrameworkLogger
-extends Subsystem
+extends RefCounted
 
 ## 日志分级与诊断输出门面契约（Framework Logger Contract）。[br]
 ##
@@ -14,11 +14,6 @@ extends Subsystem
 
 ## 当前最低输出级别过滤阈值（参见 [LogLevel] 枚举常量，低于此级别的日志将被静默丢弃）。
 var min_level: int = LogLevel.DEBUG
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "logger"
 
 
 #region Public Logging APIs

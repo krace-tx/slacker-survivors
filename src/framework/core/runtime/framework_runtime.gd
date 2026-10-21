@@ -19,13 +19,13 @@ func initialize(app: Node, on_step: Callable = Callable()) -> Result:
 		return Result.err_code("Core.InvalidOwner", "FrameworkRuntime requires a valid App node.")
 	if _initialized:
 		if on_step.is_valid():
-			on_step.call(12, 12, "ready")
+			on_step.call(13, 13, "ready")
 		return Result.ok()
 
 	_app = app
 	_clear_app_services()
 
-	const TOTAL_STEPS: int = 12
+	const TOTAL_STEPS: int = 13
 
 	# 基础服务：没有其它 Framework 依赖。
 	var env := RuntimeEnvironment.new()
@@ -59,47 +59,53 @@ func initialize(app: Node, on_step: Callable = Callable()) -> Result:
 	_notify_step(5, TOTAL_STEPS, "haptic", on_step)
 
 	# 节点服务：先挂载，再初始化，确保 _ready 已完成。
+	var input := InputSystem.new(logger)
+	result = await _install_node("input", input, "InputSystem")
+	if result.is_err():
+		return _rollback(result)
+	_notify_step(6, TOTAL_STEPS, "input", on_step)
+
 	var net := NetworkClient.new()
 	result = await _install_node("net", net, "NetworkClient")
 	if result.is_err():
 		return _rollback(result)
-	_notify_step(6, TOTAL_STEPS, "net", on_step)
+	_notify_step(7, TOTAL_STEPS, "net", on_step)
 
 	var storage := StorageSystem.new(logger, net)
 	result = await _install_ref("storage", storage)
 	if result.is_err():
 		return _rollback(result)
-	_notify_step(7, TOTAL_STEPS, "storage", on_step)
+	_notify_step(8, TOTAL_STEPS, "storage", on_step)
 
 	var locale := LocalizationSystem.new()
 	result = await _install_ref("locale", locale)
 	if result.is_err():
 		return _rollback(result)
-	_notify_step(8, TOTAL_STEPS, "locale", on_step)
+	_notify_step(9, TOTAL_STEPS, "locale", on_step)
 
 	var scene := SceneRouter.new(asset, logger)
 	result = await _install_node("scene", scene, "SceneRouter")
 	if result.is_err():
 		return _rollback(result)
-	_notify_step(9, TOTAL_STEPS, "scene", on_step)
+	_notify_step(10, TOTAL_STEPS, "scene", on_step)
 
 	var ui := UISystem.new(asset, logger)
 	result = await _install_node("ui", ui, "UISystem")
 	if result.is_err():
 		return _rollback(result)
-	_notify_step(10, TOTAL_STEPS, "ui", on_step)
+	_notify_step(11, TOTAL_STEPS, "ui", on_step)
 
 	var audio := AudioSystem.new(asset, logger)
 	result = await _install_node("audio", audio, "AudioSystem")
 	if result.is_err():
 		return _rollback(result)
-	_notify_step(11, TOTAL_STEPS, "audio", on_step)
+	_notify_step(12, TOTAL_STEPS, "audio", on_step)
 
 	var video := VideoPlayer.new(audio, logger)
 	result = await _install_node("video", video, "VideoPlayer")
 	if result.is_err():
 		return _rollback(result)
-	_notify_step(12, TOTAL_STEPS, "video", on_step)
+	_notify_step(13, TOTAL_STEPS, "video", on_step)
 
 	_initialized = true
 	_log_info("Framework runtime ready.")
@@ -111,7 +117,7 @@ func _notify_step(step_idx: int, total_steps: int, key: String, callback: Callab
 		callback.call(step_idx, total_steps, key)
 
 
-## 逆序释放子系统，并清空 App 门面，支持重启或测试环境重复初始化。
+## 逆序释放服务，并清空 App 门面，支持重启或测试环境重复初始化。
 func dispose() -> void:
 	for i in range(_owned_services.size() - 1, -1, -1):
 		var service = _owned_services[i]
@@ -119,6 +125,8 @@ func dispose() -> void:
 			continue
 		if service.has_method("dispose"):
 			service.dispose()
+		if service is Node and (service as Node).is_inside_tree():
+			(service as Node).queue_free()
 	_owned_services.clear()
 	_clear_app_services()
 	_initialized = false
@@ -159,7 +167,7 @@ func _rollback(failure: Result) -> Result:
 func _clear_app_services() -> void:
 	if not is_instance_valid(_app):
 		return
-	for key in ["env", "logger", "net", "storage", "time", "locale", "asset", "scene", "ui", "audio", "haptic", "video"]:
+	for key in ["env", "logger", "net", "storage", "time", "locale", "asset", "input", "scene", "ui", "audio", "haptic", "video"]:
 		_app.set(key, null)
 
 

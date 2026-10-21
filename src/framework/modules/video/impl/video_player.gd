@@ -43,7 +43,7 @@ var _duck_tween: Tween = null
 const DEFAULT_NATIVE_TIMEOUT_SECONDS: float = 300.0
 
 
-#region Lifecycle & Subsystem Contract
+#region Lifecycle
 func _init(audio_system: BaseAudioSystem = null, logger: BaseFrameworkLogger = null) -> void:
 	_audio_system = audio_system
 	_logger = logger
@@ -100,6 +100,8 @@ func dispose() -> void:
 	_current_file = ""
 	_current_options = null
 	_cancel_duck_tween()
+	if is_inside_tree():
+		queue_free()
 
 
 func set_audio_system(audio_system: BaseAudioSystem) -> void:

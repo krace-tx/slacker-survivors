@@ -1,6 +1,6 @@
 @abstract
 class_name BaseStorageSystem
-extends Subsystem
+extends RefCounted
 
 ## 存储系统门面契约（Storage System Facade Contract）。[br]
 ##
@@ -10,11 +10,6 @@ extends Subsystem
 ## - L3 远端云存档/接口（Remote HTTP）[br]
 ##
 ## 业务代码应统一通过 [code]App.storage[/code] 访问本契约提供的方法，而无需感知底层驱动细节。
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "storage"
 
 
 #region Configuration & Cache Management

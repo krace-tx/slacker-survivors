@@ -1,6 +1,6 @@
 @abstract
 class_name BaseTimeSystem
-extends Subsystem
+extends RefCounted
 
 ## 权威时间系统门面契约（Time System Facade Contract）。[br]
 ##
@@ -10,11 +10,6 @@ extends Subsystem
 ## - 状态透明：提供 [method is_trusted] 指示当前时间是否已同服务端同步校准。
 ##
 ## 业务代码应统一通过 [code]App.time[/code] 访问本契约提供的方法。
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "time"
 
 
 #region Public Time APIs

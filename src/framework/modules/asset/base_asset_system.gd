@@ -1,6 +1,6 @@
 @abstract
 class_name BaseAssetSystem
-extends Subsystem
+extends RefCounted
 
 ## 资产加载与缓存系统门面契约（Asset System Facade Contract）。[br]
 ##
@@ -11,11 +11,6 @@ extends Subsystem
 ## - 纯 RefCounted 实现，轻量、无需挂载场景树。[br]
 ##
 ## 业务代码应统一通过 [code]App.asset[/code] 访问本契约提供的方法。
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "asset"
 
 
 #region Public Asset APIs

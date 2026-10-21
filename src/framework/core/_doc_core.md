@@ -8,9 +8,7 @@ src/framework/core/
 ├── contracts/             # 所有服务共享的核心契约
 │   ├── _doc_contract.md
 │   ├── result.gd          # Result 可失败操作封装
-│   ├── framework_error.gd # FrameworkError 不可变错误对象
-│   ├── subsystem.gd       # 纯对象生命周期托管基类 (Subsystem)
-│   └── node_subsystem.gd  # Node 场景树生命周期托管基类 (NodeSubsystem)
+│   └── framework_error.gd # FrameworkError 不可变错误对象
 ├── runtime/              # Framework 唯一组合根
 │   ├── _doc_runtime.md
 │   └── framework_runtime.gd

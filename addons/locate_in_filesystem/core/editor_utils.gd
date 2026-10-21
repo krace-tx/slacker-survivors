@@ -57,12 +57,30 @@ static func find_folder_tree() -> Tree:
 
 
 static func get_icon(icon_name: String) -> Texture2D:
+	if icon_name.ends_with(".svg"):
+		var svg_icon := _load_svg_icon(icon_name)
+		if svg_icon:
+			return svg_icon
+		icon_name = "Filesystem"
 	var host := EditorInterface.get_base_control()
 	if host == null:
 		return null
 	if host.has_theme_icon(icon_name, &"EditorIcons"):
 		return host.get_theme_icon(icon_name, &"EditorIcons")
 	return null
+
+
+static func _load_svg_icon(svg_path: String) -> Texture2D:
+	if not FileAccess.file_exists(svg_path):
+		return null
+	var svg_text := FileAccess.get_file_as_string(svg_path)
+	if svg_text.is_empty():
+		return null
+	var scale := EditorInterface.get_editor_scale() if Engine.is_editor_hint() else 1.0
+	var image := Image.new()
+	if image.load_svg_from_string(svg_text, scale) != OK:
+		return null
+	return ImageTexture.create_from_image(image)
 
 
 static func make_flat_button(icon_name: String, fallback_text: String, tooltip: String) -> Button:

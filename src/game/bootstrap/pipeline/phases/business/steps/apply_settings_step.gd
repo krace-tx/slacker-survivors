@@ -22,6 +22,14 @@ func execute(context: BootContext) -> Result:
 		App.audio.set_music_enabled(settings.music_enabled)
 		App.audio.set_sfx_enabled(settings.sfx_enabled)
 
+	if App.haptic != null:
+		App.haptic.set_enabled(settings.haptic_enabled)
+
+	if App.input != null:
+		App.input.set_joy_deadzone(clampf(settings.joy_deadzone, 0.05, 0.90))
+		if not settings.input_bindings.is_empty():
+			App.input.import_bindings(settings.input_bindings)
+
 	if context != null:
 		context.set_data("game_settings", settings)
 

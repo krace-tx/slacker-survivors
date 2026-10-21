@@ -20,6 +20,15 @@ signal app_back_pressed
 #region Service
 ## 语言已切换。由 LocaleService 发出。
 signal locale_changed
+
+## 当前激活输入设备（键鼠 / 手柄）或手柄品牌已切换。由 InputSystem 发出。
+signal input_device_changed(device_type: int, joy_brand: int)
+
+## 键位映射配置已变更或重置（[param action] 为空代表批量更新）。由 InputSystem 发出。
+signal input_bindings_changed(action: StringName)
+
+## 手柄物理连接状态已变更。由 InputSystem 发出。
+signal joypad_connection_changed(device_id: int, connected: bool)
 #endregion
 
 #region Scene

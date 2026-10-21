@@ -1,6 +1,6 @@
 @abstract
 class_name BaseVideoPlayer
-extends NodeSubsystem
+extends Node
 
 ## 视频播放器门面契约接口（Video Player Facade Contract）。[br]
 ##
@@ -33,11 +33,6 @@ signal playback_finished()
 ## [param message] 详尽的错误诊断说明。
 signal error_occurred(error_code: String, message: String)
 #endregion
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "video"
 
 
 #region Playback Control Methods

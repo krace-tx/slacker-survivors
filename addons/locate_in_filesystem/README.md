@@ -56,6 +56,8 @@ core/
   file_service.gd         locate current scene / script
   folder_service.gd       expand / collapse selected folder
   editor_utils.gd         find unofficial editor widgets (icons / metadata, not translated text)
+icons/
+  locate.svg              toolbar locate icon (folder + target crosshair)
 ui/
   file_toolbar.gd         2D / 3D / Script locate buttons
   folder_toolbar.gd       fold button next to Sort Files

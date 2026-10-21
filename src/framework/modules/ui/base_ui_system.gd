@@ -1,6 +1,6 @@
 @abstract
 class_name BaseUISystem
-extends NodeSubsystem
+extends Node
 
 ## 全局 UI 画布分层与安全区系统门面契约（UI System Facade Contract）。[br]
 ##
@@ -21,11 +21,6 @@ enum Layer {
 	TOP = 50,         ## 系统顶层（全屏 Loading 遮罩、Debug 控制台）
 }
 #endregion
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "ui"
 
 
 #region Layer Management

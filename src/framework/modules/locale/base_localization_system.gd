@@ -1,6 +1,6 @@
 @abstract
 class_name BaseLocalizationSystem
-extends Subsystem
+extends RefCounted
 
 ## 多语言本地化系统门面契约（Localization System Facade Contract）。[br]
 ##
@@ -17,11 +17,6 @@ var current_language: LocaleConfig.Language = LocaleConfig.Language.EN_US
 
 ## 本工程支持并可供玩家选择的全部可用语言列表。
 var languages: Array[LocaleConfig.Language] = []
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "locale"
 
 
 #region Public Locale APIs

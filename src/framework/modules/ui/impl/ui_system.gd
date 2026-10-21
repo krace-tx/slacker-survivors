@@ -39,7 +39,8 @@ func dispose() -> void:
 			for child in layer.get_children():
 				child.queue_free()
 	_layers.clear()
-	super.dispose()
+	if is_inside_tree():
+		queue_free()
 #endregion
 
 #region Layers Management

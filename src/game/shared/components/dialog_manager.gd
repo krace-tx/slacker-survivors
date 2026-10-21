@@ -8,6 +8,7 @@ extends RefCounted
 static var _stack: Array[Control] = []
 static var _backdrop: ColorRect = null
 static var _listener_connected: bool = false
+static var _ui_context_pushed: bool = false
 
 
 ## 打开一个模态弹窗。
@@ -164,6 +165,17 @@ static func _on_backdrop_gui_input(event: InputEvent) -> void:
 
 static func _update_backdrop_state() -> void:
 	_stack = _stack.filter(func(d: Control) -> bool: return is_instance_valid(d))
+	if _stack.is_empty():
+		if _ui_context_pushed:
+			_ui_context_pushed = false
+			if App != null and App.input != null:
+				App.input.pop_context(InputContextType.Context.UI)
+	else:
+		if not _ui_context_pushed:
+			_ui_context_pushed = true
+			if App != null and App.input != null:
+				App.input.push_context(InputContextType.Context.UI)
+
 	if _backdrop == null or not is_instance_valid(_backdrop):
 		return
 

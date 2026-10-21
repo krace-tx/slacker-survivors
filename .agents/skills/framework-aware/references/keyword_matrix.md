@@ -21,10 +21,12 @@
 | **视频播放** | 视频、CG、开场动画、Cutscene、MP4/OGV | `src/framework/modules/video/_doc_video.md` | 统一通过门面 `App.video` 调度；使用 `VideoPlayOptions` 链式配置；资源统一存放在 `src/assets/videos/`。 |
 | **日志与诊断** | 打印日志、错误追踪、诊断、Logger、调试信息 | `src/framework/modules/logger/_doc_logger.md` | 统一使用 `App.logger`（`debug/info/warn/error`）；必须带模块 Tag；严禁在业务和框架代码中残留原生 `print()`。 |
 | **多语言本地化** | 多语言、国际化、翻译、Locale、文案切换 | `src/framework/modules/locale/_doc_locale.md` | 统一通过 `App.locale` 管理；文本通过字典键映射，支持动态占位符格式化。 |
+| **输入与键位映射** | 输入、键盘映射、手柄、改键、组合键、按键提示、摇杆死区、Input、InputMap | `src/framework/modules/input/_doc_input.md` | 统一通过 `App.input` 访问；支持键鼠/手柄双轨双槽隔离、`InputChord` 组合键消费、二段式免勾选交互录制与增量序列化；严禁直接调用 `InputMap.action_erase_events()` 破坏双轨绑定。 |
 | **环境与配置** | 环境变量、运行环境、Debug/Release 判定、渠道参数 | `src/framework/modules/env/_doc_env.md` | 统一通过 `App.env` 读取；隔离开发机环境与线上生产配置。 |
 | **参数契约实体** | 数据传参、参数对象、序列化、契约实体、DTO | `src/framework/infra/param/_doc_param.md` | 统一继承 `BaseParams`；内置 `to_dict()` 与 `from_dict()` 映射；严禁使用拼装字典裸传关键参数。 |
 | **通用工具体系** | 节点遍历、文件操作、异步等待、时间格式化、UUID、坐标计算 | `src/framework/util/_doc_util.md` | 优先使用各二级分类全局工具类（`NodeUtils`, `FileUtils`, `AsyncUtils`, `TimeUtils`, `CoordUtils` 等），严禁重复造轮子。 |
 | **结果与错误处理** | Result、错误返回、AppError、is_ok/is_err | `src/framework/core/_doc_core.md` | 涉及失败可能性的核心操作统一返回 `Result`；错误包装为 `AppError`，禁止通过静默返回 null 或裸异常阻断流程。 |
+| **功能测试与原型验证** | 功能测试、测试场景、原型验证、src/test | `src/test/_doc_test.md` | 按单数被测功能域建立 `src/test/<feature_name>/`；轻量测试直接放 `BaseScene` 测试场景，复杂测试对齐 **MSVP / MES** 子目录分层；支持按 `F6` 独立运行；正式代码严禁引用 `src/test/`。 |
 
 ---
 

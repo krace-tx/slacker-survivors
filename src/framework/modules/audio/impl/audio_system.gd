@@ -8,7 +8,7 @@ extends BaseAudioSystem
 ##
 ## BGM 与 SFX 分别使用独立的音频总线（自动创建并路由至 Master），
 ## 以便在设置菜单中独立调节“音乐”与“音效”音量。
-## 本子系统作为 NodeSubsystem 常驻场景树（挂载在 App 下），以保证 BGM 在场景切换时不中断。
+## 本系统作为 Node 常驻场景树（挂载在 App 下），以保证 BGM 在场景切换时不中断。
 ##
 ## 交叉淡变实现在 [BgmPlayer]，播放器池实现在 [SfxPool]；本系统只负责资源加载、总线与限频。
 
@@ -62,7 +62,8 @@ func _ready() -> void:
 func dispose() -> void:
 	if _bgm != null:
 		_bgm.kill_tween()
-	super.dispose()
+	if is_inside_tree():
+		queue_free()
 #endregion
 
 #region Public API

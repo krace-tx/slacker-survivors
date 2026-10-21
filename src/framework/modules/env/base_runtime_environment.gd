@@ -1,6 +1,6 @@
 @abstract
 class_name BaseRuntimeEnvironment
-extends Subsystem
+extends RefCounted
 
 ## 运行环境与诊断能力门面契约（Runtime Environment Contract）。[br]
 ##
@@ -9,11 +9,6 @@ extends Subsystem
 ## - 提供统一的只读诊断查询接口，屏蔽平台特征探测细节；[br]
 ##
 ## 业务代码应统一通过 [code]App.env[/code] 访问本契约提供的方法。
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "env"
 
 
 #region Public Queries

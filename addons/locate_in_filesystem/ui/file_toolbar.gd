@@ -5,6 +5,7 @@ extends RefCounted
 ## 脚本编辑器没有官方 CONTAINER，顶栏要下一帧再找。
 
 const EditorUtils = preload("../core/editor_utils.gd")
+const LOCATE_ICON_PATH := "res://addons/locate_in_filesystem/icons/locate.svg"
 
 signal locate_pressed
 
@@ -59,7 +60,7 @@ func _mount_script() -> void:
 func _make_toolbar() -> Control:
 	var bar := HBoxContainer.new()
 	var button := EditorUtils.make_flat_button(
-		"Filesystem",
+		LOCATE_ICON_PATH,
 		"FS",
 		"Locate in FileSystem (Ctrl/Cmd+Shift+L)",
 	)

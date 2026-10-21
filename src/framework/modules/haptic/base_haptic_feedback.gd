@@ -1,6 +1,6 @@
 @abstract
 class_name BaseHapticFeedback
-extends Subsystem
+extends RefCounted
 
 ## 触觉振动反馈门面契约（Haptic Feedback Contract）。[br]
 ##
@@ -24,11 +24,6 @@ const HEAVY: Array[int] = [100, 50, 100]
 
 ## 玩家全局振动总开关（由设置菜单切换并持久化同步）。
 var enabled: bool = true
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "haptic"
 
 
 #region Public Haptic APIs

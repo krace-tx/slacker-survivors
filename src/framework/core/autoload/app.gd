@@ -11,6 +11,7 @@ var storage:	BaseStorageSystem		## 存储：内存/磁盘/远端三级读写
 var time:		BaseTimeSystem			## 校验：服务器权威时间校准
 var locale:		BaseLocalizationSystem	## 表现：多语言与区域格式化
 var asset:		BaseAssetSystem			## 资源：资产加载池、内存/磁盘缓存管理
+var input:		BaseInputSystem			## 输入：键鼠/手柄双轨映射、组合键求值与交互改键
 var scene:		BaseSceneRouter			## 表现：场景流转与转场遮罩
 var ui:			BaseUISystem			## 表现：全局 UI 分层与模态弹窗系统
 var audio:		BaseAudioSystem			## 表现：音效分组与交叉淡变
@@ -31,7 +32,7 @@ var _is_app_paused := false
 func bootstrap(on_progress: Callable = Callable()) -> Result:
 	if _boot_done:
 		if on_progress.is_valid():
-			on_progress.call(12, 12, "ready")
+			on_progress.call(13, 13, "ready")
 		return _boot_result
 	if _booting:
 		while _booting:
@@ -57,11 +58,21 @@ func _ready() -> void:
 	call_deferred("_ensure_standalone_bootstrap")
 
 
+func _exit_tree() -> void:
+	if _runtime != null:
+		_runtime.dispose()
+		_runtime = null
+		_boot_done = false
+		_boot_result = null
+
+
 func _ensure_standalone_bootstrap() -> void:
 	if not _boot_done and not _booting:
 		var current := get_tree().current_scene
 		if current == null or current.scene_file_path != "res://src/game/bootstrap/scene/splash_scene.tscn":
-			await bootstrap()
+			var res := await bootstrap()
+			if res.is_ok() and scene != null and scene.is_empty() and is_instance_valid(current) and current is BaseScene:
+				await scene.bind(current.scene_file_path, current as BaseScene)
 
 
 func _notification(what: int) -> void:

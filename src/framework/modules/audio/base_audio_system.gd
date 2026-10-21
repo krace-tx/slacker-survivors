@@ -1,6 +1,6 @@
 @abstract
 class_name BaseAudioSystem
-extends NodeSubsystem
+extends Node
 
 ## 音频系统门面契约（Audio System Facade Contract）。[br]
 ##
@@ -15,11 +15,6 @@ extends NodeSubsystem
 
 ## 默认全局通用按钮点击音效资源路径（由业务层在游戏启动期统一注入，解除底层控件耦合）。
 var default_button_sfx: String = ""
-
-
-## 返回该子系统的全局唯一注册标识符。
-func get_id() -> String:
-	return "audio"
 
 
 #region BGM Management

@@ -24,6 +24,10 @@ var sfx_enabled: bool = true
 var haptic_enabled: bool = true
 ## 语言区域标识
 var locale: String = "zh_CN"
+## 手柄摇杆死区 (0.05 ~ 0.90)
+var joy_deadzone: float = 0.20
+## 自定义键位增量映射补丁字典（由 App.input.export_bindings() 导出）
+var input_bindings: Dictionary = {}
 
 
 ## 触发设置变更通知

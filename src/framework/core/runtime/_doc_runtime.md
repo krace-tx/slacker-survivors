@@ -11,9 +11,7 @@ src/framework/core/
 ├── contracts/
 │   ├── _doc_contract.md
 │   ├── result.gd
-│   ├── framework_error.gd
-│   ├── subsystem.gd
-│   └── node_subsystem.gd
+│   └── framework_error.gd
 ├── runtime/
 │   ├── _doc_runtime.md
 │   └── framework_runtime.gd
@@ -26,7 +24,7 @@ src/framework/core/
 ## 初始化顺序
  
 ```text
-Env → Logger → Time → Asset → Haptic
+Env → Logger → Time → Asset → Haptic → Input
 	→ Network → Storage → Locale
 	→ Scene → UI → Audio → Video
 ```

@@ -56,6 +56,8 @@ core/
   file_service.gd         定位当前场景 / 脚本
   folder_service.gd       选中目录整枝展开 / 收起
   editor_utils.gd         查找编辑器未公开的控件（图标 / metadata，不靠翻译文案）
+icons/
+  locate.svg              顶栏定位按钮图标（文件夹 + 瞄准准星）
 ui/
   file_toolbar.gd         2D / 3D / 脚本顶栏定位按钮
   folder_toolbar.gd       Sort Files 旁的折叠按钮

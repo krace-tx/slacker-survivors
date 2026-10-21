@@ -17,6 +17,8 @@ func initialize() -> Result:
 
 func dispose() -> void:
 	_token += 1
+	for joy_id in Input.get_connected_joypads():
+		Input.stop_joy_vibration(joy_id)
 #endregion
 
 #region Public API
@@ -24,6 +26,9 @@ func dispose() -> void:
 ## 由设置管理器在设置变更与启动恢复（apply_all）时调用。
 func set_enabled(value: bool) -> void:
 	enabled = value
+	if not enabled:
+		for joy_id in Input.get_connected_joypads():
+			Input.stop_joy_vibration(joy_id)
 
 
 ## 触发一次设备振动。[br]
@@ -49,6 +54,13 @@ func _play(steps: Array[int], index: int, token: int) -> void:
 	var duration_ms: int = steps[index]
 	if duration_ms > 0:
 		Input.vibrate_handheld(duration_ms)
+		# 桌面端手柄联动：仅当玩家当前活跃设备为手柄时驱动对应手柄马达，避免键鼠游玩时桌面手柄空震噪音
+		if App != null and App.input != null and App.input.current_device == InputDeviceType.Type.JOYPAD:
+			var joy_id := App.input.active_joy_id
+			var is_heavy := duration_ms >= 50
+			var weak_mag := 0.55 if is_heavy else 0.30
+			var strong_mag := 0.75 if is_heavy else 0.15
+			Input.start_joy_vibration(joy_id, weak_mag, strong_mag, float(duration_ms) / 1000.0)
 	if index + 1 >= steps.size():
 		return
 	var gap_ms: int = steps[index + 1]
