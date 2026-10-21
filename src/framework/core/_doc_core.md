@@ -59,9 +59,15 @@ App.audio.play_sfx_by_path("res://assets/audio/click.wav")
 ## 三、 Bus 领域事件总线
 
 只广播已发生的客观事实，不承载具体业务命令：
+- **框架系统级事实**：通过内置 `signal` 直接连接（如 `app_paused`、`scene_changed`、`locale_changed`）；
+- **业务跨模块事实**：通过动态主题方法 `Bus.on()` / `Bus.off()` / `Bus.emit()` 配合 `GameEvents` 常量解耦广播（自动清理已销毁对象的悬空回调，并自适应无参或单参回调）。
 
 ```gdscript
-# 订阅事实
+# 1. 订阅框架系统级信号
 Bus.scene_changed.connect(_on_scene_changed)
 Bus.app_paused.connect(_on_app_paused)
+
+# 2. 订阅与广播业务跨模块领域事件
+Bus.on(GameEvents.GOLD_CHANGED, _on_gold_changed)
+Bus.emit(GameEvents.GOLD_CHANGED, {"gold": 500, "delta": 100})
 ```

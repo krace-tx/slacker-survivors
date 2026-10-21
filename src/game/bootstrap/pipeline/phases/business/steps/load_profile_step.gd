@@ -12,22 +12,22 @@ func execute(context: BootContext) -> Result:
 	if App.storage == null:
 		return Result.err_code("Business.StorageMissing", "Storage service is not available.")
 
-	var user_data: Dictionary = App.storage.get_dict(GameConstants.KEY_PLAYER_DATA, {})
-	if user_data.is_empty():
+	var raw_data: Dictionary = App.storage.get_dict(GameConstants.KEY_PLAYER_DATA, {})
+	var profile: PlayerProfileModel
+	if raw_data.is_empty():
 		if App.logger != null:
 			App.logger.info("Bootstrap", "New player detected. Initializing default profile...")
-		user_data = {
-			"nickname": "Survivor",
-			"gold": 0,
-			"level": 1,
-			"created_at": App.time.now_msec() if App.time != null else 0,
-		}
-		App.storage.set_dict(GameConstants.KEY_PLAYER_DATA, user_data)
+		var now_ms: int = App.time.now_msec() if App.time != null else 0
+		profile = PlayerProfileModel.create_default(now_ms)
+		App.storage.set_dict(GameConstants.KEY_PLAYER_DATA, profile.to_dict())
 		var flush_res: Result = App.storage.flush()
 		if flush_res.is_err():
 			return flush_res
+	else:
+		profile = PlayerProfileModel.new(raw_data)
 
 	if context != null:
-		context.set_data("player_data", user_data)
+		context.set_data("player_profile", profile)
+		context.set_data("player_data", profile.to_dict())
 
 	return Result.ok()

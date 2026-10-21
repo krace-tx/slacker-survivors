@@ -10,8 +10,9 @@
 | :--- | :--- | :--- | :--- |
 | **场景系统** | 新建场景、场景切换、push/pop/replace、关卡流转 | `src/framework/modules/scene/_doc_scene.md` | 必须继承 `BaseScene`；重写生命周期钩子（`_on_enter`、`_on_exit`、`_on_pause`、`_on_resume`）；切场景统一调用 `App.scene`。 |
 | **UI 表现层** | UI 视图根节点、界面层级、UI 编排、安全区适配 | `src/framework/modules/ui/_doc_ui.md` | 场景内 UI 根节点必须继承 `BaseUIView`，节点名称固定为 `UI`；由 `BaseScene` 自动装载；仅负责引擎级视口挂载与过渡。 |
-| **弹窗与提示** | 弹窗、模态对话框、Toast、提示条、确认框 | `src/game/shared/components/ui/dialog_manager.gd`<br>`src/game/shared/components/ui/toast_manager.gd` | 弹窗类必须继承 `BaseDialog`；通过 `DialogManager.open(...)` 打开；严禁在 framework 层写业务弹窗。 |
-| **按钮与交互** | 按钮、点击反馈、音效震动、纹理按钮 | `src/game/shared/components/ui/base_texture_button.gd` | 统一继承/使用 `BaseTextureButton`；基类已自动内置缩放动画、音效与触感震动；业务侧仅连接 `pressed` 信号，严禁手写补间与音效。 |
+| **弹窗与提示** | 弹窗、模态对话框、Toast、提示条、确认框 | `src/game/shared/components/dialog_manager.gd`<br>`src/game/shared/components/toast_manager.gd` | 弹窗类必须继承 `BaseDialog`；通过 `DialogManager.open(...)` 打开；严禁在 framework 层写业务弹窗。 |
+| **按钮与交互** | 按钮、点击反馈、音效震动、纹理按钮 | `src/game/shared/components/base_texture_button.gd` | 统一继承/使用 `BaseTextureButton`；基类已自动内置缩放动画、音效与触感震动；业务侧仅连接 `pressed` 信号，严禁手写补间与音效。 |
+| **业务模块与数据模型** | 新建业务模块、Feature、MSVP、MES、Model、Engine、Service、Presenter | `src/game/_doc_game.md`<br>`src/game/shared/_doc_shared.md` | 交互模块采用 **MSVP** (`model/service/view/presenter`) 子目录，纯算法模块采用 **MES** (`model/engine/service`) 子目录；`model/` 内严格按 `*Config`、`*Model`、`*State`、`*Params`、`*Context`、`*VO` 后缀区分数据领域。 |
 | **聚合根与总线** | 全局服务、App.xxx、服务定位器、Service Locator、事件总线 | `src/framework/_doc_framework.md` | 全局单例统一通过 `App` 访问；跨模块解耦通信统一使用全局事件总线 `Bus.emit(...)` / `Bus.on(...)`。 |
 | **启动与运行时** | 启动流程、FrameworkRuntime、初始化、加载阶段、Boot | `src/framework/core/runtime/_doc_runtime.md` | 必须遵循 `FrameworkRuntime` 唯一组合根；按预定生命周期阶段推进加载；严禁私自绕过运行时乱序初始化。 |
 | **网络通讯** | 网络请求、HTTP、API、Token、鉴权、后端通信 | `src/framework/modules/network/_doc_network.md` | 统一通过门面 `App.net` 调用；返回值使用标准 `Result` 包装；拦截器与 Token 刷新由网络驱动层透明接管。 |

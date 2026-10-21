@@ -62,14 +62,24 @@ if ($loggerMatches) {
     Write-Host "✅ 日志系统路径合规 (统一使用 modules/logger/)" -ForegroundColor Green
 }
 
-# 5. 检查业务弹窗是否误放在 framework 层
+# 5. 检查业务弹窗是否误放在 framework 层，以及是否存在已移除的冗余路径 shared/components/ui/ 或 shared/msvp/
 $uiDialogMatches = Get-ChildItem -Path "$root\src\framework\modules\ui" -Recurse -Include *dialog*.gd, *modal*.gd, *toast*.gd -ErrorAction SilentlyContinue
 if ($uiDialogMatches) {
-    Write-Host "❌ 发现 framework/modules/ui 层残留业务弹窗组件 (应下沉至 src/game/shared/components/ui/):" -ForegroundColor Red
+    Write-Host "❌ 发现 framework/modules/ui 层残留业务弹窗组件 (应收敛至 src/game/shared/components/):" -ForegroundColor Red
     $uiDialogMatches | ForEach-Object { Write-Host "   - $($_.FullName)" -ForegroundColor Red }
     $errorCount += $uiDialogMatches.Count
 } else {
-    Write-Host "✅ UI 表现层职责解耦完全 (弹窗完全收敛在 shared/components/ui/)" -ForegroundColor Green
+    Write-Host "✅ UI 表现层职责解耦完全 (弹窗完全收敛在 shared/components/)" -ForegroundColor Green
+}
+
+$legacySharedMatches = Get-ChildItem -Path "$root\src", "$root\docs" -Recurse -Include *.gd, *.md, *.tscn |
+    Select-String -Pattern 'shared/components/ui/|shared/msvp/'
+if ($legacySharedMatches) {
+    Write-Host "❌ 发现已移除的旧版路径引用 (shared/components/ui/ 或 shared/msvp/):" -ForegroundColor Red
+    $legacySharedMatches | ForEach-Object { Write-Host "   - $($_.Path):$($_.LineNumber) -> $($_.Line.Trim())" -ForegroundColor Red }
+    $errorCount += $legacySharedMatches.Count
+} else {
+    Write-Host "✅ Shared 目录引用合规 (已扁平化至 shared/components/ 且移除空壳 msvp 基类)" -ForegroundColor Green
 }
 
 # 6. 警告项：检查源码中残留的原生 print 语句 (应优先使用 App.logger)

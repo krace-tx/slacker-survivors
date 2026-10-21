@@ -85,7 +85,7 @@ flowchart TD
 | **生命周期明确 (Lifecycle Control)** | 摒弃随意乱写全局常驻节点。核心服务统一挂载在 `App` 节点下，由 `FrameworkRuntime` 按依赖拓扑顺序初始化并逆序释放。 |
 | **结果导向与容错 (Result-Oriented)** | 可预期失败绝不静默吞没，统一返回不可变强类型 `Result` 并携带标准错误码 `{Module}.{Reason}`。 |
 | **约定优于配置 (Convention over Configuration)** | 提供合理的智能默认行为（如 Locale 无翻译表时安全降级、Scene 自动压栈唤醒、Storage 自动穿透回灌）。 |
-| **纯基建无业务耦合 (Zero Asset Coupling)** | 框架内不硬编码业务音频路径与贴图；业务级通用控件（如 `BaseTextureButton`、`BaseDialog`）收敛在 `src/game/shared/components/ui/`。 |
+| **纯基建无业务耦合 (Zero Asset Coupling)** | 框架内不硬编码业务音频路径与贴图；业务级通用控件（如 `BaseTextureButton`、`BaseDialog`）收敛在 `src/game/shared/components/`。 |
 
 ---
 

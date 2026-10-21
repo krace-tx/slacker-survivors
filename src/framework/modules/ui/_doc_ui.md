@@ -7,7 +7,7 @@
 
 > 💡 **职责划分原则**：
 > - `framework/modules/ui` **只做纯基建**：CanvasLayer 画布容器管理与屏幕安全区几何计算；
-> - 具体的交互动效与弹窗堆栈（`BaseDialog`、`DialogManager`、`ToastManager`、`BaseTextureButton`）收敛在业务共享层 `src/game/shared/components/ui/`。
+> - 具体的交互动效与弹窗堆栈（`BaseDialog`、`DialogManager`、`ToastManager`、`BaseTextureButton`）收敛在业务共享层 `src/game/shared/components/`。
 
 ---
 
@@ -40,7 +40,7 @@ src/framework/modules/ui/
     └── ui_system.gd          # 画布层级与安全区实现 (extends BaseUISystem)
 
 # 业务表现层交互控件库（位于业务共享层）：
-src/game/shared/components/ui/
+src/game/shared/components/
 ├── base_texture_button.gd    # 业务贴图按钮 (缩放/音效/震动/滑动中继)
 ├── base_dialog.gd            # 模态弹窗业务基类 (进退场补间/点击遮罩关闭)
 ├── dialog_manager.gd         # 业务弹窗调度器 (暗色遮罩/后入先出堆栈/返回键监听)

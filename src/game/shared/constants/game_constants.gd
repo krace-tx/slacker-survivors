@@ -4,9 +4,7 @@ extends RefCounted
 ## 游戏全局静态常量定义表。
 
 #region Scene Paths
-const SCENE_SPLASH: String = "res://src/game/bootstrap/splash_scene.tscn"
-const SCENE_LOBBY: String = "res://src/game/features/lobby/main_menu/lobby_scene.tscn"
-const SCENE_BATTLE: String = "res://src/game/features/battle/battle_scene.tscn"
+const SCENE_SPLASH: String = "res://src/game/bootstrap/scene/splash_scene.tscn"
 #endregion
 
 #region Storage Keys

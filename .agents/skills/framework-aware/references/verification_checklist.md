@@ -8,14 +8,17 @@
 
 - [ ] **意图扫描**：是否已阅读用户需求并提取出涉及的框架系统关键词？
 - [ ] **文档注入**：是否已命中 [keyword_matrix.md](keyword_matrix.md) 中的文档并执行了 `view_file` 查阅？
-- [ ] **基类确认**：
+- [ ] **基类与模块结构确认**：
   - 新建场景是否继承 `BaseScene` 而非裸 `Node`？
   - 新建 UI 根节点是否继承 `BaseUIView` 且节点名为 `UI`？
-  - 新建弹窗是否继承 `BaseDialog` 并放置在 `src/game/shared/components/ui/`？
-  - 新建传参契约是否继承 `BaseParams` 并放置在 `src/framework/infra/param/`？
+  - 新建弹窗是否继承 `BaseDialog` 并放置在 `src/game/shared/components/`（或对应 Feature 的 `view/`）？
+  - 新建传参契约是否继承 `BaseParams`？
+  - 新建业务 `features/<feature>/` 模块是否按交互特征采用 **MSVP** (`model/service/view/presenter`) 或 **MES** (`model/engine/service`) 子文件夹结构？
+  - `model/` 下的数据类是否严格遵循领域后缀（`*Config`、`*Model`、`*State`、`*Params`、`*Context`、`*VO`）？
 - [ ] **路径与命名**：
   - 引用视频资源是否使用 `src/assets/videos/`（复数）？
   - 引用参数基类是否使用 `src/framework/infra/param/`（单数）？
+  - 引用通用业务控件是否使用 `src/game/shared/components/`（无多余 `ui/` 二级目录）？
   - 引用日志服务是否使用 `App.logger`？
 
 ---

@@ -39,10 +39,13 @@ export_credentials.cfg
 .sconsign.dblite
 .sconf_temp/
 
-# Python 运行时字节码与缓存
+# Python 虚拟环境、运行时字节码与缓存 (含 addons/blender_mcp)
+.venv/
+venv/
 __pycache__/
 *.py[cod]
 *$py.class
+*.egg-info/
 
 # Gradle 缓存与构建输出
 .gradle/

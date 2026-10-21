@@ -55,7 +55,7 @@ func open_dialog() -> void:
 # 1. 场景内 UI 根节点：继承 BaseUIView，节点命名为 UI
 class_name BattleUIView extends BaseUIView
 
-# 2. 弹窗类：继承 BaseDialog，存放在 src/game/shared/components/ui/
+# 2. 弹窗类：继承 BaseDialog，通用组件存放在 src/game/shared/components/
 class_name SettingsDialog extends BaseDialog
 
 func _on_dialog_opened() -> void:
@@ -63,7 +63,7 @@ func _on_dialog_opened() -> void:
 
 # 3. 业务调用弹窗：通过 DialogManager 统一调度
 func _on_settings_button_pressed() -> void:
-    DialogManager.open("res://src/game/shared/components/ui/settings_dialog.tscn")
+    DialogManager.open("res://src/game/shared/components/settings_dialog.tscn")
 ```
 
 ---
@@ -87,7 +87,7 @@ func _ready() -> void:
 
 ### ✅ 黄金范式 (Golden Pattern)
 ```gdscript
-# 正确：使用 BaseTextureButton（已下沉至 src/game/shared/components/ui/）
+# 正确：使用 BaseTextureButton（位于 src/game/shared/components/）
 # 基类自动处理了：缩放反馈、悬停动画、禁用态着色、点击音效与触感震动
 @onready var btn: BaseTextureButton = $StartButton
 

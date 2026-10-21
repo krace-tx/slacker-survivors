@@ -30,8 +30,8 @@ func _run_bootstrap() -> void:
 	if result.is_ok():
 		# 稍微延迟 0.15 秒让进度条拉满动效自然平滑
 		await get_tree().create_timer(0.15).timeout
-		if App.scene != null:
-			App.scene.replace(GameConstants.SCENE_LOBBY)
+		if _status_label != null:
+			_status_label.text = "Bootstrap Ready. Waiting for feature scenes."
 	else:
 		if _status_label != null:
 			_status_label.text = "Startup Error: %s" % result.error_message()
