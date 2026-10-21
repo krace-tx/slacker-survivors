@@ -134,3 +134,10 @@ yarn-error.log*
 !addons/**/*.framework/
 !addons/**/*.a
 !addons/**/*.aar
+!addons/**/*.wasm
+!addons/**/*.gdextension
+
+# Godot GDExtension Windows 编辑器热重载影子副本与临时锁文件
+~*.dll
+~*.pdb
+*.TMP

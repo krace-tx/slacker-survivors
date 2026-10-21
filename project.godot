@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Slacker Survivors"
-run/main_scene="res://src/game/bootstrap/scene/splash_scene.tscn"
+run/main_scene="res://src/game/bootstrap/bootstrap_scene.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -20,6 +20,10 @@ config/icon="res://icon.svg"
 Bus="*res://src/framework/core/autoload/event_bus.gd"
 App="*res://src/framework/core/autoload/app.gd"
 EventBus="*res://src/framework/core/autoload/event_bus.gd"
+
+[debug]
+
+gdscript/warnings/redundant_await=0
 
 [display]
 
@@ -31,7 +35,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/ffmpeg/plugin.cfg", "res://addons/godot_mcp/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg", "res://addons/video_player_android/plugin.cfg", "res://addons/video_player_ios/plugin.cfg")
+enabled=PackedStringArray("res://addons/ffmpeg/plugin.cfg", "res://addons/godot_mcp/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg", "res://addons/scene_define_generator/plugin.cfg", "res://addons/video_player_android/plugin.cfg", "res://addons/video_player_ios/plugin.cfg")
 
 [file_customization]
 
