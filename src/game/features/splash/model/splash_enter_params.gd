@@ -10,7 +10,11 @@ var override_target_scene: String = ""
 var override_target_params: BaseParams = null
 
 
-func _init(target_scene: String = "", target_params: BaseParams = null, dict: Dictionary = {}) -> void:
+func _init(
+	target_scene: String = "",
+	target_params: BaseParams = null,
+	dict: Dictionary = {}
+) -> void:
 	override_target_scene = target_scene
 	override_target_params = target_params
 	super._init(dict)

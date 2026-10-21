@@ -10,9 +10,7 @@ extends RefCounted
 
 ## 顶层主场景路由契约 (继承自 BaseScene)
 class Scene:
-	const BATTLE: String = "res://src/game/features/battle/view/battle_scene.tscn"
 	const BOOTSTRAP: String = "res://src/game/bootstrap/bootstrap_scene.tscn"
-	const LOBBY: String = "res://src/game/features/lobby/view/lobby_scene.tscn"
 	const SPLASH: String = "res://src/game/features/splash/view/splash_scene.tscn"
 
 ## 模态弹窗路由契约 (继承自 BaseDialog)

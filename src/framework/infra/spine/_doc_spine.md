@@ -3,7 +3,7 @@
 ## 核心
 
 全框架统一的 Spine 骨骼动画高性能运行时基建（彻底取代旧版过程式 `SpineUtils`）。
-通过 **[`SpineController`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_controller.gd)（强类型适配器 + 流式控制器 + 租约句柄）** 与 **[`SpinePool`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd)（享元对象池 + 视口内全管线真预热 + 奇偶帧错峰步进调度器）** 协同配合，既提供优雅的面向对象链式控制 API，又从物理根源彻底解决 Godot 4 + `spine-godot` 在复杂骨骼动画下的**「瞬时掉帧卡顿（Frame Spike / Hitch）」**通病。
+通过 **[`SpineController`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_controller.gd)（强类型适配器 + 流式控制器 + 租约句柄）** 与 **[`SpinePool`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd)（享元对象池 + 视口内全管线真预热 + 奇偶帧错峰步进调度器）** 协同配合，既提供优雅的面向对象链式控制 API，又从物理根源彻底解决 Godot 4 + `spine-godot` 在复杂骨骼动画下的**「瞬时掉帧卡顿（Frame Spike / Hitch）」**通病。
 
 ```text
 src/framework/infra/spine/
@@ -18,10 +18,10 @@ src/framework/infra/spine/
 
 | 设计模式 | 核心载体 | 解决的工程与性能问题 |
 | :--- | :--- | :--- |
-| **1. 适配器与流式接口模式**<br>(Adapter & Fluent Interface) | [`SpineController`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_controller.gd) | 隔离 `spine-godot` C++ 扩展反射细节（无插件时安全降级），支持 `ctrl.set_skin("v2").set_time_scale(1.2).play("attack").queue("idle", true)` 链式编排、骨骼挂点世界坐标查询与带超时兜底的 `await_completed`。 |
-| **2. 享元对象池与租约句柄模式**<br>(Flyweight Pool & Lease Handle) | [`SpinePool`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd) + [`SpineController.release()`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_controller.gd#L371) | 消除战斗期新建 `SpineSprite` 时在主线程深拷贝 C++ `spine::Skeleton` 树与分配 `MeshAttachment` 蒙皮缓冲的瞬时卡顿；借出返回 `SpineController` 租约句柄，调用 `ctrl.release()` 或 `play_oneshot` 播完自动归还休眠池，实现 **0ms C++ 构造开销**。 |
-| **3. 视口内全管线真预热模式**<br>(In-Frustum Pipeline Warmup) | [`SpinePool.warmup()`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd#L105) | 摒弃会被视口裁剪器（Frustum Culler）剔除的 `(-9999, -9999)` 假预热，在视口安全角（`Vector2(2, 2)`，配合 `0.001` 微缩放与 `0.005` 微透明度）遍历该骨骼**全部动画**执行首帧步进采样并渲染 1 帧，强制 GPU 提前编译 `Normal / Additive / Multiply` 混合管线，预热完直接入池待命。 |
-| **4. 奇偶帧错峰与降频步进模式**<br>(Staggered Frame Decimation) | [`SpinePool.register_staggered()`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd#L285) | 将同屏复杂 Spine 切换为 `UpdateMode_Manual`，按目标帧率（如美术标准 `30 FPS`）与奇偶帧相位桶（Bucket）自动错峰调用 `update_skeleton`，**砍掉 50%~75% CPU 蒙皮变形与剪裁遮罩算力，彻底削平单帧尖峰**。 |
+| **1. 适配器与流式接口模式**<br>(Adapter & Fluent Interface) | [`SpineController`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_controller.gd) | 隔离 `spine-godot` C++ 扩展反射细节（无插件时安全降级），支持 `ctrl.set_skin("v2").set_time_scale(1.2).play("attack").queue("idle", true)` 链式编排、骨骼挂点世界坐标查询与带超时兜底的 `await_completed`。 |
+| **2. 享元对象池与租约句柄模式**<br>(Flyweight Pool & Lease Handle) | [`SpinePool`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd) + [`SpineController.release()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_controller.gd#L371) | 消除战斗期新建 `SpineSprite` 时在主线程深拷贝 C++ `spine::Skeleton` 树与分配 `MeshAttachment` 蒙皮缓冲的瞬时卡顿；借出返回 `SpineController` 租约句柄，调用 `ctrl.release()` 或 `play_oneshot` 播完自动归还休眠池，实现 **0ms C++ 构造开销**。 |
+| **3. 视口内全管线真预热模式**<br>(In-Frustum Pipeline Warmup) | [`SpinePool.warmup()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd#L105) | 摒弃会被视口裁剪器（Frustum Culler）剔除的 `(-9999, -9999)` 假预热，在视口安全角（`Vector2(2, 2)`，配合 `0.001` 微缩放与 `0.005` 微透明度）遍历该骨骼**全部动画**执行首帧步进采样并渲染 1 帧，强制 GPU 提前编译 `Normal / Additive / Multiply` 混合管线，预热完直接入池待命。 |
+| **4. 奇偶帧错峰与降频步进模式**<br>(Staggered Frame Decimation) | [`SpinePool.register_staggered()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd#L285) | 将同屏复杂 Spine 切换为 `UpdateMode_Manual`，按目标帧率（如美术标准 `30 FPS`）与奇偶帧相位桶（Bucket）自动错峰调用 `update_skeleton`，**砍掉 50%~75% CPU 蒙皮变形与剪裁遮罩算力，彻底削平单帧尖峰**。 |
 
 ---
 

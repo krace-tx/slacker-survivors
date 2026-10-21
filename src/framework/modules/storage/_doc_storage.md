@@ -1,6 +1,6 @@
 # Framework · Storage (三级持久化存储与容灾迁移系统)
 
-> 按 [`StorageItem`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd) 元数据统一编排同一份业务数据在三层物理介质上的读写、压缩/加密、容灾自愈与版本演进：**L1 内存（`key_id`） ➔ L2 本地磁盘（`disk_path`） ➔ L3 远端云存储（`remote_url`）**。
+> 按 [`StorageItem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd) 元数据统一编排同一份业务数据在三层物理介质上的读写、压缩/加密、容灾自愈与版本演进：**L1 内存（`key_id`） ➔ L2 本地磁盘（`disk_path`） ➔ L3 远端云存储（`remote_url`）**。
 
 ```text
 src/framework/modules/storage/
@@ -30,9 +30,9 @@ src/framework/modules/storage/
 
 1. **职责边界与统一载荷契约 (Responsibility & Payload Contract)**：
    - 本服务只负责多级存储路由、容灾落盘与版本迁移，不侵入具体业务实体字段。
-   - **载荷类型严格一致**：无论命中 `MEMORY`、`DISK` 还是 `REMOTE`，`payload_type == "JSON"` 统一收发 [`Dictionary`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/impl/storage_system.gd) / `Array`；`payload_type == "FILE"` 统一收发 `PackedByteArray`。
+   - **载荷类型严格一致**：无论命中 `MEMORY`、`DISK` 还是 `REMOTE`，`payload_type == "JSON"` 统一收发 [`Dictionary`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/impl/storage_system.gd) / `Array`；`payload_type == "FILE"` 统一收发 `PackedByteArray`。
 2. **L1 内存深拷贝引用隔离 (Deep-Copy Isolation)**：
-   - [`MemoryStorageDriver`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/impl/drivers/memory_storage_driver.gd) 在写入和读取 `Dictionary` / `Array` / `PackedByteArray` 时强制执行深拷贝（`duplicate(true)`），彻底杜绝业务层在外部直接修改字典导致的 L1 内存脏缓存污染。
+   - [`MemoryStorageDriver`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/impl/drivers/memory_storage_driver.gd) 在写入和读取 `Dictionary` / `Array` / `PackedByteArray` 时强制执行深拷贝（`duplicate(true)`），彻底杜绝业务层在外部直接修改字典导致的 L1 内存脏缓存污染。
 3. **L2 磁盘 `.tmp/.bak` 双写容灾自愈与透明压缩/加密 (Atomic Save & Self-Healing)**：
    - **写入事务流**：先写入 `<path>.tmp` ➔ 将旧主文件安全备份至 `<path>.bak` ➔ 将 `.tmp` 原子重命名提升为主文件。
    - **损坏自愈流**：读取时若主文件缺失、JSON 损坏、解密失败或 MD5 不匹配，自动降级读取 `.bak` 并自愈恢复主文件。
@@ -43,10 +43,10 @@ src/framework/modules/storage/
 5. **存档版本演进与防降级保护 (`StorageMigrator`)**：
    - 当 `StorageItem.schema_version >= 1` 时，写入自动注入 `_schema_version`；
    - 读取旧版存档时按 `register_migration(key_id, from_v, to_v, fn)` 自动链式升级并回写本地缓存与磁盘；
-   - 若存档版本高于当前客户端支持版本，返回 [`StorageError.VERSION_TOO_NEW`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_error.gd) 拒绝降级覆盖坏档。
+   - 若存档版本高于当前客户端支持版本，返回 [`StorageError.VERSION_TOO_NEW`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_error.gd) 拒绝降级覆盖坏档。
 6. **显式绑定与纯异步契约 (Explicit Binding & Async Contract)**：
    - 所有读写统一通过 `await App.storage.read_async(target, policy)` / `await App.storage.write_async(target, data, policy)` 执行；
-   - 按 `key_id` 访问前必须先通过 `App.storage.bind(item)` 显式注册 [`StorageItem`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd)（或直接传入 `StorageItem` 实例），未绑定时严格返回 `StorageError.UNBOUND_ITEM`。
+   - 按 `key_id` 访问前必须先通过 `App.storage.bind(item)` 显式注册 [`StorageItem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd)（或直接传入 `StorageItem` 实例），未绑定时严格返回 `StorageError.UNBOUND_ITEM`。
 
 ---
 

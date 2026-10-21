@@ -11,7 +11,7 @@ src/framework/modules/
 ├── storage/      # 内存/磁盘/远端存储
 ├── network/      # HTTP 通讯
 ├── scene/        # 场景栈与转场
-├── ui/           # 全局 UI 分层与安全区适配
+├── display/      # 显示控制、异形屏安全区与全局画布分层
 ├── audio/        # BGM / SFX
 ├── locale/       # 多语言与区域
 ├── haptic/       # 触觉反馈
@@ -93,12 +93,14 @@ storage/
 ├── _doc_storage.md
 ├── base_storage_system.gd
 ├── types/
+│   ├── storage_error.gd
 │   ├── storage_item.gd
 │   ├── storage_read_mode.gd
 │   └── storage_write_mode.gd
 └── impl/
 	├── storage_system.gd
 	├── storage_cache.gd
+	├── storage_migrator.gd
 	└── drivers/
 		├── storage_driver.gd
 		├── memory_storage_driver.gd
@@ -109,6 +111,7 @@ network/
 ├── _doc_network.md
 ├── base_network_client.gd
 ├── types/
+│   ├── network_error.gd
 │   └── network_request.gd
 └── impl/
 	├── network_client.gd

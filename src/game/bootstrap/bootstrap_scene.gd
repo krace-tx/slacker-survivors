@@ -5,27 +5,36 @@ extends BaseScene
 
 ## 引擎级极简纯空启动器场景 (Pure Kernel Bootstrapper & Handover Entry)。[br]
 ##
-## [b]工业级架构职责（第一性原理）：[/b][br]
+## [b]架构职责：[/b][br]
 ## 1. [b]零视觉开销纯空节点[/b]：作为 `project.godot` 的 `run/main_scene`，本场景不包含任何 UI 控件或业务重资产引用，确保引擎进程以 0 渲染负担毫秒级拉起；[br]
 ## 2. [b]消灭首屏跳变与爆音（Early Preferences Alignment）[/b]：在实例化任何业务 UI 视图（如 `features/splash`）之前，先行完成 [method App.bootstrap] 内核装配与 [method GameSettingsService.load_and_apply] 硬件参数对齐（窗口模式、分辨率、VSync、MSAA、多语言 Locale、音频总线静音/音量）；[br]
 ## 3. [b]无感移交至业务层[/b]：内核与硬件就绪后，将自身注册为 [code]App.scene[/code] 初始根节点，随即通过无动画瞬切（[constant SceneTransitionType.NONE]）将控制权移交至 `src/game/features/splash/` 垂直模块。
 
+#region Signals & Constants
 ## 启动交接流转完成信号（供自动化集成测试监听）
 signal handover_completed(next_scene_path: String)
 
-## 允许在检查器或测试中覆盖内核就绪后的首个业务加载场景（默认移交至 GameConstants.SCENE_SPLASH）
-@export var handover_scene_path: String = GameConstants.SCENE_SPLASH
-## 允许在开发期指定完成 Splash 加载后强制直达的目标业务场景（透传给 SplashEnterParams.override_target_scene）
+const _LOG_TAG: String = "Bootstrap"
+#endregion
+
+#region Exports & State
+## 允许在检查器或测试中覆盖内核就绪后的首个业务加载场景（默认移交至 [constant GameScenes.Scene.SPLASH]）
+@export var handover_scene_path: String = GameScenes.Scene.SPLASH
+## 允许在开发期指定完成 Splash 加载后强制直达的目标业务场景（透传给 [member SplashEnterParams.override_target_scene]）
 @export var override_target_scene: String = ""
 
 var _handover_started: bool = false
+#endregion
 
 
+#region Engine Lifecycle
 func _ready() -> void:
 	# 立即在首帧同步发起内核装配，抢在 App._ensure_standalone_bootstrap 之前接管启动控制权
 	_boot_kernel_and_handover()
+#endregion
 
 
+#region Internal Handover Pipeline
 func _boot_kernel_and_handover() -> void:
 	if _handover_started:
 		return
@@ -34,11 +43,18 @@ func _boot_kernel_and_handover() -> void:
 	# 1. 装配 Framework 13 大核心技术子系统
 	var kernel_res := await App.bootstrap()
 	if kernel_res.is_err():
-		push_error("[BootstrapScene] Kernel bootstrap failed: %s" % kernel_res.error_message())
+		var err_msg := "[%s] Kernel bootstrap failed: %s" % [
+			kernel_res.error_code(),
+			kernel_res.error_message(),
+		]
+		if App.logger != null:
+			App.logger.error(_LOG_TAG, err_msg)
+		else:
+			push_error("[BootstrapScene] %s" % err_msg)
 		return
 
 	# 2. 将当前空启动场景注册为 SceneRouter 的初始受管根节点
-	var self_path := scene_file_path if not scene_file_path.is_empty() else GameConstants.SCENE_BOOTSTRAP
+	var self_path := scene_file_path if not scene_file_path.is_empty() else GameScenes.Scene.BOOTSTRAP
 	if App.scene != null and App.scene.is_empty():
 		await App.scene.bind(self_path, self)
 
@@ -46,10 +62,10 @@ func _boot_kernel_and_handover() -> void:
 	await GameSettingsService.load_and_apply()
 
 	# 4. 构造强类型入参并无感移交至 features/splash 闪屏加载模块
-	var next_scene := handover_scene_path if not handover_scene_path.is_empty() else GameConstants.SCENE_SPLASH
+	var next_scene := handover_scene_path if not handover_scene_path.is_empty() else GameScenes.Scene.SPLASH
 	if App.logger != null:
 		App.logger.info(
-			"Bootstrap",
+			_LOG_TAG,
 			"Kernel & early device preferences ready; handing over to '%s'." % next_scene
 		)
 
@@ -58,3 +74,4 @@ func _boot_kernel_and_handover() -> void:
 	if App.scene != null and ResourceLoader.exists(next_scene):
 		var enter_params := SplashEnterParams.new(override_target_scene)
 		await App.scene.replace(next_scene, enter_params, SceneTransitionType.NONE)
+#endregion

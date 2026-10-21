@@ -1,7 +1,7 @@
 class_name TranslationServerAdapter
 extends RefCounted
 
-## 引擎边界适配器：封装 Godot [TranslationServer] 的交互（私有实现，仅供 [LocaleService] 使用）。[br]
+## 引擎边界适配器：封装 Godot [TranslationServer] 的交互（私有实现，仅供 [LocalizationSystem] 使用）。[br]
 ## 隔离引擎多语言服务原生 API，提供强类型与标准化的接口。
 
 ## 获取已加载的语言代码列表

@@ -34,12 +34,12 @@ src/framework/modules/network/
    - **401 Single-Flight 刷新**：注册 `set_unauthorized_handler` 后，当多个并发请求同时收到 HTTP 401 时，自动合并为单次刷新调用，刷新成功后无感重放原请求一次。
 4. **事务级 `.tmp` 原子文件下载 (Atomic File Download)**：
    - `download_file` 与 `download_file_with_md5` 先流式写入 `<save_path>.<id>.tmp` 临时文件（开启 `use_threads = true` 后台线程 I/O）；
-   - 仅当 HTTP 状态码为 `2xx` 且（若指定）MD5 哈希校验完全匹配后，才通过 [`FileUtils.rename_file`](file:///d:/code/GodotProject/slacker-survivors/src/framework/util/file/file_utils.gd) 原子替换至目标路径；任何断网、非 2xx 响应、MD5 不匹配或中途取消均立即清除 `.tmp` 残卷，原目标文件 100% 安全。
+   - 仅当 HTTP 状态码为 `2xx` 且（若指定）MD5 哈希校验完全匹配后，才通过 [`FileUtils.rename_file`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/util/file/file_utils.gd) 原子替换至目标路径；任何断网、非 2xx 响应、MD5 不匹配或中途取消均立即清除 `.tmp` 残卷，原目标文件 100% 安全。
 5. **零死锁异步取消与生命周期守卫 (Async & Lifecycle)**：
    - 解决 Godot `HTTPRequest.cancel_request()` 不发射 `request_completed` 信号的引擎限制；
-   - 在排队期、飞行请求期、退避等待期及文件流传输期全链路支持 [`CancellationToken`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/async/cancellation_token.gd)（可绑定 `BaseScene.task_scope` / `BaseView.task_scope`），并在 `FrameworkRuntime` 执行 `shutdown_async()` / `dispose()` 时安全中止所有传输。
+   - 在排队期、飞行请求期、退避等待期及文件流传输期全链路支持 [`CancellationToken`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/async/cancellation_token.gd)（可绑定 `BaseScene.task_scope` / `BaseView.task_scope`），并在 `FrameworkRuntime` 执行 `shutdown_async()` / `dispose()` 时安全中止所有传输。
 6. **标准化错误契约 (Public Error Contract)**：
-   - 全面采用 [`NetworkError`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/network/types/network_error.gd) 与 [`FrameworkError`](file:///d:/code/GodotProject/slacker-survivors/src/framework/core/contracts/framework_error.gd)，通过 `res.error_code()`、`res.is_retryable()`、`res.error_context()` 暴露完整诊断上下文（含 `url`、`status_code`、`attempt`），拒绝将损坏的 JSON 静默伪装为空字典。
+   - 全面采用 [`NetworkError`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/network/types/network_error.gd) 与 [`FrameworkError`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/contracts/framework_error.gd)，通过 `res.error_code()`、`res.is_retryable()`、`res.error_context()` 暴露完整诊断上下文（含 `url`、`status_code`、`attempt`），拒绝将损坏的 JSON 静默伪装为空字典。
 
 ---
 

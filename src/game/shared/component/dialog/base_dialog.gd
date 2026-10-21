@@ -6,6 +6,17 @@ extends BaseView
 ## 强类型 [BaseParams] 入参持有及 [member BaseView.task_scope] 异步任务自动取消能力，
 ## 并扩展模态弹窗专属的进退场弹性补间动画与背景遮罩/返回键自闭控制。
 
+#region Constants
+const _ENTER_INITIAL_SCALE: Vector2 = Vector2(0.8, 0.8)
+const _EXIT_TARGET_SCALE: Vector2 = Vector2(0.85, 0.85)
+const _ENTER_SCALE_DURATION: float = 0.20
+const _ENTER_ALPHA_DURATION: float = 0.15
+const _EXIT_SCALE_DURATION: float = 0.15
+const _EXIT_ALPHA_DURATION: float = 0.12
+const _PROP_SCALE: NodePath = ^"scale"
+const _PROP_MODULATE_ALPHA: NodePath = ^"modulate:a"
+#endregion
+
 #region Exports
 @export_group("Modal Behavior")
 ## 点击半透明背景遮罩是否自动关闭
@@ -15,12 +26,13 @@ extends BaseView
 ## 是否启用弹窗入场和退场默认补间动画
 @export var enable_animation: bool = true
 ## 动画作用的目标节点（为空时默认为自身）
-@export var animation_target_path: NodePath = ""
+@export var animation_target_path: NodePath = ^""
 #endregion
 
 #region State
 var _is_closing: bool = false
 #endregion
+
 
 #region Lifecycle & Public API
 func _init() -> void:
@@ -28,7 +40,7 @@ func _init() -> void:
 	apply_safe_area = false
 
 
-## 打开弹窗（由 DialogManager 或调用端驱动）
+## 打开弹窗（由 [DialogManager] 或调用端驱动）
 func open(params: BaseParams = null) -> void:
 	_params = params
 	_is_closing = false
@@ -61,6 +73,7 @@ func close() -> void:
 		_finish_close()
 #endregion
 
+
 #region Animation & Internal
 func _get_anim_node() -> Control:
 	if not animation_target_path.is_empty():
@@ -73,15 +86,15 @@ func _get_anim_node() -> Control:
 func _play_enter_animation() -> void:
 	var target := _get_anim_node()
 	target.pivot_offset = target.size * 0.5
-	target.scale = Vector2(0.8, 0.8)
+	target.scale = _ENTER_INITIAL_SCALE
 	target.modulate.a = 0.0
 
 	var tween := create_tween().set_parallel(true)
-	tween.tween_property(target, "scale", Vector2.ONE, 0.2) \
+	tween.tween_property(target, _PROP_SCALE, Vector2.ONE, _ENTER_SCALE_DURATION) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(target, "modulate:a", 1.0, 0.15) \
+	tween.tween_property(target, _PROP_MODULATE_ALPHA, 1.0, _ENTER_ALPHA_DURATION) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.chain().tween_callback(func(): opened.emit())
+	tween.chain().tween_callback(_on_enter_animation_finished)
 
 
 func _play_exit_animation() -> void:
@@ -89,11 +102,15 @@ func _play_exit_animation() -> void:
 	target.pivot_offset = target.size * 0.5
 
 	var tween := create_tween().set_parallel(true)
-	tween.tween_property(target, "scale", Vector2(0.85, 0.85), 0.15) \
+	tween.tween_property(target, _PROP_SCALE, _EXIT_TARGET_SCALE, _EXIT_SCALE_DURATION) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(target, "modulate:a", 0.0, 0.12) \
+	tween.tween_property(target, _PROP_MODULATE_ALPHA, 0.0, _EXIT_ALPHA_DURATION) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(_finish_close)
+
+
+func _on_enter_animation_finished() -> void:
+	opened.emit()
 
 
 func _finish_close() -> void:

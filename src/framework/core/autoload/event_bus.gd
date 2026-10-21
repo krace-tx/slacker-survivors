@@ -18,7 +18,7 @@ signal app_back_pressed
 #endregion
 
 #region Service
-## 语言已切换。由 LocaleService 发出。
+## 语言已切换。由 LocalizationSystem 发出。
 signal locale_changed
 
 ## 当前激活输入设备（键鼠 / 手柄）或手柄品牌已切换。由 InputSystem 发出。
@@ -32,10 +32,10 @@ signal joypad_connection_changed(device_id: int, connected: bool)
 #endregion
 
 #region Scene
-## 顶层场景切换完成。由 SceneService 发出。[param path] 为 tscn 路径。
+## 顶层场景切换完成。由 SceneRouter 发出。[param path] 为 tscn 路径。
 signal scene_changed(path: String)
 
-## 顶层场景切换失败。由 SceneService 发出。[param path] 为当时请求的路径。
+## 顶层场景切换失败。由 SceneRouter 发出。[param path] 为当时请求的路径。
 signal scene_change_failed(path: String)
 #endregion
 

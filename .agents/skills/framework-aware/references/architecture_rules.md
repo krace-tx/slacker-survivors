@@ -67,5 +67,5 @@
 
 ## 5. 错误处理与返回值规范
 
-1. **可失败操作统一使用 Result**：涉及网络 I/O、磁盘持久化、跨平台解码器初始化的方法，必须返回 `Result`（`Result.ok(value)` 或 `Result.err(AppError)`）。
+1. **可失败操作统一使用 Result**：涉及网络 I/O、磁盘持久化、跨平台解码器初始化的方法，必须返回 `Result`（`Result.ok(value)` 或 `Result.err_code(code, msg)` / `Result.err_ex(...)`，内部封装 `FrameworkError`）。
 2. **严禁静默吞异常**：禁止使用空的 `catch` / `if result.is_err(): pass`；失败分支必须通过 `App.logger.error(...)` 输出可诊断上下文。

@@ -5,7 +5,7 @@
 提供全框架与业务层通用的无状态纯函数工具集合。
 覆盖场景树节点操作、安全文件 I/O、资源与图像编解码、时间格式化、坐标数学计算与内存大小评估等基础领域。
 所有工具类仅包含 `static func` 纯函数，不维护内部状态，不持有业务实例引用，失败操作严格通过 `Result` 显式向上传递。
-*(注：有状态的异步任务生命周期作用域已收敛于 [`src/framework/infra/async/`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/async/_doc_async.md) 的 `TaskScope` 中；Spine 骨骼动画流式控制器、享元对象池、视口内真预热与分频错峰调度已统一升级收敛于 [`src/framework/infra/spine/`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/_doc_spine.md) 的 `SpineController` 与 `SpinePool` 中；有状态的显示控制、窗口模式、分辨率与异形屏安全区已收敛于 [`src/framework/modules/display/`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/display/_doc_display.md) 的 `App.display` 中。)*
+*(注：有状态的异步任务生命周期作用域已收敛于 [`src/framework/infra/async/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/async/_doc_async.md) 的 `TaskScope` 中；Spine 骨骼动画流式控制器、享元对象池、视口内真预热与分频错峰调度已统一升级收敛于 [`src/framework/infra/spine/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/_doc_spine.md) 的 `SpineController` 与 `SpinePool` 中；有状态的显示控制、窗口模式、分辨率与异形屏安全区已收敛于 [`src/framework/modules/display/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/_doc_display.md) 的 `App.display` 中。)*
 
 ---
 

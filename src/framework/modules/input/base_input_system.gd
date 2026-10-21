@@ -241,7 +241,7 @@ func simulate_device(device_type: int, joy_brand: int = -1) -> void
 func export_bindings() -> Dictionary
 
 
-## 从存档增量字典恢复用户自定义键位映射（由启动管线 ApplySettingsStep 调用）。
+## 从存档增量字典恢复用户自定义键位映射（由 GameSettingsService 调用）。
 @abstract
 func import_bindings(payload: Dictionary) -> Result
 #endregion

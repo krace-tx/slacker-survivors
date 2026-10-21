@@ -10,6 +10,11 @@ extends TextureButton
 ## 做：按下/抬起/滑出时的缩放、音效与振动、滚动事件中继。[br]
 ## 不做：换场、广告、业务回调；那些由上层业务场景连接 [signal pressed]。
 
+#region Constants
+const _SCROLL_EPSILON: float = 0.001
+const _PROP_SCALE: NodePath = ^"scale"
+#endregion
+
 #region Exports
 @export_group("Scale")
 ## 按下时的缩放。大于 1 外扩，小于 1 内缩。
@@ -22,7 +27,7 @@ extends TextureButton
 @export_group("Feedback")
 ## 点击时是否播音效。
 @export var play_sfx: bool = true
-## 点击音效路径。空则使用 App.audio.default_button_sfx（若配置）。
+## 点击音效路径。空则使用 [member BaseAudioSystem.default_button_sfx]（若配置）。
 @export_file("*.wav", "*.mp3", "*.ogg") var sfx_path: String = ""
 ## 点击音效音量（分贝）。[method BaseAudioSystem.play_sfx] 的 volume。
 @export var sfx_volume_db: int = 0
@@ -38,7 +43,11 @@ extends TextureButton
 @export var scroll_speed_factor: float = 1.0
 #endregion
 
-#region State
+#region State & Static Handlers
+## 静态反馈提供者代理（可在启动期或无 Autoload 单元测试中覆盖）
+static var sfx_handler: Callable
+static var haptic_handler: Callable
+
 var _tween: Tween = null								## 缩放补间动画实例
 var _press_pos: Vector2 = Vector2.ZERO					## 触摸/鼠标按下时的屏幕绝对坐标
 var _is_scrolling: bool = false							## 当前触摸会话是否已被确认为滚动行为
@@ -48,18 +57,23 @@ var _parent_scroll: ScrollContainer = null				## 祖先节点链条上最近的 
 #endregion
 
 
-#region Lifecycle
+#region Engine Lifecycle
 func _ready() -> void:
 	# 缓存初始掩码与中心锚点
 	_original_button_mask = button_mask
 	pivot_offset = size * 0.5
-	resized.connect(func(): pivot_offset = size * 0.5)
+	if not resized.is_connected(_on_base_resized):
+		resized.connect(_on_base_resized)
 
 	# 基础交互信号连接
-	button_down.connect(_on_base_button_down)
-	button_up.connect(_on_base_button_up)
-	mouse_exited.connect(_on_base_mouse_exited)
-	pressed.connect(_on_base_pressed)
+	if not button_down.is_connected(_on_base_button_down):
+		button_down.connect(_on_base_button_down)
+	if not button_up.is_connected(_on_base_button_up):
+		button_up.connect(_on_base_button_up)
+	if not mouse_exited.is_connected(_on_base_mouse_exited):
+		mouse_exited.connect(_on_base_mouse_exited)
+	if not pressed.is_connected(_on_base_pressed):
+		pressed.connect(_on_base_pressed)
 
 	# 预先寻址最近的滚动容器（若此时尚未进入完整父树，后续按下时还会惰性查找一次）
 	if enable_scroll_forwarding:
@@ -109,15 +123,19 @@ func _gui_input(event: InputEvent) -> void:
 #endregion
 
 
-#region Internal - Tween & Audio
+#region Internal - Tween & Feedback
 ## 执行缩放动画补间
 func _scale_to(to_scale: float) -> void:
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	_tween = create_tween()
-	_tween.tween_property(self, "scale", Vector2(to_scale, to_scale), scale_duration) \
+	_tween.tween_property(self, _PROP_SCALE, Vector2(to_scale, to_scale), scale_duration) \
 		.set_trans(Tween.TRANS_QUAD) \
 		.set_ease(Tween.EASE_OUT)
+
+
+func _on_base_resized() -> void:
+	pivot_offset = size * 0.5
 
 
 ## 按钮原生按下回调：仅在非滚动态时呈现按压缩放
@@ -134,11 +152,6 @@ func _on_base_button_up() -> void:
 ## 指针滑出按钮范围回调：恢复原始缩放
 func _on_base_mouse_exited() -> void:
 	_scale_to(idle_scale)
-
-
-## 静态反馈提供者代理（可在启动期配置，方便无 Autoload 环境单元测试）
-static var sfx_handler: Callable
-static var haptic_handler: Callable
 
 
 ## 按钮原生触发点击回调：播放音效与设备振动（附加滚动安全防护门禁）
@@ -221,7 +234,7 @@ func _handle_pointer_up() -> void:
 	_scale_to(idle_scale)
 	button_mask = _original_button_mask
 	# 延迟至帧末重置 _is_scrolling，确保本轮后续释放分发完全消化后再放开点击门禁
-	call_deferred("_reset_scrolling_flag")
+	call_deferred(&"_reset_scrolling_flag")
 
 
 ## 惰性重置滚动标志
@@ -235,10 +248,10 @@ func _forward_scroll(relative: Vector2) -> void:
 		return
 
 	# 垂直滚动：手指向上移动（relative.y < 0）时，列表内容下滚，scroll_vertical 数值需递增
-	if _parent_scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED and absf(relative.y) > 0.001:
+	if _parent_scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED and absf(relative.y) > _SCROLL_EPSILON:
 		_parent_scroll.scroll_vertical -= int(round(relative.y * scroll_speed_factor))
 
 	# 水平滚动：手指向左移动（relative.x < 0）时，列表内容右滚，scroll_horizontal 数值需递增
-	if _parent_scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED and absf(relative.x) > 0.001:
+	if _parent_scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED and absf(relative.x) > _SCROLL_EPSILON:
 		_parent_scroll.scroll_horizontal -= int(round(relative.x * scroll_speed_factor))
 #endregion

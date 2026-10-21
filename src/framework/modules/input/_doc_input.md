@@ -30,20 +30,22 @@ src/framework/modules/input/
 1. **键鼠与手柄双轨双槽物理隔离 (`InputMapAdapter`)**：
    - 每个受管 Action 独立维护 `kb_0`（键鼠主）、`kb_1`（键鼠副）、`joy_0`（手柄主）、`joy_1`（手柄副）四个 [`InputChord`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/input/types/input_chord.gd) 槽位。
    - 修改键盘按键绝不会洗掉同动作的手柄按键；重置默认时支持按单动作、单设备轨道或全量恢复。
-2. **统一复合键（`InputChord`）与高阶优先消费管线**：
+2. **统一复合键（`InputChord`）、高阶优先消费与持续抑制管线**：
    - 最小绑定单元为 `0~2 个前置修饰键 + 1 个触发主键`，统一表达键盘组合键（`Shift + Q`）与手柄肩键组合技（`LB + Y`、`LT + A`）。
-   - **高阶优先消费（Highest-Order Chord Consumption）**：同帧内优先求值组合键，命中后将该帧的触发主键与修饰键记入消费池，自动抑制同作用域下的低阶单键（如按 `Shift + Q` 放大招时绝不误触单键 `Q` 的小技能）。
+   - **高阶优先消费与跨帧持续抑制（Highest-Order Chord Consumption & Hold Suppression）**：同帧内优先求值组合键，命中后将该帧的触发主键与修饰键同时记入当帧消费池与持续抑制表（`_chord_consumed_triggers`），在物理按键完全松开前持续抑制同作用域下的低阶单键（例如按 `Shift + Q` 放大招后，即使玩家先松开 `Shift` 仍按住 `Q`，也绝不会在后续帧误触单键 `Q` 的小技能）。
+   - **帧内瞬时按压脉冲锁存（Sub-Frame Pulse Latching）与双通道独立帧戳**：在 `_input(event)` 中即时锁存按键与修饰键脉冲（`_pending_press_proc` / `_pending_press_phys`），并独立维护渲染帧（`pressed_proc` / `jp_proc` / `jr_proc`）与物理帧（`pressed_phys` / `jp_phys` / `jr_phys`）状态；即使极速轻敲键盘或使用 macOS 触控板轻点（同帧内完成按下与抬起），在 `_process` 和 `_physics_process` 中调用 `is_action_just_pressed()` / `is_action_just_released()` 均 100% 精确捕获、绝不漏帧。
    - **连续轴向豁免修饰锁**：[`App.input.get_vector()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/input/base_input_system.gd) 强制忽略修饰键状态，边按 `Shift` 边按 `WASD` 走位绝不卡顿。
-   - **双帧戳对齐**：内部同时追踪 `Engine.get_process_frames()` 与 `Engine.get_physics_frames()`，无论业务在 `_process` 还是 `_physics_process` 调用 `is_action_just_pressed()` 均 100% 精确。
-3. **输入上下文栈（Context Stack）与防关弹窗穿透（Wait-For-Release）**：
+3. **输入上下文栈（Context Stack）、防关弹窗穿透（Wait-For-Release）与桌面端 IME 防拦截**：
    - 弹窗打开时调用 `App.input.push_context(InputContextType.Context.UI)`（或设 `set_gameplay_input_enabled(false)`），自动释放战斗按压态；
-   - 弹窗关闭切回 `GAMEPLAY` 时，对仍处于按住状态的离散触发键自动启用 **Wait-For-Release（松开解锁）**，彻底杜绝按手柄 `A` 或 `Space` 关弹窗的同一帧误放技能。
-4. **二段式免勾选交互录制 (`InputRebindCapturer`)**：
+   - 弹窗关闭切回 `GAMEPLAY` 时，对仍处于按住状态的离散触发键自动启用 **Wait-For-Release（松开解锁）**，彻底杜绝按手柄 `A` 或 `Space` 关弹窗的同一帧误放技能；
+   - **桌面端 IME 自动抑制**：在 `GAMEPLAY` 与 `REBIND` 上下文下自动调用 `DisplayServer.window_set_ime_active(false)` 关闭系统输入法候选框，防止中文输入法拦截 `WASD` 移动或改键按键。
+4. **二段式免勾选交互录制与跨按钮无缝切换 (`InputRebindCapturer`)**：
    - 调用 `await App.input.rebind_interactive_async(action, device_type, slot)`：
      - 玩家直接按下非修饰键（如 `E` 或手柄 `A`）$\rightarrow$ **0ms 立即完成单键绑定**；
      - 玩家按下候选修饰键（`Ctrl/Shift/Alt/Meta` 或手柄 `LB/RB/LT/RT`）$\rightarrow$ 实时发射 `rebind_preview`（UI 显示 `"Shift + ..."`）：
        - 未松开期间再按主键（如 `Q`）$\rightarrow$ **立即完成组合键绑定 `[Shift + Q]`**；
        - 未按其它键直接松开该修饰键 $\rightarrow$ **确认为独立单键绑定 `[Shift]`**。
+   - **跨按钮点击智能取消与无缝切换**：正在录制手柄槽位时若用鼠标点击界面立即取消录制；正在录制键鼠槽位时若用鼠标左键点击了**另一个** UI 按钮，自动取消当前槽位录制并让新按钮立即响应点击，无需先按 `ESC`。
 
 ---
 

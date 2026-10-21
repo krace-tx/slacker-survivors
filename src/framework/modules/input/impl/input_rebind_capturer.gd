@@ -36,6 +36,11 @@ func is_capturing() -> bool:
 	return _state != State.IDLE
 
 
+## 获取当前录制的目标设备大类
+func get_target_device() -> int:
+	return _target_device
+
+
 ## 启动一次交互式按键录制
 func start_capture(action: StringName, device_type: int, timeout_sec: float = 5.0) -> Result:
 	if is_capturing():

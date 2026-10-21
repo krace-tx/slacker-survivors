@@ -124,14 +124,14 @@ flowchart TD
 | **Scene** | `src/framework/modules/scene/` | `BaseSceneRouter` (`App.scene`) / `BaseScene` | 4大场景动词（Load/Push/Pop/Replace）、场景历史栈、Apple 级流式转场路由 | [_doc_scene.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/_doc_scene.md) |
 | **Network** | `src/framework/modules/network/` | `BaseNetworkClient` (`App.net`) | HTTP 请求队列调度、指数退避重试、Token 鉴权注入网络通信客户端 | [_doc_network.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/network/_doc_network.md) |
 | **Env** | `src/framework/modules/env/` | `BaseRuntimeEnvironment` (`App.env`) | 运行环境（Local/Emulator/Dev/Test/Prod）判定与只读诊断上下文 | [_doc_env.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/_doc_env.md) |
-| **Clock** | `src/framework/modules/clock/` | `BaseClockSystem` (`App.clock`) | 防作弊单调权威时钟、服务器 Unix 毫秒校准与时钟系统 | [_doc_clock.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/clock/_doc_clock.md) |
+| **Clock** | `src/framework/modules/clock/` | `BaseClockSystem` (`App.clock`) | 防作弊单调权威时钟、服务器 Unix 毫秒校准与时钟系统 | [_doc_clock.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/clock/_doc_clock.md) |
 | **Haptic** | `src/framework/modules/haptic/` | `BaseHapticFeedback` (`App.haptic`) | 触觉振动统一裁决、振动节奏模式、硬件震动执行器（含手柄马达联动） | [_doc_haptic.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/haptic/_doc_haptic.md) |
 | **Input** | `src/framework/modules/input/` | `BaseInputSystem` (`App.input`) | 键鼠/手柄双轨双槽隔离映射、`InputChord` 组合键优先消费、二段式免勾选录制与增量持久化 | [_doc_input.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/input/_doc_input.md) |
-| **Display** | `src/framework/modules/display/` | `BaseDisplaySystem` (`App.display`) / `BaseView` | 窗口/全屏状态机、分辨率钳制、宽高比拉伸策略、异形屏安全区（Safe Area）投影与五大 CanvasLayer 分层管理 | [_doc_display.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/display/_doc_display.md) |
+| **Display** | `src/framework/modules/display/` | `BaseDisplaySystem` (`App.display`) / `BaseView` | 窗口/全屏状态机、分辨率钳制、宽高比拉伸策略、异形屏安全区（Safe Area）投影与五大 CanvasLayer 分层管理 | [_doc_display.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/_doc_display.md) |
 | **Video** | `src/framework/modules/video/` | `BaseVideoPlayer` (`App.video`) | 视频播放控制、开源专业插件（EIRTeam.FFmpeg）动态桥接与 BGM 避让播放器 | [_doc_video.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/video/_doc_video.md) |
-| **Infra** | `src/framework/infra/` | `TaskScope` / `CancellationToken` / `BudgetCache` / `CooldownScheduler` / `BaseParams` / `SpineController` / `SpinePool` | 通用基建组件：异步任务生命周期作用域与并发编排、LRU 缓存预算、异步冷却防抖调度、强类型参数契约、Spine 骨骼流式控制与享元对象池/分频错峰调度 | [_doc_async.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/async/_doc_async.md) / [_doc_param.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/_doc_param.md) / [_doc_spine.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/spine/_doc_spine.md) |
-| **Util** | `src/framework/util/` | `NodeUtils` / `FileUtils` / `ResourceCodecUtils` / `FileCodecUtils` 等 | 跨平台无状态纯函数工具集与资源编解码器 | [_doc_util.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/util/_doc_util.md) |
-| **Governance** | `src/framework/` | `_doc_module_standard.md` | 模块依赖矩阵、12 维设计模板与五大完成验收标准 | [_doc_module_standard.md](file:///d:/code/GodotProject/slacker-survivors/src/framework/_doc_module_standard.md) |
+| **Infra** | `src/framework/infra/` | `TaskScope` / `CancellationToken` / `BudgetCache` / `CooldownScheduler` / `BaseParams` / `SpineController` / `SpinePool` | 通用基建组件：异步任务生命周期作用域与并发编排、LRU 缓存预算、异步冷却防抖调度、强类型参数契约、Spine 骨骼流式控制与享元对象池/分频错峰调度 | [_doc_async.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/async/_doc_async.md) / [_doc_cache.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/cache/_doc_cache.md) / [_doc_param.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/_doc_param.md) / [_doc_scheduler.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/scheduler/_doc_scheduler.md) / [_doc_spine.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/_doc_spine.md) |
+| **Util** | `src/framework/util/` | `NodeUtils` / `FileUtils` / `ResourceCodecUtils` / `FileCodecUtils` 等 | 跨平台无状态纯函数工具集与资源编解码器 | [_doc_util.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/util/_doc_util.md) |
+| **Governance** | `src/framework/` | `_doc_module_standard.md` | 模块依赖矩阵、12 维设计模板与五大完成验收标准 | [_doc_module_standard.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/_doc_module_standard.md) |
 
 ---
 
@@ -147,8 +147,8 @@ flowchart TD
   - `Locale.NotLoaded`
 - **代码示例**：
   ```gdscript
-  var res := await App.scene.replace("res://src/game/scenes/battle/battle.tscn")
+  var res := await App.scene.replace(GameScenes.Scene.SPLASH)
   if res.is_err():
-	  App.logger.error("Scene", "切换关卡失败: %s - %s" % [res.error_code(), res.error_message()])
+	  App.logger.error("Scene", "切换场景失败: %s - %s" % [res.error_code(), res.error_message()])
 	  return
   ```

@@ -16,6 +16,7 @@ enum Phase {
 	COMPLETED = 3,
 }
 
+#region Runtime State Fields
 ## 当前管线运行阶段
 var phase: Phase = Phase.IDLE
 ## 归一化目标进度比值 `[0.0, 1.0]`
@@ -30,8 +31,10 @@ var failed_task_id: StringName = &""
 var error_code: String = ""
 ## 失败挂起时的错误描述
 var error_message: String = ""
+#endregion
 
 
+#region Public Mutators
 ## 标记管线进入运行状态
 func mark_running(task_id: StringName, title: String, ratio: float) -> void:
 	phase = Phase.RUNNING
@@ -67,11 +70,11 @@ func mark_completed(total_ms: int, target_scene: String) -> void:
 	phase = Phase.COMPLETED
 	progress_ratio = 1.0
 	current_task_id = &""
-	if target_scene.is_empty() or not ResourceLoader.exists(target_scene):
-		status_text = "启动就绪 (%d ms) · 待接入场景: %s" % [
-			total_ms,
-			target_scene.get_file() if not target_scene.is_empty() else "None"
-		]
+	if target_scene.is_empty():
+		status_text = "启动就绪 (%d ms)" % total_ms
+	elif not ResourceLoader.exists(target_scene):
+		status_text = "启动就绪 (%d ms) · 待接入场景: %s" % [total_ms, target_scene.get_file()]
 	else:
 		status_text = "启动就绪"
 	state_changed.emit()
+#endregion

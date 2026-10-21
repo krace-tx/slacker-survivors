@@ -18,7 +18,7 @@ src/framework/modules/audio/
 
 1. **统一双态入口与零协程同步热路径**：
    - `play_bgm(source, volume, fade, loop)` 与 `play_sfx(source, volume, pitch_scale)` 同时支持传入 `res://` 路径字符串或已加载的 `AudioStream` 实例（保留 `play_bgm_by_path` / `play_sfx_by_path` 兼容别名）。
-   - 主入口函数不含 `await`，当传入 `AudioStream` 或路径已命中 [`App.asset.get_cached()`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/asset/base_asset_system.gd) 时，**零协程状态机分配、零帧延迟当场播放**；仅在首次冷加载未命中时转入内部异步加载慢路径。
+   - 主入口函数不含 `await`，当传入 `AudioStream` 或路径已命中 [`App.asset.get_cached()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/asset/base_asset_system.gd) 时，**零协程状态机分配、零帧延迟当场播放**；仅在首次冷加载未命中时转入内部异步加载慢路径。
 2. **无损循环控制与异步切歌竞态守卫**：
    - `BgmPlayer` 通过监听播放器自身的 `finished` 信号实现循环重播，**绝不篡改共享 `AudioStream` 资源的 `.loop` 属性**，兼容全部音频流类型并支持非循环曲目（`loop = false`）。
    - `AudioSystem` 通过单调递增的 `_bgm_request_id` 拦截异步加载期间过期的切歌或停止指令，杜绝快速切换场景时的背景音乐串音覆盖。

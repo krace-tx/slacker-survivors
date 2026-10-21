@@ -14,10 +14,7 @@ const SCAN_ROOT: String = "res://src/game"
 const OUTPUT_PATH: String = "res://src/game/shared/define/generated/game_scenes.gd"
 
 ## 尚未创建物理 .tscn 文件时的预留路由占位项（一旦物理文件创建于任意子目录，自动被真实扫描路径覆盖）
-const PLANNED_SCENES: Dictionary = {
-	"LOBBY": "res://src/game/features/lobby/view/lobby_scene.tscn",
-	"BATTLE": "res://src/game/features/battle/view/battle_scene.tscn",
-}
+const PLANNED_SCENES: Dictionary = {}
 
 
 #region Public API

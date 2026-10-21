@@ -1,7 +1,9 @@
+class_name InputTest
 extends BaseScene
 
-## Input 模块可视化与自动化综合测试场景（继承 BaseScene，支持 F6 独立启动）。
+## Input 模块可视化与自动化综合测试场景（继承 [BaseScene]，支持 F6 独立启动）。
 
+#region Constants & State
 const DISPLAY_ACTIONS: Array[StringName] = [
 	&"move_up",
 	&"move_down",
@@ -15,14 +17,20 @@ const DISPLAY_ACTIONS: Array[StringName] = [
 	&"interact",
 ]
 
-var _status_label: Label
-var _device_label: Label
-var _trigger_log_label: Label
-var _test_summary_label: Label
-var _avatar_dot: ColorRect
+var _status_label: Label = null
+var _device_label: Label = null
+var _trigger_log_label: Label = null
+var _test_summary_label: Label = null
+var _live_hud_label: Label = null
+var _avatar_dot: ColorRect = null
 var _avatar_center: Vector2 = Vector2(180.0, 110.0)
 var _slot_buttons: Dictionary = {}
+var _action_flash_timers: Dictionary = {}
 var _recent_triggers: Array[String] = []
+#endregion
+
+
+#region Scene & Engine Lifecycle
 
 
 func _on_enter(_params: BaseParams = null) -> void:
@@ -45,22 +53,58 @@ func _on_exit() -> void:
 		App.input.rebind_preview.disconnect(_on_rebind_preview)
 
 
-func _physics_process(delta: float) -> void:
+func _process(delta: float) -> void:
 	if App.input == null or _avatar_dot == null:
 		return
 
 	# 1. 验证连续移动向量（按住 Shift 放组合技时移动不断触）
 	var dir := App.input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
-	_avatar_center += dir * 180.0 * delta
+	_avatar_center += dir * 200.0 * delta
 	_avatar_center.x = clampf(_avatar_center.x, 20.0, 340.0)
 	_avatar_center.y = clampf(_avatar_center.y, 20.0, 190.0)
 	_avatar_dot.position = _avatar_center - _avatar_dot.size * 0.5
 
-	# 2. 验证高阶组合键优先消费（按 Shift+Q 仅触发 ultimate，不误触 skill_1）
-	for act in [&"dash", &"attack", &"skill_1", &"skill_2", &"ultimate", &"interact"]:
+	# 2. 检验当前鼠标是否正点击在 UI 按钮上（避免点击左侧改键按钮时误记为右侧沙盒 LMB 攻击）
+	var vp := get_viewport()
+	var hovered_ctrl: Control = vp.gui_get_hovered_control() if vp != null else null
+	var is_clicking_ui_btn := (hovered_ctrl is BaseButton) and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+
+	# 3. 实时监测全部 10 个展示动作的按下边沿、持续按压态与左侧行高亮反馈
+	var held_list: PackedStringArray = []
+	for act in DISPLAY_ACTIONS:
+		var act_str := String(act)
+		var flash_rem: float = maxf(float(_action_flash_timers.get(act, 0.0)) - delta, 0.0)
+
 		if App.input.is_action_just_pressed(act):
-			var glyph := App.input.get_action_glyph(act)
-			_append_trigger_log("Triggered [%s] via (%s)" % [String(act), glyph.display_text])
+			if not (act == &"attack" and is_clicking_ui_btn):
+				flash_rem = 0.22
+				var glyph := App.input.get_action_glyph(act)
+				_append_trigger_log("Triggered [%s] via (%s)" % [act_str, glyph.display_text])
+
+		_action_flash_timers[act] = flash_rem
+		var is_held := App.input.is_action_pressed(act) and not (act == &"attack" and is_clicking_ui_btn)
+		if is_held:
+			held_list.append(act_str)
+
+		var is_highlighted := is_held or flash_rem > 0.0
+		var name_lbl: Label = _slot_buttons.get("%s_name" % act_str, null)
+		if name_lbl != null:
+			name_lbl.text = ("● %s" % act_str) if is_highlighted else act_str
+			name_lbl.add_theme_color_override(
+				"font_color",
+				Color(0.30, 1.0, 0.55) if is_highlighted else Color(0.92, 0.94, 0.98)
+			)
+		var prompt_lbl: Label = _slot_buttons.get("%s_prompt" % act_str, null)
+		if prompt_lbl != null:
+			prompt_lbl.add_theme_color_override(
+				"font_color",
+				Color(0.30, 1.0, 0.55) if is_highlighted else Color(1.0, 0.88, 0.40)
+			)
+
+	if _live_hud_label != null:
+		var held_str := ", ".join(held_list) if not held_list.is_empty() else "无"
+		_live_hud_label.text = "移动向量: (%.2f, %.2f) | 当前按住: %s" % [dir.x, dir.y, held_str]
+#endregion
 
 
 #region Automated Contract Verification Suite
@@ -208,6 +252,8 @@ func _build_test_ui() -> void:
 	]:
 		var btn := Button.new()
 		btn.text = preset["label"]
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 		var d: int = preset["dev"]
 		var b: int = preset["brand"]
 		btn.pressed.connect(func() -> void: App.input.simulate_device(d, b))
@@ -215,6 +261,8 @@ func _build_test_ui() -> void:
 
 	var reset_btn := Button.new()
 	reset_btn.text = "恢复出厂默认"
+	reset_btn.focus_mode = Control.FOCUS_NONE
+	reset_btn.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	reset_btn.pressed.connect(func() -> void:
 		App.input.reset_to_default()
 		_status_label.text = "已恢复全部出厂默认键位。"
@@ -259,6 +307,7 @@ func _build_test_ui() -> void:
 		name_lbl.text = String(act)
 		name_lbl.custom_minimum_size = Vector2(110, 0)
 		grid.add_child(name_lbl)
+		_slot_buttons["%s_name" % String(act)] = name_lbl
 
 		var active_prompt_lbl := Label.new()
 		active_prompt_lbl.custom_minimum_size = Vector2(120, 0)
@@ -274,6 +323,8 @@ func _build_test_ui() -> void:
 		]:
 			var slot_btn := Button.new()
 			slot_btn.custom_minimum_size = Vector2(125, 32)
+			slot_btn.focus_mode = Control.FOCUS_NONE
+			slot_btn.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 			var dev_val: int = slot_cfg["dev"]
 			var slot_val: int = slot_cfg["slot"]
 			var btn_key := "%s_%s" % [String(act), slot_cfg["tag"]]
@@ -301,6 +352,11 @@ func _build_test_ui() -> void:
 	sandbox_title.add_theme_font_size_override("font_size", 16)
 	right_vbox.add_child(sandbox_title)
 
+	_live_hud_label = Label.new()
+	_live_hud_label.text = "移动向量: (0.00, 0.00) | 当前按住: 无"
+	_live_hud_label.add_theme_color_override("font_color", Color(0.55, 0.92, 0.72))
+	right_vbox.add_child(_live_hud_label)
+
 	var arena := ColorRect.new()
 	arena.custom_minimum_size = Vector2(360, 210)
 	arena.color = Color(0.14, 0.16, 0.22, 1.0)
@@ -313,7 +369,7 @@ func _build_test_ui() -> void:
 	arena.add_child(_avatar_dot)
 
 	_trigger_log_label = Label.new()
-	_trigger_log_label.text = "等待动作触发...（试着按 Q 触发 skill_1，按 Shift+Q 触发 ultimate）"
+	_trigger_log_label.text = "等待动作触发...（试着按 WASD/方向键移动，按 Q 触发 skill_1，按 Shift+Q 触发 ultimate）"
 	_trigger_log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	right_vbox.add_child(_trigger_log_label)
 

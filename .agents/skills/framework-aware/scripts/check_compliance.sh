@@ -218,6 +218,7 @@ if [ -z "$GODOT_EXE" ] || [ ! -f "$GODOT_EXE" ]; then
 fi
 if [ -z "$GODOT_EXE" ] || [ ! -f "$GODOT_EXE" ]; then
 	for candidate in \
+		"/Applications/Godot.app/Contents/MacOS/Godot" \
 		"/d/software/Godot/Godot_v4.7.1-stable_win64.exe/Godot_v4.7.1-stable_win64.exe" \
 		"D:/software/Godot/Godot_v4.7.1-stable_win64.exe/Godot_v4.7.1-stable_win64.exe" \
 		"/d/software/Godot/Godot_v4.7.1-stable_win64.exe/Godot_v4.7.1-stable_win64_console.exe" \

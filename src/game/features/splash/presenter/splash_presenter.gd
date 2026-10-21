@@ -9,14 +9,20 @@ extends RefCounted
 ## 3. 监听 [signal SplashScene.retry_requested] 用户交互信号，委托 [SplashBootService] 执行断点重试；[br]
 ## 4. 在业务启动管线全部完成后，按 [member SplashBootContext.target_scene_path] 调度首屏场景路由跳转。
 
+#region Constants & State
+const _ERR_BUSY: String = "Splash.Busy"
+const _ERR_CANNOT_RETRY: String = "Splash.CannotRetry"
+
 var _view: SplashScene = null
 var _state: SplashBootState = null
 var _context: SplashBootContext = null
 var _service: SplashBootService = null
 var _is_running: bool = false
 var _disposed: bool = false
+#endregion
 
 
+#region Public API
 func _init(view: SplashScene, params: BaseParams = null) -> void:
 	_view = view
 	_state = SplashBootState.new()
@@ -37,7 +43,7 @@ func _init(view: SplashScene, params: BaseParams = null) -> void:
 ## 启动闪屏业务加载流程
 func start() -> Result:
 	if _disposed or _is_running:
-		return Result.err_code("Splash.Busy", "SplashPresenter is already running or disposed.")
+		return Result.err_code(_ERR_BUSY, "SplashPresenter is already running or disposed.")
 	_is_running = true
 	var res := await _service.start_boot_sequence()
 	_is_running = false
@@ -48,7 +54,7 @@ func start() -> Result:
 ## 响应重试请求，从失败断点处原地续跑
 func retry() -> Result:
 	if _disposed or _is_running:
-		return Result.err_code("Splash.CannotRetry", "SplashPresenter cannot retry right now.")
+		return Result.err_code(_ERR_CANNOT_RETRY, "SplashPresenter cannot retry right now.")
 	_is_running = true
 	var res := await _service.retry_failed()
 	_is_running = false
@@ -56,7 +62,7 @@ func retry() -> Result:
 	return res
 
 
-## 销毁并解绑所有信号监听（由 SplashScene._on_exit 调用）
+## 销毁并解绑所有信号监听（由 [method SplashScene._on_exit] 调用）
 func dispose() -> void:
 	if _disposed:
 		return
@@ -81,6 +87,7 @@ func get_context() -> SplashBootContext:
 ## 获取当前运行时状态模型
 func get_state() -> SplashBootState:
 	return _state
+#endregion
 
 
 #region Internal Signal Handlers & Navigation

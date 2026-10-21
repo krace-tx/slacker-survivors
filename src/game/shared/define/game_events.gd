@@ -2,28 +2,16 @@ class_name GameEvents
 extends RefCounted
 
 ## 游戏业务层跨模块领域事件常量集合（位于 src/game/shared/define/）。[br]
-## 用于在模块与模块间解耦通讯（通过 [code]Bus.emit()[/code] 与 [code]Bus.on()[/code]）。
+## 用于在垂直模块间通过 [code]Bus.emit()[/code] 与 [code]Bus.on_scoped()[/code] 解耦通讯。
 
-## 货币资产变动: {"gold": int, "delta": int}
-const GOLD_CHANGED: StringName = &"game:gold_changed"
-
-## 角色属性升级: {"talent_id": String, "level": int}
-const TALENT_UPGRADED: StringName = &"game:talent_upgraded"
+## 业务启动管线全部加载完毕: {"total_boot_ms": int, "is_first_launch": bool, "is_offline_mode": bool, "target_scene_path": String, "tasks_ms": Dictionary, "warnings": Array[String]}
+const BOOTSTRAP_COMPLETED: StringName = &"game:bootstrap_completed"
 
 ## 全局偏好设置已变更: {"settings": GameSettingsModel}
 const SETTINGS_CHANGED: StringName = &"game:settings_changed"
 
-## 画质档位或视觉密度已变更: {"preset": int, "particle_density": float, "damage_number_mode": int}
+## 全局画质预设档位或视口渲染管线已变更: {"preset": int, "render_scale": float, "msaa_2d": int, "msaa_3d": int, "screen_space_aa": int}
 const QUALITY_PRESET_CHANGED: StringName = &"game:quality_preset_changed"
 
-## 关卡战斗开始: {"stage_id": String, "difficulty": int}
-const BATTLE_STARTED: StringName = &"game:battle_started"
-
-## 关卡战斗胜利或失败结算: {"is_victory": bool, "survived_time": float, "kills": int, "rewards": Dictionary}
-const BATTLE_FINISHED: StringName = &"game:battle_finished"
-
-## 局内角色升级触发展示选卡: {"current_level": int, "choices": Array}
-const BATTLE_LEVEL_UP: StringName = &"game:battle_level_up"
-
-## 游戏业务层启动与状态加载完毕
-const BOOTSTRAP_COMPLETED: StringName = &"game:bootstrap_completed"
+## 玩家全局档案数据已更新: {"profile": PlayerProfileModel}
+const PROFILE_UPDATED: StringName = &"game:profile_updated"

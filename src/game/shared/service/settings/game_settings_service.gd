@@ -3,14 +3,18 @@ extends RefCounted
 
 ## 全局游戏设置业务服务（位于 src/game/shared/service/settings/）。[br]
 ##
-## [b]核心职责（第一性原理）：[/b][br]
-## 1. [b]单一权威运行时协调点[/b]：统一持有当前生效的 [GameSettingsModel]，供启动管线、设置面板与战斗模块随时访问；[br]
+## [b]核心职责：[/b][br]
+## 1. [b]单一权威运行时协调点[/b]：统一持有当前生效的 [GameSettingsModel]，供启动管线与各业务模块随时访问；[br]
 ## 2. [b]硬件与引擎子系统同步[/b]：将纯数据模型一键或分域同步至 [code]App.audio[/code]、[code]App.display[/code]、[code]App.haptic[/code]、[code]App.input[/code] 与 [code]App.locale[/code]；[br]
 ## 3. [b]画质档位与单项微调联动[/b]：切换预设档位时自动展开渲染管线参数；单独微调任一渲染参数时自动切入 [constant GameEnums.QualityPreset.CUSTOM]；[br]
-## 4. [b]后台静音焦点联动[/b]：监听 [signal Bus.app_paused] 与 [signal Bus.app_resumed]，严格按 [member GameSettingsModel.mute_in_background] 裁决后台音频策略。
+## 4. [b]后台静音焦点联动[/b]：监听 [signal Bus.app_paused] 与 [signal Bus.app_resumed]，按 [member GameSettingsModel.mute_in_background] 裁决后台音频策略。
+
+#region Constants & Static State
+const _ERR_STORAGE_UNAVAILABLE: String = "Settings.StorageUnavailable"
 
 static var _current: GameSettingsModel = null
 static var _focus_listener_connected: bool = false
+#endregion
 
 
 #region 1. Lifecycle & Persistence
@@ -21,7 +25,7 @@ static func get_current() -> GameSettingsModel:
 	return _current
 
 
-## 从本地存储加载偏好设置并立即同步至全部底层硬件子系统（由启动管线 ApplySettingsStep 调用）。
+## 从本地存储加载偏好设置并立即同步至全部底层硬件子系统（由 [BootstrapScene] 在启动首帧前调用）。
 static func load_and_apply() -> Result:
 	_ensure_focus_listener()
 
@@ -42,14 +46,14 @@ static func load_and_apply() -> Result:
 ## 将当前设置模型持久化落盘至本地存储。
 static func save_async() -> Result:
 	if App == null or App.storage == null:
-		return Result.err_code("Settings.StorageUnavailable", "Storage service is not available.")
+		return Result.err_code(_ERR_STORAGE_UNAVAILABLE, "Storage service is not available.")
 	var model := get_current().sanitize()
 	var item := GameSettingsModel.storage_item()
 	App.storage.bind(item)
 	return await App.storage.write_async(item, model.to_dict(), StorageWriteMode.LOCAL_ONLY)
 
 
-## 恢复全部设置为出厂默认值，立即生效并落盘。
+## 恢复全部设置为出厂默认值，立即生效并按需落盘。
 static func reset_to_defaults(auto_save: bool = true) -> GameSettingsModel:
 	_current = GameSettingsModel.new().sanitize()
 	apply_all(_current)
@@ -84,7 +88,7 @@ static func apply_audio(model: GameSettingsModel = null) -> void:
 	App.audio.set_sfx_enabled(m.sfx_enabled)
 
 
-## 同步窗口模式、分辨率、垂直同步与帧率上限至 App.display（底层内置幂等短路）。
+## 同步窗口模式、分辨率、垂直同步与帧率上限至 App.display（底层内置状态幂等短路）。
 static func apply_display(model: GameSettingsModel = null) -> void:
 	if App == null or App.display == null:
 		return
@@ -97,7 +101,7 @@ static func apply_display(model: GameSettingsModel = null) -> void:
 	App.display.set_max_fps(maxi(0, m.max_fps))
 
 
-## 同步视口渲染管线原语至 App.display 并广播画质与粒子预算变更事件。
+## 同步视口渲染管线原语至 App.display 并广播画质变更事件。
 static func apply_graphics(model: GameSettingsModel = null) -> void:
 	var m := model if model != null else get_current()
 	if App != null and App.display != null:
@@ -111,8 +115,10 @@ static func apply_graphics(model: GameSettingsModel = null) -> void:
 	if Bus != null:
 		Bus.emit(GameEvents.QUALITY_PRESET_CHANGED, {
 			"preset": m.quality_preset,
-			"particle_density": m.particle_density,
-			"damage_number_mode": m.damage_number_mode,
+			"render_scale": m.render_scale,
+			"msaa_2d": m.msaa_2d,
+			"msaa_3d": m.msaa_3d,
+			"screen_space_aa": m.screen_space_aa,
 		})
 
 
@@ -151,14 +157,13 @@ static func set_quality_preset(preset: int, auto_save: bool = true) -> void:
 		save_async()
 
 
-## 单独微调高级画质/视觉参数（任意传入非负参数即更新，并自动将档位切换为 CUSTOM）。
+## 单独微调高级视口渲染参数（任意传入非负参数即更新，并自动将档位切换为 CUSTOM）。
 static func set_custom_graphics(
 	msaa_2d: int = -1,
 	msaa_3d: int = -1,
 	screen_space_aa: int = -1,
 	render_scale: float = -1.0,
-	particle_density: float = -1.0,
-	damage_number_mode: int = -1,
+	canvas_texture_filter: int = -1,
 	auto_save: bool = true
 ) -> void:
 	var m := get_current()
@@ -170,10 +175,8 @@ static func set_custom_graphics(
 		m.screen_space_aa = screen_space_aa
 	if render_scale > 0.0:
 		m.render_scale = render_scale
-	if particle_density > 0.0:
-		m.particle_density = particle_density
-	if damage_number_mode >= 0:
-		m.damage_number_mode = damage_number_mode
+	if canvas_texture_filter >= 0:
+		m.canvas_texture_filter = canvas_texture_filter
 
 	m.quality_preset = GameEnums.QualityPreset.CUSTOM
 	m.sanitize()

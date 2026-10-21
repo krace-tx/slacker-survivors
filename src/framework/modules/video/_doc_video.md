@@ -68,8 +68,9 @@ addons/
    - `VideoPlayOptions` 继承框架统一的 `BaseParams`，不仅支持流式链式配置（Fluent Builder），更原生具备 Dictionary 自动双向映射，场景间传参零样板代码。
 6. **视觉呈现与播放逻辑解耦**：
    - 全屏过场视觉逻辑收敛于 `VideoCutsceneOverlay`，负责纯黑底衬、画面比例对齐与跳过按钮平滑淡入，`VideoPlayer` 专注音视频时序与生命周期。
-7. **音频避让机制 (Audio Ducking)**：
-   - 视频播放时按 `duck_fade_seconds` 降低游戏当前的 `BGM` 总线音量，避免音视频杂音叠加；视频停止或结束时恢复之前的音量和静音状态。
+7. **显式依赖注入与正交音频避让 (Explicit DI & Orthogonal Audio Ducking)**：
+   - `VideoPlayer` 声明 `MODULE_ID = &"video"` 与 `OPTIONAL_MODULES = [&"audio", &"logger"]`，由 `FrameworkRuntime` 显式构造注入 `BaseAudioSystem` 与 `BaseFrameworkLogger`，零 `App.xxx` 隐式耦合。
+   - 视频播放时调用 `_audio_system.duck_bgm(0.0, duck_fade_seconds)` 进行**正交音画避让**（不污染用户设定的 BGM 音量滑块值）；视频停止、自然结束或异常退出时自动调用 `unduck_bgm(duck_fade_seconds)` 平滑恢复，并通过递增 `_operation_token` 与 `300s` 超时守卫杜绝异步过场协程竞态悬挂。
 
 ---
 
@@ -134,7 +135,7 @@ if result.is_err():
 # 监听播放完成
 App.video.playback_finished.connect(func():
     App.logger.info("Video", "剧情视频播放完毕，进入主界面")
-    App.scene.replace("res://src/game/scenes/lobby/lobby.tscn")
+    App.scene.replace(GameScenes.Scene.SPLASH)
 , CONNECT_ONE_SHOT)
 ```
 
@@ -151,7 +152,7 @@ if result.is_err():
     App.logger.error("Video", "过场播放异常: %s" % result.error_message())
     return
 
-App.scene.replace("res://src/game/scenes/battle/battle.tscn")
+App.scene.replace("res://src/game/features/splash/view/splash_scene.tscn")
 ```
 
 ### 3. 将视频纹理绑定至 UI / 材质画面

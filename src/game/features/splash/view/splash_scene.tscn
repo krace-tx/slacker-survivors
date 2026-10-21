@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://ca6r1t3bodl40"]
+[gd_scene load_steps=3 format=3 uid="uid://ca6r1t3bodl40"]
 
 [ext_resource type="Script" path="res://src/game/features/splash/view/splash_scene.gd" id="1_splash"]
+[ext_resource type="Script" path="res://src/framework/modules/display/base_view.gd" id="2_base_view"]
 
 [node name="SplashScene" type="Node"]
 script = ExtResource("1_splash")
@@ -20,6 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("2_base_view")
 
 [node name="CenterContainer" type="CenterContainer" parent="UI"]
 layout_mode = 1

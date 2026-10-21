@@ -27,11 +27,21 @@ var _capturer: InputRebindCapturer
 var _context_stack: Array[int] = [InputContextType.Context.GAMEPLAY]
 
 ## 每个 Action 的双帧精确状态缓存：
-## { StringName: { "pressed": bool, "strength": float, "jp_proc": int, "jr_proc": int, "jp_phys": int, "jr_phys": int } }
+## { StringName: { "pressed": bool, "pressed_proc": bool, "pressed_phys": bool, "strength": float, "jp_proc": int, "jr_proc": int, "jp_phys": int, "jr_phys": int } }
 var _action_states: Dictionary = {}
 
 ## 防穿透抬起解锁集合：记录从 UI/REBIND 切回 GAMEPLAY 时仍处于按住状态的物理触发键签名
 var _wait_release_triggers: Dictionary = {}
+
+## 高阶组合键消费抑制表：记录被组合键消费后尚未松开的物理键签名，防止先松开修饰键时误触单键动作
+var _chord_consumed_triggers: Dictionary = {}
+
+## 帧内瞬时按压脉冲锁存表：捕获两次 _process 或 _physics_process 之间极速按下并抬起的按键/触控板轻点
+var _pending_press_proc: Dictionary = {}
+var _pending_press_phys: Dictionary = {}
+
+## 启动当前按键录制的 UI 按钮引用（用于识别用户点击其它按钮时的无缝切换与取消）
+var _rebind_initiator_control: Control = null
 
 ## 录制结束后的 1 帧输入屏蔽冷却计数（防止松开录制键或按 ESC 取消时穿透至 UI）
 var _rebind_cooldown_frames: int = 0
@@ -72,6 +82,8 @@ func initialize() -> Result:
 	for act in _adapter.get_managed_actions():
 		_ensure_action_state_entry(act)
 
+	_sync_ime_state()
+
 	_log_info("InputSystem initialized (%d managed actions, device=%s)." % [
 		_adapter.get_managed_actions().size(),
 		InputDeviceType.type_to_string(current_device),
@@ -91,6 +103,10 @@ func dispose() -> void:
 		_adapter.dispose()
 	_action_states.clear()
 	_wait_release_triggers.clear()
+	_chord_consumed_triggers.clear()
+	_pending_press_proc.clear()
+	_pending_press_phys.clear()
+	_rebind_initiator_control = null
 	if is_inside_tree():
 		queue_free()
 
@@ -99,8 +115,28 @@ func _input(event: InputEvent) -> void:
 	if event == null:
 		return
 
-	# 1. 若处于交互式按键录制中，或处于录制刚结束的防穿透冷却帧，优先拦截并吞没输入
+	# 1. 若处于交互式按键录制中，优先处理跨按钮切换取消或拦截吞没输入
 	if _capturer.is_capturing():
+		if event is InputEventMouseButton and event.is_pressed():
+			var vp_check := get_viewport()
+			var hovered: Control = vp_check.gui_get_hovered_control() if vp_check != null else null
+			var target_dev := _capturer.get_target_device()
+			# (a) 正在录制手柄槽位时若玩家用鼠标点击界面：立即取消手柄录制；若点在其它按钮上则放行该次点击
+			if target_dev == InputDeviceType.Type.JOYPAD:
+				var clicked_same_btn := (hovered != null and hovered == _rebind_initiator_control)
+				_capturer.cancel_capture()
+				if clicked_same_btn and vp_check != null:
+					vp_check.set_input_as_handled()
+				return
+			# (b) 正在录制键鼠槽位时若玩家用左键点击了【另一个】UI 按钮：取消当前录制并让新按钮立即响应点击
+			if (
+				(event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
+				and hovered is BaseButton
+				and hovered != _rebind_initiator_control
+			):
+				_capturer.cancel_capture()
+				return
+
 		var consumed := _capturer.handle_input_event(event, current_joy_brand)
 		if consumed:
 			var vp := get_viewport()
@@ -117,6 +153,9 @@ func _input(event: InputEvent) -> void:
 
 	# 2. 驱动硬件设备嗅探器（键鼠 <-> 手柄热切）
 	_tracker.process_input_event(event)
+
+	# 3. 锁存本帧瞬时按压脉冲（确保极速轻敲按键或 macOS 触控板同帧按下抬起时 100% 被 _process 与 _physics_process 捕获）
+	_record_pending_press_from_event(event)
 
 
 func _process(delta: float) -> void:
@@ -237,12 +276,17 @@ func get_active_context() -> int:
 
 func flush_all_states() -> void:
 	_wait_release_triggers.clear()
+	_chord_consumed_triggers.clear()
+	_pending_press_proc.clear()
+	_pending_press_phys.clear()
 	for act in _adapter.get_managed_actions():
 		if InputMap.has_action(act) and Input.is_action_pressed(act):
 			Input.action_release(act)
 		if _action_states.has(act):
 			var st: Dictionary = _action_states[act]
 			st["pressed"] = false
+			st["pressed_proc"] = false
+			st["pressed_phys"] = false
 			st["strength"] = 0.0
 
 
@@ -274,11 +318,15 @@ func rebind_interactive_async(
 	if start_res.is_err():
 		return start_res
 
+	var vp := get_viewport()
+	_rebind_initiator_control = vp.gui_get_hovered_control() if vp != null else null
+
 	push_context(InputContextType.Context.REBIND)
 	rebind_started.emit(action, device_type, slot)
 
 	var capture_res: Result = await _capturer.rebind_finished
-	_rebind_cooldown_frames = 2
+	_rebind_initiator_control = null
+	_rebind_cooldown_frames = 0
 	pop_context(InputContextType.Context.REBIND)
 
 	if capture_res.is_err():
@@ -409,6 +457,57 @@ func import_bindings(payload: Dictionary) -> Result:
 
 
 #region Internal Chord Evaluation Pipeline
+func _record_pending_press_from_event(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		return
+	if event is InputEventKey and (event as InputEventKey).echo:
+		return
+	if event is InputEventJoypadMotion:
+		var jm := event as InputEventJoypadMotion
+		if absf(jm.axis_value) >= 0.50:
+			var clean_axis := InputChord.make_joy_axis_event(jm.axis, 1.0 if jm.axis_value >= 0.0 else -1.0)
+			var axis_sig := InputChord.get_single_event_signature(clean_axis)
+			_pending_press_proc[axis_sig] = true
+			_pending_press_phys[axis_sig] = true
+		return
+	if not event.is_pressed():
+		return
+	var clean_ev := InputChord.clean_single_event(event)
+	if clean_ev != null:
+		var sig := InputChord.get_single_event_signature(clean_ev)
+		_pending_press_proc[sig] = true
+		_pending_press_phys[sig] = true
+	if event is InputEventWithModifiers:
+		var mod_ev := event as InputEventWithModifiers
+		if mod_ev.shift_pressed:
+			var s_sig := "KEY_%d" % int(KEY_SHIFT)
+			_pending_press_proc[s_sig] = true
+			_pending_press_phys[s_sig] = true
+		if mod_ev.ctrl_pressed:
+			var c_sig := "KEY_%d" % int(KEY_CTRL)
+			_pending_press_proc[c_sig] = true
+			_pending_press_phys[c_sig] = true
+		if mod_ev.alt_pressed:
+			var a_sig := "KEY_%d" % int(KEY_ALT)
+			_pending_press_proc[a_sig] = true
+			_pending_press_phys[a_sig] = true
+		if mod_ev.meta_pressed:
+			var m_sig := "KEY_%d" % int(KEY_META)
+			_pending_press_proc[m_sig] = true
+			_pending_press_phys[m_sig] = true
+
+
+func _is_chord_active_in_frame(chord: InputChord, dz: float, pending_press: Dictionary) -> bool:
+	if chord == null or chord.trigger == null:
+		return false
+	for m in chord.modifiers:
+		var m_sig := InputChord.get_single_event_signature(m)
+		if not InputChord.is_single_event_pressed_now(m, active_joy_id, dz) and not pending_press.has(m_sig):
+			return false
+	var trig_sig := chord.get_trigger_signature()
+	return InputChord.is_single_event_pressed_now(chord.trigger, active_joy_id, dz) or pending_press.has(trig_sig)
+
+
 func _ensure_evaluated() -> void:
 	_evaluate_for_current_frame(Engine.is_in_physics_frame())
 
@@ -425,6 +524,7 @@ func _evaluate_for_current_frame(is_physics: bool) -> void:
 			return
 		_last_eval_process_frame = proc_frame
 
+	var pending_press: Dictionary = _pending_press_phys if is_physics else _pending_press_proc
 	var dz := _adapter.get_joy_deadzone()
 
 	# 1. 更新防穿透抬起解锁表 (_wait_release_triggers)：已松开的物理键立即解除锁定
@@ -437,7 +537,17 @@ func _evaluate_for_current_frame(is_physics: bool) -> void:
 		for sig in to_remove:
 			_wait_release_triggers.erase(sig)
 
-	# 2. 第一遍扫描：评估所有高阶组合键（order >= 1），将已触发组合键的主键与修饰键记入同帧消费池
+	# 1b. 更新高阶组合键消费锁 (_chord_consumed_triggers)：已松开（或重新按下）的物理键解除单键抑制
+	if not _chord_consumed_triggers.is_empty():
+		var released_consumed: Array[String] = []
+		for trig_sig in _chord_consumed_triggers.keys():
+			var ev: InputEvent = _chord_consumed_triggers[trig_sig]
+			if ev == null or not InputChord.is_single_event_pressed_now(ev, active_joy_id, dz) or pending_press.has(trig_sig):
+				released_consumed.append(trig_sig)
+		for sig in released_consumed:
+			_chord_consumed_triggers.erase(sig)
+
+	# 2. 第一遍扫描：评估所有高阶组合键（order >= 1），将已触发组合键的主键与修饰键记入同帧消费池与持续抑制表
 	var consumed_triggers_by_ctx: Dictionary = {}
 	for act in _adapter.get_managed_actions():
 		if _adapter.is_axis_action(act):
@@ -451,31 +561,41 @@ func _evaluate_for_current_frame(is_physics: bool) -> void:
 			var trig_sig := chord.get_trigger_signature()
 			if _wait_release_triggers.has(trig_sig):
 				continue
-			if chord.are_modifiers_pressed_now(active_joy_id, dz) and chord.is_trigger_pressed_now(active_joy_id, dz):
+			if _is_chord_active_in_frame(chord, dz, pending_press):
 				if not consumed_triggers_by_ctx.has(ctx):
 					consumed_triggers_by_ctx[ctx] = {}
 				consumed_triggers_by_ctx[ctx][trig_sig] = true
+				_chord_consumed_triggers[trig_sig] = chord.trigger
 				for mod_ev in chord.modifiers:
-					consumed_triggers_by_ctx[ctx][InputChord.get_single_event_signature(mod_ev)] = true
+					var mod_sig := InputChord.get_single_event_signature(mod_ev)
+					consumed_triggers_by_ctx[ctx][mod_sig] = true
+					_chord_consumed_triggers[mod_sig] = mod_ev
 
-	# 3. 第二遍扫描：结算每个 Action 的最终按压态并更新双帧边沿时间戳
+	# 3. 第二遍扫描：结算每个 Action 的最终按压态并独立更新当前通道（Process 或 Physics）的边沿帧戳
 	for act in _adapter.get_managed_actions():
 		_ensure_action_state_entry(act)
 		var st: Dictionary = _action_states[act]
-		var was_pressed := bool(st["pressed"])
+		var was_pressed := bool(st["pressed_phys"]) if is_physics else bool(st["pressed_proc"])
 		var ctx := _adapter.get_action_context(act)
 
 		if not _is_context_allowed(ctx):
-			_apply_action_frame_transition(st, was_pressed, false, 0.0, proc_frame, phys_frame)
+			_apply_action_frame_transition(st, is_physics, was_pressed, false, false, false, 0.0, proc_frame, phys_frame)
 			continue
 
 		if _adapter.is_axis_action(act):
-			var axis_strength := _compute_axis_action_strength(act, dz)
-			_apply_action_frame_transition(st, was_pressed, axis_strength > 0.25, axis_strength, proc_frame, phys_frame)
+			var axis_strength := _compute_axis_action_strength(act, dz, pending_press)
+			var axis_active := axis_strength > 0.25
+			var axis_hw_held := _compute_axis_action_strength(act, dz) > 0.25
+			var axis_fresh := _has_any_chord_fresh_press(act, pending_press)
+			_apply_action_frame_transition(
+				st, is_physics, was_pressed, axis_active, axis_hw_held, axis_fresh, axis_strength, proc_frame, phys_frame
+			)
 			continue
 
 		var ctx_consumed: Dictionary = consumed_triggers_by_ctx.get(ctx, {})
 		var now_pressed := false
+		var hw_held := false
+		var fresh_press := false
 		var best_strength := 0.0
 
 		for chord in _adapter.get_all_chords(act):
@@ -483,48 +603,89 @@ func _evaluate_for_current_frame(is_physics: bool) -> void:
 			if _wait_release_triggers.has(trig_sig):
 				continue
 			if chord.is_chord():
-				if chord.are_modifiers_pressed_now(active_joy_id, dz) and chord.is_trigger_pressed_now(active_joy_id, dz):
+				if _is_chord_active_in_frame(chord, dz, pending_press):
 					now_pressed = true
-					best_strength = maxf(best_strength, chord.get_strength_now(active_joy_id, dz, false))
+					if chord.are_modifiers_pressed_now(active_joy_id, dz) and chord.is_trigger_pressed_now(active_joy_id, dz):
+						hw_held = true
+					if pending_press.has(trig_sig):
+						fresh_press = true
+					best_strength = maxf(best_strength, maxf(chord.get_strength_now(active_joy_id, dz, false), 1.0))
 			else:
-				# 单键绑定：若触发键在本帧已被同域高阶组合键消费，则自动抑制单键触发
-				if ctx_consumed.has(trig_sig):
+				# 单键绑定：若触发键在本帧已被高阶组合键消费，或处于组合键消费后的未松开阶段，则自动抑制单键触发
+				if ctx_consumed.has(trig_sig) or _chord_consumed_triggers.has(trig_sig):
 					continue
-				if chord.is_trigger_pressed_now(active_joy_id, dz):
+				var trig_hw := chord.is_trigger_pressed_now(active_joy_id, dz)
+				var trig_pending := pending_press.has(trig_sig)
+				if trig_hw or trig_pending:
 					now_pressed = true
-					best_strength = maxf(best_strength, chord.get_strength_now(active_joy_id, dz, true))
+					if trig_hw:
+						hw_held = true
+					if trig_pending:
+						fresh_press = true
+					best_strength = maxf(
+						best_strength,
+						maxf(chord.get_strength_now(active_joy_id, dz, true), 1.0 if trig_pending else 0.0)
+					)
 
-		_apply_action_frame_transition(st, was_pressed, now_pressed, best_strength, proc_frame, phys_frame)
+		_apply_action_frame_transition(
+			st, is_physics, was_pressed, now_pressed, hw_held, fresh_press, best_strength, proc_frame, phys_frame
+		)
+
+	pending_press.clear()
 
 
-func _compute_axis_action_strength(action: StringName, dz: float) -> float:
+func _compute_axis_action_strength(action: StringName, dz: float, pending_press: Dictionary = {}) -> float:
 	if not _adapter.has_action(action):
 		return Input.get_action_strength(action) if InputMap.has_action(action) else 0.0
 	var best := 0.0
 	for chord in _adapter.get_all_chords(action):
 		# 连续轴向动作强制 ignore_modifiers = true，保证按住 Shift/Ctrl 时 WASD 移动不断触
 		var s := chord.get_strength_now(active_joy_id, dz, true)
+		if s < 1.0 and not pending_press.is_empty() and pending_press.has(chord.get_trigger_signature()):
+			s = 1.0
 		if s > best:
 			best = s
 	return best
 
 
+func _has_any_chord_fresh_press(action: StringName, pending_press: Dictionary) -> bool:
+	if pending_press.is_empty():
+		return false
+	for chord in _adapter.get_all_chords(action):
+		if pending_press.has(chord.get_trigger_signature()):
+			return true
+	return false
+
+
 func _apply_action_frame_transition(
 	st: Dictionary,
+	is_physics: bool,
 	was_pressed: bool,
 	now_pressed: bool,
+	hw_held: bool,
+	fresh_press: bool,
 	strength: float,
 	proc_frame: int,
 	phys_frame: int
 ) -> void:
 	st["pressed"] = now_pressed
 	st["strength"] = strength if now_pressed else 0.0
-	if now_pressed and not was_pressed:
-		st["jp_proc"] = proc_frame
-		st["jp_phys"] = phys_frame
-	elif not now_pressed and was_pressed:
-		st["jr_proc"] = proc_frame
-		st["jr_phys"] = phys_frame
+	if is_physics:
+		st["pressed_phys"] = hw_held if now_pressed else false
+		if now_pressed and (not was_pressed or fresh_press):
+			st["jp_phys"] = phys_frame
+			if not hw_held:
+				st["jr_phys"] = phys_frame
+		elif not now_pressed and was_pressed:
+			st["jr_phys"] = phys_frame
+	else:
+		st["pressed_proc"] = hw_held if now_pressed else false
+		if now_pressed and (not was_pressed or fresh_press):
+			st["jp_proc"] = proc_frame
+			if not hw_held:
+				st["jr_proc"] = proc_frame
+		elif not now_pressed and was_pressed:
+			st["jr_proc"] = proc_frame
 
 
 func _is_context_allowed(action_ctx: int) -> bool:
@@ -541,12 +702,16 @@ func _is_context_allowed(action_ctx: int) -> bool:
 
 
 func _release_context_actions(target_ctx: int) -> void:
+	_pending_press_proc.clear()
+	_pending_press_phys.clear()
 	for act in _adapter.get_managed_actions(target_ctx):
 		if InputMap.has_action(act) and Input.is_action_pressed(act):
 			Input.action_release(act)
 		if _action_states.has(act):
 			var st: Dictionary = _action_states[act]
 			st["pressed"] = false
+			st["pressed_proc"] = false
+			st["pressed_phys"] = false
 			st["strength"] = 0.0
 
 
@@ -564,6 +729,8 @@ func _ensure_action_state_entry(action: StringName) -> void:
 	if not _action_states.has(action):
 		_action_states[action] = {
 			"pressed": false,
+			"pressed_proc": false,
+			"pressed_phys": false,
 			"strength": 0.0,
 			"jp_proc": -1,
 			"jr_proc": -1,
@@ -575,9 +742,9 @@ func _ensure_action_state_entry(action: StringName) -> void:
 func _sync_ime_state() -> void:
 	if DisplayServer.get_name() == "headless":
 		return
-	# 桌面端战斗态自动关闭输入法候选框，防止中文输入法拦截 WASD
-	var allow_ime := not _is_context_allowed(InputContextType.Context.GAMEPLAY)
-	DisplayServer.window_set_ime_active(allow_ime)
+	# 桌面端战斗态与按键录制态强制关闭输入法候选框，防止中文输入法拦截 WASD 或改键按键
+	if _is_context_allowed(InputContextType.Context.GAMEPLAY) or get_active_context() == InputContextType.Context.REBIND:
+		DisplayServer.window_set_ime_active(false)
 
 
 func _on_tracker_device_changed(device_type: int, joy_brand: int, joy_id: int) -> void:

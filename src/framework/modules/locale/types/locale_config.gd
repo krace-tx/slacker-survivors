@@ -6,7 +6,7 @@ extends Resource
 ## 表格式：首列 key，其后是语言代码（[code]zh_CN[/code]、[code]en_US[/code]）。
 ## 以下划线开头的列（如 [code]_tscn[/code]）是注释，引擎不导入，不影响 [method tr] / Auto Translate。
 ## CSV 由引擎导入，并在项目设置 Localization 里注册；本资源只回答「表在哪、默认哪门」。
-## 切语言走 [LocaleService]。各环境用不同 [code].tres[/code]，不写进 [EnvService]。
+## 切语言走 [BaseLocalizationSystem]（[code]App.locale[/code]）。各环境用不同 [code].tres[/code]，不写进 [BaseRuntimeEnvironment]。
 
 #region Constants & Enums
 ## 主流游戏发行语言；表头里出现的列才会启用。

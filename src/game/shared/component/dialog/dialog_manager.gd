@@ -5,16 +5,23 @@ extends RefCounted
 ## 维护活动弹窗列表（后入先出堆栈），并在顶层弹窗正下方调度全屏暗色背景遮罩。[br]
 ## 自动监听 [signal Bus.app_back_pressed] 事件，实现物理返回键/ESC优先关闭栈顶活动弹窗。
 
+#region Constants & Static State
+const _LOG_TAG: String = "DialogManager"
+const _BACKDROP_NODE_NAME: StringName = &"BackdropMask"
+const _BACKDROP_COLOR: Color = Color(0.0, 0.0, 0.0, 0.6)
+
 static var _stack: Array[Control] = []
 static var _backdrop: ColorRect = null
 static var _listener_connected: bool = false
 static var _ui_context_pushed: bool = false
+#endregion
 
 
+#region Public API
 ## 打开一个模态弹窗。
 ## [param path_or_scene] 可以是弹窗 .tscn 路径 (String) 或已加载的 PackedScene。
 ## [param params] 传递给弹窗的强类型数据契约实例（继承自 [BaseParams]）。
-## [param parent] 挂载的目标节点；若为空则默认挂载到 App.display.get_layer(BaseDisplaySystem.Layer.POPUP)。
+## [param parent] 挂载的目标节点；若为空则默认挂载到 `App.display.get_layer(BaseDisplaySystem.Layer.POPUP)`。
 ## @return 返回实例化的弹窗根节点 Control。
 static func open(path_or_scene: Variant, params: BaseParams = null, parent: Node = null) -> Control:
 	_ensure_listener()
@@ -34,13 +41,13 @@ static func open(path_or_scene: Variant, params: BaseParams = null, parent: Node
 		packed = path_or_scene
 
 	if packed == null:
-		push_error("[DialogManager] Failed to load dialog: %s" % str(path_or_scene))
+		_log_error("Failed to load dialog: %s" % str(path_or_scene))
 		return null
 
 	var instance := packed.instantiate()
 	if not (instance is Control):
 		instance.queue_free()
-		push_error("[DialogManager] Dialog root must be a Control: %s" % str(path_or_scene))
+		_log_error("Dialog root must be a Control: %s" % str(path_or_scene))
 		return null
 
 	var popup_ctrl := instance as Control
@@ -55,7 +62,7 @@ static func open(path_or_scene: Variant, params: BaseParams = null, parent: Node
 
 	if mount_target == null:
 		popup_ctrl.queue_free()
-		push_error("[DialogManager] No valid mount target available for dialog.")
+		_log_error("No valid mount target available for dialog.")
 		return null
 
 	_ensure_backdrop(mount_target)
@@ -88,8 +95,7 @@ static func close(dialog: Control = null) -> void:
 
 ## 关闭当前栈顶活动弹窗。
 static func close_top() -> bool:
-	# 清理已释放的无效引用
-	_stack = _stack.filter(func(d: Control) -> bool: return is_instance_valid(d))
+	_prune_invalid_dialogs()
 	if _stack.is_empty():
 		return false
 
@@ -108,7 +114,7 @@ static func close_top() -> bool:
 
 ## 查询当前是否有展示中的模态弹窗。
 static func has_modal() -> bool:
-	_stack = _stack.filter(func(d: Control) -> bool: return is_instance_valid(d))
+	_prune_invalid_dialogs()
 	return not _stack.is_empty()
 
 
@@ -119,9 +125,14 @@ static func clear() -> void:
 			dialog.queue_free()
 	_stack.clear()
 	_update_backdrop_state()
+#endregion
 
 
-#region Internal
+#region Internal Backdrop & Input Context Management
+static func _prune_invalid_dialogs() -> void:
+	_stack = _stack.filter(func(d: Control) -> bool: return is_instance_valid(d))
+
+
 static func _ensure_listener() -> void:
 	if _listener_connected:
 		return
@@ -148,8 +159,8 @@ static func _ensure_backdrop(mount_target: Node) -> void:
 		return
 
 	_backdrop = ColorRect.new()
-	_backdrop.name = "BackdropMask"
-	_backdrop.color = Color(0, 0, 0, 0.6)
+	_backdrop.name = _BACKDROP_NODE_NAME
+	_backdrop.color = _BACKDROP_COLOR
 	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	_backdrop.visible = false
@@ -166,7 +177,7 @@ static func _on_backdrop_gui_input(event: InputEvent) -> void:
 
 
 static func _update_backdrop_state() -> void:
-	_stack = _stack.filter(func(d: Control) -> bool: return is_instance_valid(d))
+	_prune_invalid_dialogs()
 	if _stack.is_empty():
 		if _ui_context_pushed:
 			_ui_context_pushed = false
@@ -188,5 +199,12 @@ static func _update_backdrop_state() -> void:
 		var top: Control = _stack.back()
 		if top.get_parent() == _backdrop.get_parent():
 			var idx: int = top.get_index()
-			_backdrop.get_parent().move_child(_backdrop, max(0, idx))
+			_backdrop.get_parent().move_child(_backdrop, maxi(0, idx))
+
+
+static func _log_error(message: String) -> void:
+	if App != null and App.logger != null:
+		App.logger.error(_LOG_TAG, message)
+	else:
+		push_error("[%s] %s" % [_LOG_TAG, message])
 #endregion

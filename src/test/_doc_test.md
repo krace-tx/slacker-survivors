@@ -65,7 +65,7 @@ src/test/<feature_name>/
 ## 三、 独立运行与调试机制
 
 1. **编辑器一键运行（`F6`）**：
-   - [`App`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/autoload/app.gd#L60-L65) 内置 `_ensure_standalone_bootstrap()` 保底机制：当直接运行任何非 `SplashScene` 的测试场景时，会自动完成 `await App.bootstrap()` 装配全部 12 个框架底层服务。
+   - [`App`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/autoload/app.gd#L60-L65) 内置 `_ensure_standalone_bootstrap()` 保底机制：当直接运行任何非 `BootstrapScene` 的测试场景时，会自动完成 `await App.bootstrap()` 装配全部 13 个框架底层服务并绑定当前场景路由。
    - 在 Godot 编辑器中打开任意 `src/test/<feature_name>/` 下的 `.tscn` 场景并按下 `F6`（运行当前场景），即可直接测试该功能。
 2. **命令行运行**：
    ```bash

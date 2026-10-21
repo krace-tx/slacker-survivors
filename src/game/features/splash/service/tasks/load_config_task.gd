@@ -1,19 +1,24 @@
 class_name LoadConfigTask
 extends BootTask
 
-## 启动任务 1：绑定核心存储契约并装载静态策划数值配置表 (CRITICAL)。
+## 启动任务 1：绑定核心存储契约并装载静态配置表 (`CRITICAL`)。
+
+const _TASK_ID: StringName = &"load_config"
+const _TASK_TITLE: String = "装载静态配置与存储契约"
+const _TASK_WEIGHT: float = 20.0
+const _ERR_STORAGE_MISSING: String = "Splash.StorageMissing"
 
 
 func get_task_id() -> StringName:
-	return &"load_config"
+	return _TASK_ID
 
 
 func get_task_title() -> String:
-	return "装载静态数值与存储契约"
+	return _TASK_TITLE
 
 
 func get_weight() -> float:
-	return 20.0
+	return _TASK_WEIGHT
 
 
 func get_failure_policy() -> FailurePolicy:
@@ -22,7 +27,7 @@ func get_failure_policy() -> FailurePolicy:
 
 func execute(context: SplashBootContext) -> Result:
 	if App.storage == null:
-		return Result.err_code("Splash.StorageMissing", "Storage subsystem is not initialized.")
+		return Result.err_code(_ERR_STORAGE_MISSING, "Storage subsystem is not initialized.")
 
 	# 1. 确保所有全局持久化契约项已在 StorageSystem 中注册绑定
 	var settings_item := GameSettingsModel.storage_item()

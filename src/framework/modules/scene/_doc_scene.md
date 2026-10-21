@@ -56,7 +56,7 @@ class LevelResultParams extends BaseParams:
 	var solved_level_id: int = 0
 
 # 2. 默认智能流式切场（无参时 params 默认为 null）
-var replace_res := await App.scene.replace("res://src/game/scenes/gallery/gallery.tscn")
+var replace_res := await App.scene.replace(GameScenes.Scene.SPLASH)
 if replace_res.is_err():
 	App.logger.error("Scene", replace_res.error_message())
 
