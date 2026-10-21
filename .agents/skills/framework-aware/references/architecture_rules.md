@@ -1,6 +1,6 @@
 # Skill Wiki · 框架架构设计铁律与约束准则 (Architecture Rules)
 
-> 📖 **Wiki 定位**：本规范记录项目的核心架构约束。Agent 在编写或重构任何代码时，必须遵守本文件的硬性规则，避免破坏系统分层与封装。
+> **Wiki 定位**：本规范记录项目的核心架构约束。Agent 在编写或重构任何代码时，必须遵守本文件的硬性规则，避免破坏系统分层与封装。
 
 ---
 
@@ -21,7 +21,9 @@
 ### 依赖红线
 1. **表现层严禁拥有核心业务状态**：UI 节点只负责视图呈现与事件收集，不处理战斗数值计算或业务决策。
 2. **业务逻辑层严禁直接操作具体 UI 节点**：业务计算（如玩家扣血、怪物死亡）禁止调用 `get_node("/root/.../HealthBar")`；应通过 Signal 向上抛出事件，由 Presenter 或 UI 监听刷新。
-3. **框架层严禁反向依赖业务层**：`src/framework/` 下不得引用任何 `src/game/` 内的代码或资源。所有业务通用控件（如 `BaseDialog`、`DialogManager`）必须放在 `src/game/shared/components/`。
+3. **框架层严禁反向依赖业务层**：`src/framework/` 下不得引用任何 `src/game/` 内的代码或资源。所有业务通用控件（如 `BaseDialog`、`DialogManager`）必须放在 `src/game/shared/component/`。
+4. **框架模块间严禁通过 `App.xxx` 隐式耦合**：`src/framework/modules/`、`infra/`、`util/` 内部严禁调用 `App.xxx` 获取其他服务；模块间依赖必须在实现类声明 `MODULE_ID` / `REQUIRED_MODULES` / `OPTIONAL_MODULES`，并由 `FrameworkRuntime` 通过构造函数或 Setter 显式注入公开门面（`Base*`）。
+5. **严禁跨模块或跨层访问 `impl/` 私有实现**：`src/game/` 及其他模块只允许引用公开门面（`Base*`）与 `types/`，严禁直接引用或实例化任何模块 `impl/` 下的内部类、Adapter 或 Driver。
 
 ---
 
@@ -33,9 +35,9 @@
 | :--- | :--- | :--- | :--- |
 | **父子节点级** | **Signal / 方法调用** | 强内聚的单场景内树形结构 | 按钮点击通知父面板 `button.pressed`；子控件通过信号传递数据给上层。 |
 | **同层模块间** | **全局事件总线 (`Bus`)** | 跨界面、跨系统广播通知，监听者无需知晓触发源 | 玩家经验满级广播 `Bus.emit("player_leveled_up", data)`，战斗 HUD 与成就系统各自监听。 |
-| **全局服务调用** | **服务定位器 (`App.xxx`)** | 获取由框架统一管理的全局系统能力 | 播放音效 `App.audio.play_sfx(...)`；切换场景 `App.scene.replace(...)`；网络请求 `App.net.get(...)`。 |
+| **全局服务调用** | **服务定位器 (`App.xxx`)** | 获取由框架统一管理的全局系统能力 | 播放音效 `App.audio.play_sfx(...)`；切换场景 `App.scene.replace(...)`；网络请求 `App.net.get_request(...)`。 |
 
-> ⚠️ **严禁行为**：
+> **严禁行为**：
 > - 严禁在两个平级业务模块间互相 `get_node()` 强引用。
 > - 严禁绕过 `App` 门面自行实例化或缓存底层服务单例。
 
@@ -45,20 +47,20 @@
 
 全工程遵循统一的语义化命名标准：
 
-> 💡 **核心原则**：
+> **核心原则**：
 > - **领域 / 系统 / 功能域 ➔ 单数 (Singular)**：表达一个子系统、能力范畴、逻辑分层或业务领域。
 > - **容器 / 资源 / 实例集合 ➔ 复数 (Plural)**：表达物理或逻辑上存放多个具体同质对象、文件、资源或插件的集合。
 
 ### 核心对比查照
-- **单数技术域**：`src/framework/`、`src/framework/infra/param/`、`src/framework/modules/logger/`、`src/framework/util/file/`、`src/game/scenes/battle/`。
-- **复数容器域**：`src/assets/videos/`、`src/assets/textures/`、`src/game/shared/components/`、`addons/`、`docs/`、各模块内的 `types/`、`adapters/`。
+- **单数技术/共享域**：`src/framework/`、`src/framework/infra/param/`、`src/framework/modules/logger/`、`src/framework/util/file/`、`src/game/shared/define/`、`src/game/shared/model/`、`src/game/shared/service/`、`src/game/shared/component/`。
+- **复数容器域**：`src/assets/videos/`、`src/assets/textures/`、`src/game/features/`、`addons/`、`docs/`、各模块内的 `types/`、`adapters/`。
 
 ---
 
 ## 4. 工具集二级封装规范 (`util/`)
 
 1. `src/framework/util/` 下禁止在根目录下平铺海量工具文件。
-2. 必须按照技术领域细分二级单数目录（如 `file/file_utils.gd`、`async/async_utils.gd`、`node/node_utils.gd` 等）。
+2. 必须按照技术领域细分二级单数目录（如 `file/file_utils.gd`、`codec/resource_codec_utils.gd`、`node/node_utils.gd` 等）。
 3. 所有工具类对外必须暴露统一风格的全局类名（`class_name XxxUtils`），工具方法统一声明为静态方法 `static func`。
 
 ---
