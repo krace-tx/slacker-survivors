@@ -28,7 +28,7 @@ src/test/
 ```text
 src/test/<feature_name>/
 ├── _doc_<feature_name>.md       # [可选] 测试目的与验证项说明
-├── <feature_name>_test.tscn     # 测试入口场景 (根节点继承 BaseScene，包含 $UI: BaseUIView)
+├── <feature_name>_test.tscn     # 测试入口场景 (根节点继承 BaseScene，包含 $UI: BaseView)
 ├── <feature_name>_test.gd       # 测试场景脚本
 └── assets/                      # [可选] 仅该测试模块专用的临时测试素材 (复数容器)
 ```
@@ -43,7 +43,7 @@ src/test/<feature_name>/
 ├── assets/                      # [可选] 仅该测试模块专用的临时测试素材
 ├── model/                       # 数据与状态定义 (按 *Config / *Model / *State / *Params 后缀区分)
 ├── service/                     # 业务逻辑、被测能力编排与 App.* 调用
-├── view/                        # 测试场景 (.tscn) 与视图节点脚本 (BaseScene / BaseUIView / BaseDialog)
+├── view/                        # 测试场景 (.tscn) 与视图节点脚本 (BaseScene / BaseView / BaseDialog)
 └── presenter/                   # 连接 View 与 Service/Model 的中介胶水层
 ```
 
@@ -81,4 +81,4 @@ src/test/<feature_name>/
 
 1. **单向依赖铁律**：仅允许 `src/test/` 单向引用 `src/framework/` 与 `src/game/`；`src/framework/` 与 `src/game/` 的正式代码**严禁**引用 `src/test/` 下的任何脚本、场景或 `assets/` 测试素材。
 2. **模块互不耦合**：`src/test/` 下的各个 `<feature_name>/` 测试目录彼此完全独立，**严禁**跨测试目录互相引用。
-3. **基类与规范对齐**：测试场景根节点统一继承 [`BaseScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene.gd)，顶层 UI 节点统一继承 [`BaseUIView`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/ui/base_ui_view.gd)，日志输出统一使用 `App.logger`，数据结构命名严格遵循 [`_doc_game.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/_doc_game.md) 的领域后缀规范。
+3. **基类与规范对齐**：测试场景根节点统一继承 [`BaseScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene.gd)，顶层 UI 节点统一继承 [`BaseView`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/base_view.gd)，日志输出统一使用 `App.logger`，数据结构命名严格遵循 [`_doc_game.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/_doc_game.md) 的领域后缀规范。

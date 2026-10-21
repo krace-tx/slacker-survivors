@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/test/input/input_test.gd" id="1_test"]
-[ext_resource type="Script" path="res://src/framework/modules/ui/base_ui_view.gd" id="2_uiview"]
+[ext_resource type="Script" path="res://src/framework/modules/display/base_view.gd" id="2_uiview"]
 
 [node name="InputTestScene" type="Node"]
 script = ExtResource("1_test")

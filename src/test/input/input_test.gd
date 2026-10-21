@@ -25,7 +25,7 @@ var _slot_buttons: Dictionary = {}
 var _recent_triggers: Array[String] = []
 
 
-func _on_enter(_params: Dictionary = {}) -> void:
+func _on_enter(_params: BaseParams = null) -> void:
 	_build_test_ui()
 	Bus.input_device_changed.connect(_on_device_or_binding_changed)
 	Bus.input_bindings_changed.connect(_on_binding_changed)

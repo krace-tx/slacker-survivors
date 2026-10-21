@@ -1,0 +1,60 @@
+[gd_scene load_steps=2 format=3 uid="uid://ca6r1t3bodl40"]
+
+[ext_resource type="Script" path="res://src/game/features/splash/view/splash_scene.gd" id="1_splash"]
+
+[node name="SplashScene" type="Node"]
+script = ExtResource("1_splash")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.08, 0.11, 1)
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/CenterContainer"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="UI/CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Slacker Survivors"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="UI/CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+value = 0.0
+show_percentage = false
+
+[node name="StatusLabel" type="Label" parent="UI/CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Initializing..."
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="UI/CenterContainer/VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "重试启动"
