@@ -5,7 +5,7 @@ extends BootTask
 ## 评估外部强制直达路由（如开发测试覆盖或 DeepLink）与默认首屏目标场景，决定启动完成后的跳转目标。
 
 const _TASK_ID: StringName = &"resolve_route"
-const _TASK_TITLE: String = "裁决首屏目标场景路由"
+const _TASK_TITLE: String = "准备就绪"
 const _TASK_WEIGHT: float = 15.0
 const _ERR_CONTEXT_MISSING: String = "Splash.ContextMissing"
 

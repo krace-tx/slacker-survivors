@@ -4,7 +4,7 @@ extends BootTask
 ## 启动任务 1：绑定核心存储契约并装载静态配置表 (`CRITICAL`)。
 
 const _TASK_ID: StringName = &"load_config"
-const _TASK_TITLE: String = "装载静态配置与存储契约"
+const _TASK_TITLE: String = "加载配置"
 const _TASK_WEIGHT: float = 20.0
 const _ERR_STORAGE_MISSING: String = "Splash.StorageMissing"
 

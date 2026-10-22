@@ -33,7 +33,7 @@ flowchart LR
 
 1. **彻底根除首帧画面闪烁、语言跳变与启动爆音**：
    - 若将带 UI 的闪屏场景直接设为 `run/main_scene`，引擎会在读取玩家本地设置前先以工程默认窗口尺寸、默认语言和未静音音量渲染首帧，随后再 resize 窗口或切换语言，导致肉眼可见的窗口跳变与闪屏；
-   - 由纯空 `BootstrapScene` 先行完成 `App.bootstrap()` 与 `GameSettingsService.load_and_apply()`，确保当 [`SplashScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/splash_scene.gd) 渲染第 1 帧像素时，分辨率、画质抗锯齿、多语言与音频总线已 100% 处于玩家偏好状态。
+   - 由纯空 `BootstrapScene` 先行完成 `App.bootstrap()` 与 `GameSettingsService.load_and_apply()`，确保当 [`SplashScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/scene/splash/splash_scene.gd) 渲染第 1 帧像素时，分辨率、画质抗锯齿、多语言与音频总线已 100% 处于玩家偏好状态。
 2. **职责边界清晰正交**：
    - `src/game/bootstrap/` 只管**「引擎内核拉起 ➔ 硬件环境对齐 ➔ 首棒交接」**，永不膨胀；
    - 具体的品牌闪屏界面、进度条阻尼动效、业务配表/档案加权加载管线与异常断点重试，完整收敛在 [`src/game/features/splash/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/_doc_splash.md) 中，严格遵循业务层标准 **MSVP (`model/` - `service/` - `view/` - `presenter/`)** 架构。

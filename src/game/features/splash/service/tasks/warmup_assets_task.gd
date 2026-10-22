@@ -5,7 +5,7 @@ extends BootTask
 ## 采用分帧平滑预热策略，避免首屏切换卡顿；若个别非关键资源预热失败，静默忽略绝不阻断进游。
 
 const _TASK_ID: StringName = &"warmup_assets"
-const _TASK_TITLE: String = "预热首屏核心资源"
+const _TASK_TITLE: String = "预热资源"
 const _TASK_WEIGHT: float = 25.0
 
 var _warmup_paths: Array[String] = []

@@ -5,7 +5,7 @@ extends BootTask
 ## 若存档版本过高或迁移失败则中止启动以保护玩家原存档不被覆盖；若为新玩家则自动建档落盘。
 
 const _TASK_ID: StringName = &"load_profile"
-const _TASK_TITLE: String = "读取玩家基础档案"
+const _TASK_TITLE: String = "读取存档"
 const _TASK_WEIGHT: float = 25.0
 const _ERR_STORAGE_MISSING: String = "Splash.StorageMissing"
 

@@ -1,0 +1,110 @@
+[gd_scene load_steps=7 format=3 uid="uid://cbootprogpanel01"]
+
+[ext_resource type="Script" path="res://src/game/features/splash/view/component/progress/boot_progress_panel.gd" id="1_panel"]
+[ext_resource type="Script" path="res://src/game/features/splash/view/component/progress/boot_progress_bar.gd" id="2_bar"]
+[ext_resource type="Script" path="res://src/game/shared/component/button/base_texture_button.gd" id="3_base_tex_btn"]
+[ext_resource type="Texture2D" path="res://src/assets/textures/ui/btn_minimal_retry.svg" id="4_btn_tex"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0.98, 0.96, 0.93, 0.22)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(0.98, 0.96, 0.93, 0.94)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="BootProgressPanel" type="VBoxContainer"]
+custom_minimum_size = Vector2(360, 0)
+theme_override_constants/separation = 18
+script = ExtResource("1_panel")
+
+[node name="TitleGroup" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="TitleGroup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.99, 0.98, 0.96, 0.95)
+theme_override_colors/font_shadow_color = Color(0.08, 0.07, 0.06, 0.42)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 5
+theme_override_font_sizes/font_size = 36
+text = "摸 鱼 幸 存 者"
+
+[node name="SubtitleLabel" type="Label" parent="TitleGroup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.89, 0.84, 0.62)
+theme_override_colors/font_shadow_color = Color(0.08, 0.07, 0.06, 0.35)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/shadow_outline_size = 3
+theme_override_font_sizes/font_size = 11
+text = "S L A C K E R   S U R V I V O R S"
+
+[node name="ProgressGroup" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ProgressBar" type="ProgressBar" parent="ProgressGroup"]
+custom_minimum_size = Vector2(360, 2)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+value = 0.0
+show_percentage = false
+script = ExtResource("2_bar")
+
+[node name="MetaRow" type="HBoxContainer" parent="ProgressGroup"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="ProgressGroup/MetaRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.92, 0.9, 0.86, 0.68)
+theme_override_colors/font_shadow_color = Color(0.06, 0.05, 0.05, 0.38)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/shadow_outline_size = 3
+theme_override_font_sizes/font_size = 12
+text = "正在启动"
+
+[node name="PercentLabel" type="Label" parent="ProgressGroup/MetaRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.93, 0.89, 0.78)
+theme_override_colors/font_shadow_color = Color(0.06, 0.05, 0.05, 0.38)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/shadow_outline_size = 3
+theme_override_font_sizes/font_size = 12
+text = "0%"
+horizontal_alignment = 2
+
+[node name="RetryButton" type="TextureButton" parent="."]
+visible = false
+custom_minimum_size = Vector2(104, 28)
+layout_mode = 2
+size_flags_horizontal = 0
+texture_normal = ExtResource("4_btn_tex")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("3_base_tex_btn")
+
+[node name="RetryLabel" type="Label" parent="RetryButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.96, 0.95, 0.92, 0.92)
+theme_override_font_sizes/font_size = 12
+text = "重试"
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -5,7 +5,7 @@ extends BootTask
 ## 若网络不可达或处于纯单机环境，自动降级为离线模式继续进游，绝不阻断单机游玩。
 
 const _TASK_ID: StringName = &"sync_session"
-const _TASK_TITLE: String = "同步运行环境与时间基准"
+const _TASK_TITLE: String = "同步环境"
 const _TASK_WEIGHT: float = 15.0
 const _ERR_CLOCK_UNTRUSTED: String = "Splash.ClockUntrusted"
 

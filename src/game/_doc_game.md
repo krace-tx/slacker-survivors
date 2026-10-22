@@ -61,8 +61,12 @@ src/game/features/<feature_name>/
 ├── _doc_<feature_name>.md
 ├── model/                       # 数据结构与状态定义 (按架构后缀区分领域)
 ├── service/                     # 业务规则校验、App.* 存储/网络读写、Model 修改
-├── view/                        # 场景 (.tscn) 与视图节点脚本 (BaseScene / BaseView / BaseDialog / Control)
-└── presenter/                   # 视图与业务中介胶水 (监听 View 交互 -> 调 Service；监听 Model/Bus -> 刷 View)
+├── presenter/                   # 视图与业务中介胶水 (监听 View 交互 -> 调 Service；监听 Model/Bus -> 刷 View)
+└── view/                        # 视图表现层 (按 scene/ 与 component/ 分类，每个单元以独立领域文件夹包裹)
+    ├── scene/                   # [主场景单元集合] 顶层路由舞台 (BaseScene + BaseView)
+    │   └── <domain>/            # 单个主场景单元文件夹 (按领域命名，内含 1 个 .tscn + 多个 .gd)
+    └── component/               # [局部预制体单元集合] 拆出的可复用挂件、动态列表项或弹窗预制体
+        └── <domain>/            # 单个组件预制体单元文件夹 (按领域命名，内含 1 个 .tscn + 多个 .gd)
 ```
 
 ```mermaid
@@ -122,8 +126,17 @@ flowchart LR
 | **`model/`** | MSVP / MES | 持有纯数据结构、运行态字段与序列化映射；状态变化时发射 `signal` | **严禁**引用任何 UI 节点；**严禁**调用 `App.net` / `App.storage` 执行 I/O。 |
 | **`engine/`** | MES | 核心数值公式、波次/掉落生成算法、复杂状态机推演（`class_name XxxEngine`） | **严禁**引用 UI 节点；**严禁**直接读写磁盘存档或发起网络请求，保持纯函数/纯算法特性。 |
 | **`service/`** | MSVP / MES | 业务流程编排、规则校验、调用 `Engine`、读写 `App.*` 门面、更新 `Model`、发送 `Bus.emit` | **严禁**直接查找或修改具体 View 控件节点；**严禁**编写界面 Tween 补间动画。 |
-| **`view/`** | MSVP | 继承 [`BaseScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene.gd) / [`BaseView`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/base_view.gd) / [`BaseDialog`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/component/dialog/base_dialog.gd) 或 `Control`；负责节点排版、动效播放、捕获输入并抛出 `signal` | **严禁**编写业务规则计算（如扣减金币、伤害公式）；**严禁**直接篡改持久化 Model。 |
+| **`view/`** | MSVP | 内部划分为 `scene/<domain>/`（顶层场景舞台）与 `component/<domain>/`（拆出的局部预制体/弹窗单元）；每个单元必须用**无后缀的领域文件夹**包裹 `1 个 .tscn + 多个职责单一的 .gd` | **严禁**将 `.tscn` 与 `.gd` 平铺散落在 `view/` 根目录；**严禁**在视图层编写业务规则计算或直接篡改持久化 Model。 |
 | **`presenter/`** | MSVP | 连接 `View` 与 `Service`/`Model` 的胶水层；管理信号连接与界面销毁解绑 | **保持薄层**。不写复杂玩法算法（归 `service/` 或 `engine/`），不直接操作底层子节点树（归 `view/`）。 |
+
+### 4. `view/` 内部二级分类与“单元文件夹”包裹规范 (`scene/` vs `component/`)
+
+为了防止复杂界面将十几个 `.tscn` 和 `.gd` 平铺堆在 `view/` 下，同时避免单个场景脚本既管路由生命周期、又管安全区、又管子控件帧动画而变成上千行的“上帝脚本”，`view/` 内部强制执行 **“二级职能分类 + 领域单元文件夹包裹（1 `.tscn` + N `.gd`）”**：
+
+| 二级目录 | 单元文件夹命名 | 适用维度与拆分准则 | 单元文件夹内部标准构成 (`1 .tscn + N .gd`) |
+| :--- | :--- | :--- | :--- |
+| **`view/scene/<domain>/`** | 精简领域单数名词（如 `view/scene/splash/`） | **顶层主场景舞台**：由 `App.scene.replace()` / `push()` 直接路由切换的全屏场景。 | • `<domain>_scene.tscn`：主场景文件<br>• `<domain>_scene.gd`（`extends BaseScene`）：仅负责 `_on_enter` / `_on_exit` 路由生命周期与 `Presenter` 装配<br>• `<domain>_view.gd`（`extends BaseView`）：挂载于 `UI` 节点，负责安全区适配、组合子组件与暴露 `render_*()` 接口 |
+| **`view/component/<domain>/`** | 精简领域单数名词（对齐 `shared/component/button/` 风格，如 `view/component/progress/`、`view/component/card/`） | **局部预制体（Prefab）与拆分组件**：<br>1. **动态实例化项**：列表格子、掉落物、飘字等需多次 `instantiate()` 的预制体；<br>2. **同模块复用件**：在模块内多处复用的公共挂件；<br>3. **高复杂度隔离块**：拥有独立帧更新（`_process`）、复杂补间或深层节点树的局部区域，拆出以保持主场景 `.tscn` 整洁；<br>4. **模态弹窗预制体**：通过 `DialogManager.open()` 弹出的 `BaseDialog` 窗口单元。 | • **严禁使用赘述的 `_component` / `Component` 后缀**，统一按具体 UI 语义角色命名（`*Panel`、`*Bar`、`*Card`、`*Slot`、`*Item`、`*Button`、`*Dialog`）：<br>• `<role_name>.tscn`（如 [`boot_progress_panel.tscn`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/component/progress/boot_progress_panel.tscn)）<br>• `<role_name>.gd`（如 [`boot_progress_panel.gd`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/component/progress/boot_progress_panel.gd)）<br>• `<sub_part>.gd`（如 [`boot_progress_bar.gd`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/component/progress/boot_progress_bar.gd)） |
 
 ---
 
@@ -146,7 +159,7 @@ flowchart LR
 
 1. **统一启动入口（空入口 `bootstrap/` 交接 + 垂直模块 `features/splash/` 管线）**：
    - 引擎默认启动主场景（`run/main_scene`）配置为纯空入口 [`res://src/game/bootstrap/bootstrap_scene.tscn`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/bootstrap_scene.tscn)（[`BootstrapScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/bootstrap_scene.gd)）；
-   - `BootstrapScene` 在渲染首帧 UI 前率先完成 `await App.bootstrap()` 框架内核装配与 [`GameSettingsService.load_and_apply()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/settings/game_settings_service.gd) 硬件参数同步（窗口/分辨率/Locale/音量），随后无感移交至 [`features/splash`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/_doc_splash.md) 模块的 [`SplashScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/splash_scene.gd)；
+   - `BootstrapScene` 在渲染首帧 UI 前率先完成 `await App.bootstrap()` 框架内核装配与 [`GameSettingsService.load_and_apply()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/settings/game_settings_service.gd) 硬件参数同步（窗口/分辨率/Locale/音量），随后无感移交至 [`features/splash`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/_doc_splash.md) 模块的 [`SplashScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/scene/splash/splash_scene.gd)；
    - `SplashScene` 通过 [`SplashPresenter`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/presenter/splash_presenter.gd) 委托 [`SplashBootService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/splash_boot_service.gd) 顺序执行加权业务任务（配表装载 ➔ 会话同步 ➔ [`PlayerProfileService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/profile/player_profile_service.gd) 档案恢复 ➔ 资源预热 ➔ 首屏路由裁决），完成后广播 `GameEvents.BOOTSTRAP_COMPLETED` 并自动流转至目标场景。
 2. **跨模块解耦通讯**：
    - `features/` 下的各个垂直模块之间**严禁直接交叉 import 对方的内部 `Presenter`、`View` 或私有 `State`**；

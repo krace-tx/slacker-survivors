@@ -24,7 +24,7 @@ var progress_ratio: float = 0.0
 ## 当前正在执行的任务 ID
 var current_task_id: StringName = &""
 ## 当前展示的状态提示文案
-var status_text: String = "正在准备游戏数据..."
+var status_text: String = "正在启动"
 ## 失败挂起时的任务 ID
 var failed_task_id: StringName = &""
 ## 失败挂起时的错误码
@@ -61,20 +61,15 @@ func mark_failed(task_id: StringName, code: String, message: String) -> void:
 	failed_task_id = task_id
 	error_code = code
 	error_message = message
-	status_text = "启动异常 [%s]: %s" % [code, message]
+	status_text = "启动异常 (%s)" % code if not code.is_empty() else "启动异常"
 	state_changed.emit()
 
 
 ## 标记管线全部完成
-func mark_completed(total_ms: int, target_scene: String) -> void:
+func mark_completed(_total_ms: int, _target_scene: String) -> void:
 	phase = Phase.COMPLETED
 	progress_ratio = 1.0
 	current_task_id = &""
-	if target_scene.is_empty():
-		status_text = "启动就绪 (%d ms)" % total_ms
-	elif not ResourceLoader.exists(target_scene):
-		status_text = "启动就绪 (%d ms) · 待接入场景: %s" % [total_ms, target_scene.get_file()]
-	else:
-		status_text = "启动就绪"
+	status_text = "准备就绪"
 	state_changed.emit()
 #endregion
