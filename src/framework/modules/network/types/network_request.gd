@@ -36,6 +36,12 @@ var expect_json: bool = true
 ## 可选的协作式取消令牌（绑定 [TaskScope] 后可在场景/UI 退出时自动中止请求与退避等待）
 var cancel_token: CancellationToken = null
 
+## 是否启用 HMAC-SHA256 请求防篡改签名（默认 [code]true[/code]，当客户端配置了全局签名密钥或单次 [member signing_secret] 时生效）
+var sign_request: bool = true
+
+## 单次请求专属的 HMAC-SHA256 签名密钥（为空时自动沿用 [method BaseNetworkClient.set_request_signing] 设置的全局密钥）
+var signing_secret: String = ""
+
 
 func _init(
 	p_url: String = "",
@@ -92,5 +98,12 @@ func with_expect_json(p_expect_json: bool) -> NetworkRequest:
 ## 链式绑定协作式取消令牌。
 func with_cancel_token(p_token: CancellationToken) -> NetworkRequest:
 	cancel_token = p_token
+	return self
+
+
+## 链式开启或关闭 HMAC-SHA256 请求防篡改签名（可选指定单次专属密钥）。
+func with_signature(p_enabled: bool = true, p_custom_secret: String = "") -> NetworkRequest:
+	sign_request = p_enabled
+	signing_secret = p_custom_secret.strip_edges()
 	return self
 #endregion

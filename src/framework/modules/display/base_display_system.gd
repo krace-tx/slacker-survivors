@@ -32,6 +32,11 @@ enum WindowMode {
 	EXCLUSIVE_FULLSCREEN = 3, ## 独占全屏模式（绕过桌面合成器，最低输入延迟）
 }
 
+## 全局默认安全区缩放比例下限与默认值（统一在 DisplaySystem 与 GameSettingsModel 中管控）
+const MIN_SAFE_AREA_SCALE: float = 0.80
+const MAX_SAFE_AREA_SCALE: float = 1.00
+const DEFAULT_SAFE_AREA_SCALE: float = 1.00
+
 ## 常见主流分辨率梯度预设（覆盖 16:9 / 16:10 / 21:9）
 const COMMON_RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(1280, 720),
@@ -145,6 +150,29 @@ func get_window_aspect() -> float
 
 
 #region 5. Display Safe Area & Aspect-Ratio Guard
+## 全局安全区默认配置（比例或宽高比锁定）发生变更时发射
+signal safe_area_changed()
+
+## 设置全局默认安全区缩放比例（[code]0.80 ~ 1.00[/code]，默认 [code]1.0[/code] 表示 100% 贴合安全区，[code]0.90[/code] 表示四周向内留白 10%）。
+@abstract
+func set_safe_area_scale(scale_ratio: float) -> void
+
+
+## 获取当前全局默认安全区缩放比例。
+@abstract
+func get_safe_area_scale() -> float
+
+
+## 设置全局默认是否在安全区内锁定项目基准设计宽高比（超宽屏/异形屏下居中内接 UI 安全框）。
+@abstract
+func set_lock_design_aspect(locked: bool) -> void
+
+
+## 获取当前全局默认是否锁定设计宽高比。
+@abstract
+func is_lock_design_aspect() -> bool
+
+
 ## 获取逻辑视口坐标系（Canvas Space）下的异形屏安全区矩形 [Rect2]。
 @abstract
 func get_safe_area_rect(viewport: Viewport = null) -> Rect2
@@ -160,7 +188,10 @@ func get_safe_area_margins(
 
 ## 将异形屏安全区边距自动应用到目标 [Control] 节点（支持 [MarginContainer] 主题常量覆盖或普通 [Control] 锚点内缩）。
 @abstract
-func apply_safe_area(control: Control, lock_design_aspect: bool = false) -> Result
+func apply_safe_area(
+	control: Control,
+	lock_design_aspect: bool = false
+) -> Result
 #endregion
 
 

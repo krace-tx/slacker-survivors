@@ -61,6 +61,22 @@ func remove_default_header(key: String) -> void
 func clear_default_headers() -> void
 
 
+## 配置全局 HTTP 请求防篡改签名密钥（HMAC-SHA256）与可选的权威毫秒时钟源。[br]
+##
+## 设置非空 [param secret] 后，所有允许签名（[member NetworkRequest.sign_request] 为 [code]true[/code]）的请求在每次发送尝试时
+## 将自动通过 [method CryptoUtils.sign_http_request] 注入 [code]X-Timestamp[/code]、[code]X-Nonce[/code]、[code]X-Content-SHA256[/code] 与 [code]X-Signature[/code] 请求头。[br]
+##
+## [param secret] 客户端 HMAC 签名密钥（传入空字符串等同于关闭全局签名）。[br]
+## [param timestamp_ms_getter] 可选的毫秒时间戳获取回调 [code]func() -> int[/code]（推荐传入 [code]App.clock.now_msec[/code]）。
+@abstract
+func set_request_signing(secret: String, timestamp_ms_getter: Callable = Callable()) -> void
+
+
+## 清除全局 HTTP 请求防篡改签名密钥与时钟源配置。
+@abstract
+func clear_request_signing() -> void
+
+
 ## 注册 HTTP 401 (Unauthorized) 鉴权失效自动刷新处理器。[br]
 ##
 ## 当请求收到 HTTP 401 时，若已注册有效 [param handler]，网络层将自动挂起并调用该处理器一次：[br]

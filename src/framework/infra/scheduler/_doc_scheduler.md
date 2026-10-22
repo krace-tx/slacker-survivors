@@ -45,7 +45,7 @@ stateDiagram-v2
 # 1. 实例化调度器（冷却 5.0 秒，绑定异步云存档同步回调与日志 Tag）
 var sync_scheduler := CooldownScheduler.new(5.0, func() -> void:
 	await App.storage.write_async(
-		GameConstants.STORAGE_KEY_PLAYER_PROFILE,
+		PlayerProfileModel.storage_item(),
 		PlayerProfileService.get_current().to_dict(),
 		StorageWriteMode.LOCAL_FIRST
 	)

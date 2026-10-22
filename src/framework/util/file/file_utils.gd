@@ -17,6 +17,8 @@ extends RefCounted
 const CHUNK_SIZE: int = 65536 ## 流式分块读写缓冲区大小（64 KB）。
 const TMP_SUFFIX: String = ".tmp" ## 原子写入临时文件后缀。
 const SWAP_SUFFIX: String = ".swap_bak" ## 覆盖重命名时的安全回滚备份后缀。
+const _GODOT_COMPRESSED_MAGIC: String = "GCPF" ## Godot FileAccess.open_compressed 4 字节魔数头。
+const _GODOT_ENCRYPTED_MAGIC: String = "GDEC" ## Godot FileAccess.open_encrypted 4 字节魔数头（0x43454447 LE）。
 
 const ERR_EMPTY_PATH: String = "File.EmptyPath"
 const ERR_INVALID_PATH: String = "File.InvalidPath"
@@ -277,7 +279,7 @@ static func write_compressed(
 	return Result.ok()
 
 
-## 从压缩文件中读取并解压还原二进制数据。
+## 从压缩文件中读取并解压还原二进制数据（支持 Godot [code]GCPF[/code] 容器与 [CryptoUtils] [code]SLKZ[/code] 内存帧，前置魔数嗅探避免 C++ 报错刷屏）。
 static func read_compressed(
 	filepath: String,
 	compression_mode: FileAccess.CompressionMode = FileAccess.COMPRESSION_ZSTD
@@ -285,6 +287,23 @@ static func read_compressed(
 	var guard := _validate_read_path(filepath)
 	if guard.is_err():
 		return guard
+
+	var magic := _peek_file_magic(filepath)
+	if magic == CryptoUtils.COMPRESS_MAGIC:
+		var raw_res := read_bytes(filepath)
+		if raw_res.is_err():
+			return raw_res
+		return CryptoUtils.decompress_bytes(raw_res.value as PackedByteArray)
+
+	if magic != _GODOT_COMPRESSED_MAGIC:
+		return Result.err_ex(
+			ERR_IO_ERROR,
+			"Read compressed failed: unrecognized compression header in '%s'." % filepath,
+			{"path": filepath, "magic": magic},
+			false,
+			ERR_FILE_UNRECOGNIZED,
+			FrameworkError.CATEGORY_VALIDATION
+		)
 
 	var file := FileAccess.open_compressed(filepath, FileAccess.READ, compression_mode)
 	if file == null:
@@ -301,7 +320,7 @@ static func read_compressed(
 	return Result.ok(buffer)
 
 
-## 使用口令（AES-256）将二进制数据加密写入文件。
+## 使用口令（AES-256-CBC + HMAC-SHA256 认证加密信封）将二进制数据加密写入文件。
 static func write_encrypted(filepath: String, bytes: PackedByteArray, password: String, atomic: bool = false) -> Result:
 	var guard := _validate_write_path(filepath)
 	if guard.is_err():
@@ -309,41 +328,37 @@ static func write_encrypted(filepath: String, bytes: PackedByteArray, password: 
 	if password.is_empty():
 		return Result.err_ex(ERR_INVALID_PATH, "Write encrypted failed: password cannot be empty.", {"path": filepath}, false, null, FrameworkError.CATEGORY_PARAM)
 
-	var target_path := (filepath + TMP_SUFFIX) if atomic else filepath
-	var dir_res := ensure_dir_exists(target_path.get_base_dir())
-	if dir_res.is_err():
-		return dir_res
+	var enc_res := CryptoUtils.encrypt_bytes(bytes, password)
+	if enc_res.is_err():
+		return enc_res
 
-	var file := FileAccess.open_encrypted_with_pass(target_path, FileAccess.WRITE, password)
-	if file == null:
-		return _err_from_godot(ERR_OPEN_FAILED, "Write encrypted failed: cannot open '%s'." % target_path, FileAccess.get_open_error(), {"path": filepath})
-
-	var stored := file.store_buffer(bytes)
-	file.flush()
-	var io_err := file.get_error()
-	file.close()
-
-	if not stored or io_err != OK:
-		if atomic:
-			remove_file(target_path)
-		return _err_from_godot(ERR_IO_ERROR, "Write encrypted failed: I/O error on '%s'." % target_path, io_err, {"path": filepath})
-
-	if atomic:
-		var rename_res := rename_file(target_path, filepath)
-		if rename_res.is_err():
-			remove_file(target_path)
-			return rename_res
-
-	return Result.ok()
+	return write_bytes(filepath, enc_res.value as PackedByteArray, atomic)
 
 
-## 使用口令（AES-256）读取并解密还原二进制数据。
+## 使用口令（AES-256）读取并解密还原二进制数据（支持 [CryptoUtils] [code]SLKE[/code] 认证加密信封与 Godot 原生 [code]GDEC[/code] 容器，前置魔数嗅探零 C++ 报错刷屏）。
 static func read_encrypted(filepath: String, password: String) -> Result:
 	var guard := _validate_read_path(filepath)
 	if guard.is_err():
 		return guard
 	if password.is_empty():
 		return Result.err_ex(ERR_INVALID_PATH, "Read encrypted failed: password cannot be empty.", {"path": filepath}, false, null, FrameworkError.CATEGORY_PARAM)
+
+	var magic := _peek_file_magic(filepath)
+	if magic == CryptoUtils.CIPHER_MAGIC:
+		var raw_res := read_bytes(filepath)
+		if raw_res.is_err():
+			return raw_res
+		return CryptoUtils.decrypt_bytes(raw_res.value as PackedByteArray, password)
+
+	if magic != _GODOT_ENCRYPTED_MAGIC:
+		return Result.err_ex(
+			ERR_OPEN_FAILED,
+			"Read encrypted failed: unrecognized cipher header in '%s'." % filepath,
+			{"path": filepath, "magic": magic},
+			false,
+			ERR_FILE_UNRECOGNIZED,
+			FrameworkError.CATEGORY_VALIDATION
+		)
 
 	var file := FileAccess.open_encrypted_with_pass(filepath, FileAccess.READ, password)
 	if file == null:
@@ -358,6 +373,91 @@ static func read_encrypted(filepath: String, password: String) -> Result:
 		return _err_from_godot(ERR_IO_ERROR, "Read encrypted failed: corrupted cipher stream in '%s'." % filepath, io_err, {"path": filepath})
 
 	return Result.ok(buffer)
+
+
+## 将 [Dictionary] 或 [Array] 序列化为 JSON，可选执行内存 ZSTD 压缩后以 AES-256 加密落盘。[br]
+## [param filepath] 目标文件路径。[br]
+## [param data] 待序列化的 [Dictionary] 或 [Array]。[br]
+## [param password] AES-256 加密口令（不可为空）。[br]
+## [param compress] 是否在加密前先执行 [method CryptoUtils.compress_bytes] ZSTD 压缩（默认 [code]true[/code]）。[br]
+## [param atomic] 是否启用 [code].tmp[/code] 事务级原子替换（默认 [code]true[/code]）。
+static func write_encrypted_json(
+	filepath: String,
+	data: Variant,
+	password: String,
+	compress: bool = true,
+	atomic: bool = true
+) -> Result:
+	if not (data is Dictionary or data is Array):
+		return Result.err_ex(
+			ERR_PARSE_ERROR,
+			"Write encrypted JSON failed: root data must be Dictionary or Array.",
+			{"path": filepath, "actual_type": type_string(typeof(data))},
+			false,
+			null,
+			FrameworkError.CATEGORY_PARAM
+		)
+
+	var json_str := JSON.stringify(data)
+	if json_str.is_empty():
+		return Result.err_ex(
+			ERR_PARSE_ERROR,
+			"Write encrypted JSON failed: JSON.stringify returned empty string.",
+			{"path": filepath},
+			false,
+			null,
+			FrameworkError.CATEGORY_VALIDATION
+		)
+
+	var payload_bytes := json_str.to_utf8_buffer()
+	if compress:
+		var comp_res := CryptoUtils.compress_bytes(payload_bytes)
+		if comp_res.is_err():
+			return comp_res
+		payload_bytes = comp_res.value as PackedByteArray
+
+	return write_encrypted(filepath, payload_bytes, password, atomic)
+
+
+## 从加密文件中解密（若含 [code]SLKZ[/code] 压缩帧头则自动解压）并反序列化为 [Dictionary] 或 [Array]。
+static func read_encrypted_json(filepath: String, password: String) -> Result:
+	var dec_res := read_encrypted(filepath, password)
+	if dec_res.is_err():
+		return dec_res
+
+	var raw_bytes: PackedByteArray = dec_res.value as PackedByteArray
+	if CryptoUtils.is_compressed_frame(raw_bytes):
+		var decomp_res := CryptoUtils.decompress_bytes(raw_bytes)
+		if decomp_res.is_err():
+			return decomp_res
+		raw_bytes = decomp_res.value as PackedByteArray
+
+	var raw_text := raw_bytes.get_string_from_utf8().strip_edges()
+	if raw_text.is_empty():
+		return Result.err_ex(
+			ERR_PARSE_ERROR,
+			"Read encrypted JSON failed: decoded text in '%s' is empty." % filepath,
+			{"path": filepath},
+			false,
+			null,
+			FrameworkError.CATEGORY_VALIDATION
+		)
+
+	var json := JSON.new()
+	var err := json.parse(raw_text)
+	if err != OK or not (json.data is Dictionary or json.data is Array):
+		return Result.err_ex(
+			ERR_PARSE_ERROR,
+			"Read encrypted JSON failed: parse error in '%s' (line %d: %s)." % [
+				filepath, json.get_error_line(), json.get_error_message()
+			],
+			{"path": filepath, "line": json.get_error_line()},
+			false,
+			err,
+			FrameworkError.CATEGORY_VALIDATION
+		)
+
+	return Result.ok(json.data)
 
 #endregion
 
@@ -760,6 +860,18 @@ static func list_subdirs(dir_path: String) -> Array[String]:
 
 
 #region Private Atomic & VFS Helpers
+
+static func _peek_file_magic(filepath: String) -> String:
+	var f := FileAccess.open(filepath, FileAccess.READ)
+	if f == null:
+		return ""
+	if f.get_length() < 4:
+		f.close()
+		return ""
+	var header := f.get_buffer(4)
+	f.close()
+	return header.get_string_from_ascii()
+
 
 static func _write_bytes_direct(filepath: String, bytes: PackedByteArray) -> Result:
 	var dir_res := ensure_dir_exists(filepath.get_base_dir())

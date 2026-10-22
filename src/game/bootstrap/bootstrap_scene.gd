@@ -40,7 +40,7 @@ func _boot_kernel_and_handover() -> void:
 		return
 	_handover_started = true
 
-	# 1. 装配 Framework 13 大核心技术子系统
+	# 1. 装配 Framework 核心技术子系统
 	var kernel_res := await App.bootstrap()
 	if kernel_res.is_err():
 		var err_msg := "[%s] Kernel bootstrap failed: %s" % [

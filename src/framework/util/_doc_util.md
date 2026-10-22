@@ -16,7 +16,8 @@
   - **错误显式化**：凡涉及 I/O、节点挂载、资源实例化的可失败操作，强制返回 `Result.ok(val)` 或 `Result.err(msg)`，严禁静默吞错；仅基础设施底层确认必成功的操作提供 `_required` 后缀方法（失败直接 `assert`）。
 - **职责划分**：
   - `NodeUtils`：节点挂载（`mount`）、预制体实例化（`spawn`）、深度复制（`clone`）、安全销毁（`safe_free`）与 `wait_ready` 等待。
-  - `FileUtils`：工业级安全文件 I/O、`.tmp` 事务级原子落盘、ZSTD 压缩 / AES-256 加密读写、MD5 / SHA-256 完整性校验、64KB 分块流式复制、目录树生命周期管理与 `res://` 导出包资源实体化（`materialize_res_file`）。
+  - `FileUtils`：工业级安全文件 I/O、`.tmp` 事务级原子落盘、ZSTD 压缩 / AES-256 加密读写（含 `write_encrypted_json` / `read_encrypted_json` 组合管线）、MD5 / SHA-256 完整性校验、64KB 分块流式复制、目录树生命周期管理与 `res://` 导出包资源实体化（`materialize_res_file`）。
+  - `CryptoUtils`：纯内存无状态密码学与二进制压缩原语，包含 Encrypt-then-MAC 认证加密信封（`AES-256-CBC + PKCS#7 + 随机 IV + HMAC-SHA256`，魔数 `SLKE`）、精确长度头 ZSTD 内存压缩帧（魔数 `SLKZ`）、HMAC-SHA256 请求签名、恒定时间防时序比对与硬件设备指纹密钥派生（`derive_passphrase`）。
   - `TimeUtils`：系统墙钟（`now_string`）与格式化时间（`format_mm_ss` / `format_hh_mm_ss`）。
   - `CoordUtils`：零开方空间距离/圆环/扇形锥（`is_within_cone`）判定、双向网格坐标换算（`world_to_grid` / `grid_to_world` / `snap_to_grid`）、Control 全局变换包围盒（`get_global_rect`）、等比内接矩形（`fit_rect_aspect`）与跨 CanvasLayer / 3D 视口投影桥接（`map_canvas_position` / `world3d_to_screen`）。
   - `MemoryUtils`：全类型严格 $O(1)$ 零循环、零堆分配的 `Variant`、全系 `Packed*Array`、`Image`（C++ `get_data_size()`）与 `Texture2D` 内存/显存占用字节估算（`estimate_bytes` / `estimate_resource_bytes`）。
@@ -32,8 +33,10 @@ src/framework/util/
 │   └── resource_codec_utils.gd   # (ResourceCodecUtils) 预编译 Schema 缓存的嵌套 Resource ↔ Dictionary 互转与 clone
 ├── coord/                        # 坐标数学、几何判定与跨画布投影
 │   └── coord_utils.gd            # (CoordUtils) world_to_grid / grid_to_world / is_within_cone / map_canvas_position
+├── crypto/                       # 无状态密码学、认证加密与内存压缩原语
+│   └── crypto_utils.gd           # (CryptoUtils) encrypt_bytes / hmac_sha256_hex / derive_passphrase / compress_bytes
 ├── file/                         # 安全文件 I/O 与 VFS 事务操作
-│   └── file_utils.gd             # (FileUtils) write_text / write_json / verify_md5 / materialize_res_file
+│   └── file_utils.gd             # (FileUtils) write_text / write_json / write_encrypted_json / verify_md5
 ├── memory/                       # 内存与显存字节估算
 │   └── memory_utils.gd           # (MemoryUtils) estimate_bytes / estimate_resource_bytes
 ├── node/                         # 场景树操作与预制体挂载
@@ -61,10 +64,16 @@ var write_res := FileUtils.write_text("user://save.json", json_str)
 if write_res.is_ok():
 	var read_res := FileUtils.read_text("user://save.json")
 
-# 3. 时间格式化
+# 3. 内存态 AES-256-CBC + HMAC-SHA256 认证加解密与请求签名
+var enc_res := CryptoUtils.encrypt_text("secret_payload", "master_passphrase")
+if enc_res.is_ok():
+	var dec_res := CryptoUtils.decrypt_text(enc_res.value as String, "master_passphrase")
+var sig_res := CryptoUtils.hmac_sha256_hex("api_secret", "canonical_data")
+
+# 4. 时间格式化
 var time_text := TimeUtils.format_mm_ss(125) # "02:05"
 
-# 4. 坐标转换与版本比对
+# 5. 坐标转换与版本比对
 var grid_coord := CoordUtils.world_to_grid(Vector2(250, 100), Vector2(64, 64))
 var is_newer := VersionUtils.compare("1.2.0", "1.1.9") > 0
 ```

@@ -33,12 +33,11 @@ src/
     │   ├── bootstrap_scene.gd   # 引擎主入口空场景 (run/main_scene，0 UI 渲染开销)
     │   └── bootstrap_scene.tscn
     │
-    ├── shared/                  # 业务层跨模块共享内核 (顶层四支柱 + 二级子域分包)
+    ├── shared/                  # 业务层跨模块共享内核 (对齐 M-S-V 三支柱 + 二级子域分包)
     │   ├── _doc_shared.md
-    │   ├── define/              # [支柱 1] 静态契约定义 (GameConstants, GameEvents, GameEnums)
-    │   ├── model/               # [支柱 2] 共享数据模型 (save/ 持久化模型, config/ 配置, vo/ 值对象)
-    │   ├── service/             # [支柱 3] 共享业务服务 (settings/ 设置服务, profile/ 档案服务)
-    │   └── component/           # [支柱 4] 通用无业务流 UI 组件 (button/, dialog/, toast/, widget/)
+    │   ├── model/               # [支柱 1 · M] 共享数据模型 (save/ 持久化模型, data/ 子数据与内聚枚举, config/ 配置与路由表)
+    │   ├── service/             # [支柱 2 · S] 共享业务服务 (settings/ 设置服务, profile/ 档案服务 —— 内聚各自 EVENT_* 常量)
+    │   └── component/           # [支柱 3 · V] 通用无业务流 UI 组件 (button/, dialog/, toast/, widget/)
     │
     └── features/                # 核心垂直业务功能模块集合 (按模块特征采用 MSVP 或 MES 子目录架构)
         ├── splash/              # [MSVP 标杆模块] 闪屏展示与加权业务启动管线 (model/, service/, view/, presenter/)
@@ -142,16 +141,17 @@ flowchart LR
 
 ## 三、 `model/` 数据结构领域后缀规范 (Model Architectural Suffixes)
 
-为了杜绝在 `model/` 目录中将所有数据结构笼统命名为 `XxxModel` 造成的语义混乱，所有位于 `src/game/shared/model/` 及 `src/game/features/*/model/` 下的数据类，**必须根据其数据生命周期与领域职责采用以下标准后缀**：
+为了杜绝在 `model/` 目录中将所有数据结构笼统命名为 `XxxModel` 或混用 `*VO / *DTO / *Info / *Bean` 造成的认知碎片化，所有位于 `src/game/shared/model/` 及 `src/game/features/*/model/` 下的数据类，**必须严格按其数据来源、生命周期与读写边界采用以下 7 类标准后缀**：
 
-| 架构后缀 | 领域语义与职责定位 | 推荐继承基类 | 生命周期与读写特征 | 典型命名示例 |
+| 架构后缀 | 一句话心智定位 | 领域语义与职责边界 | 推荐继承基类 | 典型命名示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| **`*Config`** | **静态策划配表模型**：承载武器基础数值、关卡波次表、天赋树静态配置 | `Resource` 或 [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | **全局只读**。启动或进场时从 `res://src/resources/configs/` 加载，运行期严禁修改。 | `HeroConfig`<br>`WeaponConfig`<br>`StageWaveConfig` |
-| **`*Model`** | **核心业务/持久档案模型**：承载跨周期持久化档案或模块主干业务实体 | [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | **持久/长周期**。自带 `to_dict()` / `from_dict()` 反射序列化与 `data_changed` 信号，与 `App.storage` 映射。 | [`PlayerProfileModel`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/model/save/player_profile_model.gd)<br>[`GameSettingsModel`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/model/save/game_settings_model.gd) |
-| **`*State`** | **运行时动态状态模型**：承载单局战斗、单个实体或当前界面的高频易变内存状态 | `RefCounted` 或 [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | **局内/会话期**。随帧更新或交互高频变动，退出关卡或关闭模块时重置销毁。 | [`SplashBootState`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_state.gd)<br>`BattleRunState`<br>`WaveSpawnState` |
-| **`*Params`** | **传输契约入参模型**：用于切场景（`App.scene`）、开弹窗（`DialogManager`）或跨模块调用的强类型参数包 | [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | **瞬态传输**。构造并透传后即完成使命，替代松散易错的裸 `Dictionary` 传参。 | [`SplashEnterParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_enter_params.gd)<br>`BattleEnterParams` |
-| **`*Context`** | **引擎计算/管线上下文**：在 MES 的 `Engine` 演算或流水线（Pipeline）多步骤间传递中间状态与耗时指标 | `RefCounted` 或 [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | **单次演算/管线期**。贯穿一次复杂公式推导或启动流程，聚合输入与阶段产出。 | [`SplashBootContext`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_context.gd)<br>`DamageCalcContext` |
-| **`*VO` / `*Data`** | **轻量值对象 / 子条目结构**：复合模型内部的列表子项、展示用不可变数据包 | [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) 或 `RefCounted` | **依附于父模型或单次渲染**。无独立生命周期管理。 | `RewardItemData`<br>`StatModifierVO` |
+| **`*Config`** | **策划给的死数据** | **静态策划配表**：承载武器基础数值、关卡波次表、天赋树静态配置；启动或进场时只读加载，运行期严禁修改 | `Resource` 或 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | `HeroConfig`<br>`WeaponConfig`<br>`StageWaveConfig` |
+| **`*Req` / `*Resp`** | **跟服务端通信的信封** | **网络协议契约**：配合 [`App.net`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/network/_doc_network.md) 使用；上行请求体用 `*Req`（`to_dict()` 发送），下行顶层响应壳用 `*Resp`（`from_dict()` 接收并在 `Service` 防腐层内消化） | [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | `LoginReq` / `LoginResp`<br>`RankQueryReq` / `RankQueryResp` |
+| **`*Model`** | **要存盘的根档案** | **持久化存档聚合根**：绑定 [`StorageItem`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd) 顶层 Key，负责跨会话持久化落盘与 `data_changed` 信号发射 | [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | [`PlayerProfileModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/player_profile_model.gd)<br>[`GameSettingsModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/game_settings_model.gd) |
+| **`*State`** | **不存盘的活数据** | **运行时动态状态**：承载单局战斗、单个实体或当前界面的高频可变内存状态，退出关卡或关闭界面即销毁重置 | `RefCounted` 或 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | [`SplashBootState`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_state.gd)<br>`BattleRunState`<br>`WaveSpawnState` |
+| **`*Data`** | **挂载在别人肚子里的数据块** | **内嵌子结构 / 通用条目数据**：依附于 `*Model` 的分组子块、背包/邮件/排行榜列表项或 `*Resp` 内部业务条目（统一替代 `*VO` / `*Info` / `*Group`） | [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) 或 `RefCounted` | `DisplayData`、`AudioData`<br>`RewardItemData`、`RankEntryData` |
+| **`*Params`** | **客户端内部传参包** | **本地跨界传输契约**：用于切场景（`App.scene`）、开弹窗（`DialogManager`）或跨模块调用的强类型一次性参数包 | [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | [`SplashEnterParams`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_enter_params.gd)<br>`ConfirmDialogParams` |
+| **`*Context`** | **算法引擎的工作台** | **引擎演算/管线上下文**：在 MES 的 `Engine` 演算或多步流水线（`TaskRunner`）间传递输入快照、中间变量与阶段产出 | `RefCounted` 或 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) | [`SplashBootContext`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_context.gd)<br>`DamageCalcContext` |
 
 ---
 
@@ -160,8 +160,8 @@ flowchart LR
 1. **统一启动入口（空入口 `bootstrap/` 交接 + 垂直模块 `features/splash/` 管线）**：
    - 引擎默认启动主场景（`run/main_scene`）配置为纯空入口 [`res://src/game/bootstrap/bootstrap_scene.tscn`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/bootstrap_scene.tscn)（[`BootstrapScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/bootstrap_scene.gd)）；
    - `BootstrapScene` 在渲染首帧 UI 前率先完成 `await App.bootstrap()` 框架内核装配与 [`GameSettingsService.load_and_apply()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/settings/game_settings_service.gd) 硬件参数同步（窗口/分辨率/Locale/音量），随后无感移交至 [`features/splash`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/_doc_splash.md) 模块的 [`SplashScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/scene/splash/splash_scene.gd)；
-   - `SplashScene` 通过 [`SplashPresenter`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/presenter/splash_presenter.gd) 委托 [`SplashBootService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/splash_boot_service.gd) 顺序执行加权业务任务（配表装载 ➔ 会话同步 ➔ [`PlayerProfileService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/profile/player_profile_service.gd) 档案恢复 ➔ 资源预热 ➔ 首屏路由裁决），完成后广播 `GameEvents.BOOTSTRAP_COMPLETED` 并自动流转至目标场景。
+   - `SplashScene` 通过 [`SplashPresenter`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/presenter/splash_presenter.gd) 委托 [`SplashBootService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/splash_boot_service.gd) 顺序执行加权业务任务（配表装载 ➔ 会话同步 ➔ [`PlayerProfileService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/profile/player_profile_service.gd) 档案恢复 ➔ 资源预热 ➔ 首屏路由裁决），完成后广播 `SplashBootService.EVENT_BOOTSTRAP_COMPLETED` 并自动流转至目标场景。
 2. **跨模块解耦通讯**：
    - `features/` 下的各个垂直模块之间**严禁直接交叉 import 对方的内部 `Presenter`、`View` 或私有 `State`**；
-   - 跨模块事实通知统一使用全局事件总线 [`Bus.emit(GameEvents.XXX, payload)`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/define/game_events.gd) 与 `Bus.on(GameEvents.XXX, callback)` 进行异步解耦通讯；
-   - 跨模块共享的数据模型、服务、组件与静态契约统一收敛在 [`src/game/shared/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/_doc_shared.md)。
+   - 跨模块事实通知统一使用全局事件总线 `Bus.emit(XxxService.EVENT_XXX, payload)` 与 `Bus.on_scoped(XxxService.EVENT_XXX, self, callback)` 进行异步解耦通讯；
+   - 跨模块共享的数据模型、服务与组件统一收敛在 [`src/game/shared/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/_doc_shared.md)。

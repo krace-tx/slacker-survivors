@@ -7,13 +7,16 @@ extends RefCounted
 ## 1. [b]加权业务启动管线编排[/b]：顺序调度 5 大标准 [BootTask]（配置装载 ➔ 会话同步 ➔ 玩家档案恢复 ➔ 资源预热 ➔ 终局路由裁决）；[br]
 ## 2. [b]状态驱动与零 UI 耦合[/b]：实时更新 [SplashBootState] 并由其发射信号通知 [SplashPresenter]，自身绝不引用任何 UI 节点；[br]
 ## 3. [b]三级容灾与原地断点重试[/b]：区分 `CRITICAL` / `DEGRADABLE` / `OPTIONAL`，当关键任务失败时保留失败断点索引，支持 [method retry_failed] 原地续跑；[br]
-## 4. [b]全局就绪事件广播[/b]：全部任务完成后广播 [constant GameEvents.BOOTSTRAP_COMPLETED]。
+## 4. [b]全局就绪事件广播[/b]：全部任务完成后广播 [constant EVENT_BOOTSTRAP_COMPLETED]。
 
 #region Constants & State
 const _LOG_TAG: String = "Splash"
 const _ERR_ALREADY_RUNNING: String = "Splash.AlreadyRunning"
 const _ERR_NOT_IN_FAILED_STATE: String = "Splash.NotInFailedState"
 const _TASK_ID_KERNEL_BOOT: StringName = &"kernel_boot"
+
+## 业务启动管线全部加载完毕事件: {"total_boot_ms": int, "is_first_launch": bool, "is_offline_mode": bool, "target_scene_path": String, "tasks_ms": Dictionary, "warnings": Array[String]}
+const EVENT_BOOTSTRAP_COMPLETED: StringName = &"game:bootstrap_completed"
 
 var _state: SplashBootState = null
 var _context: SplashBootContext = null
@@ -155,7 +158,7 @@ func _run_from_index(start_index: int) -> Result:
 		)
 
 	if Bus != null:
-		Bus.emit(GameEvents.BOOTSTRAP_COMPLETED, _context.get_diagnostics_summary())
+		Bus.emit(EVENT_BOOTSTRAP_COMPLETED, _context.get_diagnostics_summary())
 
 	return Result.ok(_context)
 

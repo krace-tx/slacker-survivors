@@ -82,6 +82,15 @@ func with_encryption(p_password: String) -> StorageItem:
 	return self
 
 
+## 链式开启绑定当前设备硬件指纹（[method OS.get_unique_id]）的 AES-256 加密密钥派生（防跨设备拷贝替档）。[br]
+## [param p_passphrase] 应用主密钥口令。[br]
+## [param p_salt] 可选领域盐值（为空时默认使用当前条目的 [member key_id]）。
+func with_device_encryption(p_passphrase: String, p_salt: String = "") -> StorageItem:
+	var salt_key := p_salt if not p_salt.is_empty() else String(key_id)
+	encryption_key = CryptoUtils.derive_passphrase(p_passphrase, salt_key, true)
+	return self
+
+
 ## 链式设置 FILE 载荷的预期 MD5 校验码。
 func with_expected_md5(p_md5: String) -> StorageItem:
 	expected_md5 = p_md5.strip_edges().to_lower()

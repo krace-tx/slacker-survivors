@@ -122,7 +122,7 @@ if ($loggerMatches) {
     Write-Host "[PASS] Logger module path (modules/logger/)" -ForegroundColor Green
 }
 
-# 5. Display layer decoupling & shared 4-pillar directory architecture
+# 5. Display layer decoupling & shared 3-pillar directory architecture
 $uiDialogMatches = Get-ChildItem -Path "$root\src\framework\modules\display" -Recurse -Include *dialog*.gd, *modal*.gd, *toast*.gd -ErrorAction SilentlyContinue
 if ($uiDialogMatches) {
     Write-Host "[FAIL] Business dialog/toast scripts found in 'framework/modules/display' (move to 'src/game/shared/component/'):" -ForegroundColor Red
@@ -133,13 +133,13 @@ if ($uiDialogMatches) {
 }
 
 $legacySharedMatches = Get-ChildItem -Path "$root\src", "$root\docs" -Recurse -Include *.gd, *.md, *.tscn -ErrorAction SilentlyContinue |
-    Select-String -Pattern 'shared/(components|models|constants|events|msvp)/'
+    Select-String -Pattern 'shared/(define|components|models|constants|events|msvp)/'
 $sharedUpwardDepMatches = Get-ChildItem -Path "$root\src\game\shared" -Recurse -Include *.gd -ErrorAction SilentlyContinue |
     Select-String -Pattern 'res://src/game/(features|bootstrap)/' |
-    Where-Object { -not $_.Line.Trim().StartsWith("#") -and -not ($_.Path -like "*\define\generated\*") }
+    Where-Object { -not $_.Line.Trim().StartsWith("#") -and -not ($_.Path -like "*\model\config\game_scenes.gd") }
 if ($legacySharedMatches -or $sharedUpwardDepMatches) {
     if ($legacySharedMatches) {
-        Write-Host "[FAIL] Legacy shared path reference detected (use 'shared/define|model|service|component/'):" -ForegroundColor Red
+        Write-Host "[FAIL] Legacy shared path reference detected (use 'shared/model|service|component/'):" -ForegroundColor Red
         $legacySharedMatches | ForEach-Object { Write-Host "       - $($_.Path):$($_.LineNumber) -> $($_.Line.Trim())" -ForegroundColor Red }
         $errorCount += $legacySharedMatches.Count
     }
@@ -149,7 +149,7 @@ if ($legacySharedMatches -or $sharedUpwardDepMatches) {
         $errorCount += $sharedUpwardDepMatches.Count
     }
 } else {
-    Write-Host "[PASS] Shared 4-pillar architecture (define/model/service/component & zero upward deps)" -ForegroundColor Green
+    Write-Host "[PASS] Shared 3-pillar architecture (model/service/component & zero upward deps)" -ForegroundColor Green
 }
 
 # 6. Unidirectional dependency boundary: src/framework/ must never reference src/game/ or src/test/
@@ -287,7 +287,8 @@ if ($godotBin -and (Test-Path $godotBin)) {
         $combinedOutput = ($stdoutTask.GetAwaiter().GetResult() + "`n" + $stderrTask.GetAwaiter().GetResult()) -split "`r?`n"
         $syntaxExit = $proc.ExitCode
         $passLine = $combinedOutput | Where-Object { $_ -match '^\[SYNTAX_PASS\]\s+(\d+)' } | Select-Object -First 1
-        if ($syntaxExit -eq 0 -and $passLine) {
+        $errLines = $combinedOutput | Where-Object { $_ -match 'SCRIPT ERROR:|Parse Error:|Compile Error:|\[SYNTAX_FAIL\]' }
+        if ($syntaxExit -eq 0 -and $passLine -and -not $errLines) {
             $scriptCount = ($passLine -replace '^\[SYNTAX_PASS\]\s+', '').Trim()
             Write-Host "[PASS] GDScript syntax & static type compilation ($scriptCount scripts verified)" -ForegroundColor Green
         } else {

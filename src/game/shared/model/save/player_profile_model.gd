@@ -6,11 +6,12 @@ extends BaseParams
 ## [b]核心职责（遵循 `*Model` 领域后缀规范）：[/b][br]
 ## 1. 作为跨模块共享的玩家通用账号元数据载体（与具体玩法数值解耦）；[br]
 ## 2. 继承 [BaseParams]，自动具备 [method BaseParams.to_dict] 与 [method BaseParams.from_dict] 反射序列化能力；[br]
-## 3. 与 [code]App.storage[/code] 中的 [constant GameConstants.KEY_PLAYER_PROFILE] 持久层直接映射。
+## 3. 与 [code]App.storage[/code] 中的 [constant STORAGE_KEY] 持久层直接映射。
 
 signal data_changed()
 
 #region Constants
+const STORAGE_KEY: StringName = &"player_profile"
 const _STORAGE_DISK_PATH: String = "user://saves/player_profile.json"
 const _STORAGE_SCHEMA_VERSION: int = 1
 const _DEFAULT_NICKNAME: String = "Player"
@@ -36,7 +37,7 @@ var custom_data: Dictionary = {}
 ## 创建玩家档案标准存储配置项
 static func storage_item() -> StorageItem:
 	return StorageItem.new(
-		GameConstants.KEY_PLAYER_PROFILE,
+		STORAGE_KEY,
 		_STORAGE_DISK_PATH,
 		_STORAGE_SCHEMA_VERSION,
 		-1.0

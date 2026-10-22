@@ -131,7 +131,9 @@ func execute(
 	auth_token_getter: Callable = Callable(),
 	default_headers: Dictionary = {},
 	unauthorized_handler: Callable = Callable(),
-	auth_token_setter: Callable = Callable()
+	auth_token_setter: Callable = Callable(),
+	signing_secret: String = "",
+	timestamp_ms_getter: Callable = Callable()
 ) -> Result:
 	if _disposed or not is_instance_valid(_host):
 		return Result.err_ex(
@@ -199,7 +201,9 @@ func execute(
 			current_token_str,
 			default_headers,
 			attempt,
-			launch_epoch
+			launch_epoch,
+			signing_secret,
+			timestamp_ms_getter
 		)
 
 		if attempt_res.is_ok():
@@ -271,7 +275,9 @@ func _execute_single_attempt(
 	auth_token: String,
 	default_headers: Dictionary,
 	attempt: int,
-	launch_epoch: int
+	launch_epoch: int,
+	signing_secret: String = "",
+	timestamp_ms_getter: Callable = Callable()
 ) -> Result:
 	var hr := _acquire_node()
 	if hr == null:
@@ -288,7 +294,19 @@ func _execute_single_attempt(
 	var http_method := _map_http_method(request.method)
 	var payload_str := _serialize_body(request.method, request.body)
 	var has_body := not payload_str.is_empty() or request.method == "POST" or request.method == "PUT" or request.method == "PATCH"
-	var headers := build_headers(default_headers, request.headers, auth_token, has_body)
+	var attempt_custom_headers := request.headers.duplicate()
+	var effective_secret := request.signing_secret if not request.signing_secret.is_empty() else signing_secret
+	if request.sign_request and not effective_secret.is_empty():
+		var ts_ms: int = int(timestamp_ms_getter.call()) if timestamp_ms_getter.is_valid() else -1
+		var sig_res := CryptoUtils.sign_http_request(effective_secret, request.method, resolved_url, payload_str, ts_ms)
+		if sig_res.is_ok():
+			var sig_info: Dictionary = sig_res.value as Dictionary
+			attempt_custom_headers.append("X-Timestamp: %s" % str(sig_info.get("timestamp", "")))
+			attempt_custom_headers.append("X-Nonce: %s" % str(sig_info.get("nonce", "")))
+			attempt_custom_headers.append("X-Content-SHA256: %s" % str(sig_info.get("content_sha256", "")))
+			attempt_custom_headers.append("X-Signature: %s" % str(sig_info.get("signature", "")))
+
+	var headers := build_headers(default_headers, attempt_custom_headers, auth_token, has_body)
 
 	var req_id := _next_ticket_id
 	_next_ticket_id += 1

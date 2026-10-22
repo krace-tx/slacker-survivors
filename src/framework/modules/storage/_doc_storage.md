@@ -33,10 +33,10 @@ src/framework/modules/storage/
    - **载荷类型严格一致**：无论命中 `MEMORY`、`DISK` 还是 `REMOTE`，`payload_type == "JSON"` 统一收发 [`Dictionary`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/impl/storage_system.gd) / `Array`；`payload_type == "FILE"` 统一收发 `PackedByteArray`。
 2. **L1 内存深拷贝引用隔离 (Deep-Copy Isolation)**：
    - [`MemoryStorageDriver`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/impl/drivers/memory_storage_driver.gd) 在写入和读取 `Dictionary` / `Array` / `PackedByteArray` 时强制执行深拷贝（`duplicate(true)`），彻底杜绝业务层在外部直接修改字典导致的 L1 内存脏缓存污染。
-3. **L2 磁盘 `.tmp/.bak` 双写容灾自愈与透明压缩/加密 (Atomic Save & Self-Healing)**：
+3. **L2 磁盘 `.tmp/.bak` 双写容灾自愈与正交压缩/加密 (Atomic Save & Self-Healing)**：
    - **写入事务流**：先写入 `<path>.tmp` ➔ 将旧主文件安全备份至 `<path>.bak` ➔ 将 `.tmp` 原子重命名提升为主文件。
-   - **损坏自愈流**：读取时若主文件缺失、JSON 损坏、解密失败或 MD5 不匹配，自动降级读取 `.bak` 并自愈恢复主文件。
-   - **压缩与加密**：`StorageItem` 支持一键开启 `compressed = true`（ZSTD 高速压缩）或设置 `encryption_key`（AES-256 加密防篡改）。
+   - **损坏自愈流**：读取时若主文件缺失、JSON 损坏、解密失败（`StorageError.DECRYPT_FAILED`）或 MD5 不匹配，自动降级读取 `.bak` 并自愈恢复主文件。
+   - **正交压缩与加密管线**：`StorageItem` 支持同时开启 `with_compression(true)`（内存 `SLKZ` ZSTD 帧压缩）与 `with_encryption(key)` / `with_device_encryption(secret)`（AES-256 加密及硬件指纹绑定防跨机器拷档），写入时自动按「先 ZSTD 压缩 ➔ 再 AES-256 加密」流水线执行。
 4. **同 `key_id` 并发写串行化与退出落盘追踪 (Concurrency & Graceful Flush)**：
    - 针对同一 `key_id` 的并发 `write_async` 自动进入 FIFO 互斥锁队列串行执行，防止并发协程踩踏 `.tmp` 或发生旧数据覆盖新数据（Lost Update）。
    - `LOCAL_FIRST` 策略下的后台非阻塞远端同步同样纳入 `_inflight_writes` 计数追踪，应用退出时通过 `flush_async()` / `shutdown_async()` 确保本地与云端写入全部收尾。

@@ -35,6 +35,8 @@ var _base_url: String = ""
 var _auth_token: String = ""
 var _default_headers: Dictionary = {}
 var _unauthorized_handler: Callable = Callable()
+var _signing_secret: String = ""
+var _timestamp_ms_getter: Callable = Callable()
 
 var _active_transfers: Dictionary = {} ## int (transfer_id) -> Dictionary {hr, timer, tmp_path}
 var _next_transfer_id: int = 0
@@ -123,6 +125,16 @@ func clear_default_headers() -> void:
 	_default_headers.clear()
 
 
+func set_request_signing(secret: String, timestamp_ms_getter: Callable = Callable()) -> void:
+	_signing_secret = secret.strip_edges()
+	_timestamp_ms_getter = timestamp_ms_getter
+
+
+func clear_request_signing() -> void:
+	_signing_secret = ""
+	_timestamp_ms_getter = Callable()
+
+
 func set_unauthorized_handler(handler: Callable) -> void:
 	_unauthorized_handler = handler
 #endregion
@@ -136,7 +148,9 @@ func send_request(request: NetworkRequest) -> Result:
 		get_auth_token,
 		_default_headers,
 		_unauthorized_handler,
-		set_auth_token
+		set_auth_token,
+		_signing_secret,
+		_timestamp_ms_getter
 	)
 
 
@@ -348,6 +362,7 @@ func get_diagnostics() -> Dictionary:
 	return {
 		"base_url": _base_url,
 		"has_auth_token": not _auth_token.is_empty(),
+		"has_request_signing": not _signing_secret.is_empty(),
 		"default_header_count": _default_headers.size(),
 		"has_unauthorized_handler": _unauthorized_handler.is_valid(),
 		"active_transfers": _active_transfers.size(),

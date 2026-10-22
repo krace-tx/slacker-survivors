@@ -25,8 +25,9 @@
   - 窗口化模式下自动将目标分辨率钳制在当前显示器可用工作区（扣除任务栏）内并居中，防止低分屏误设高分辨率导致窗口越界。
 - **宽高比与拉伸策略 (`App.display.configure_stretch`)**：
   - 动态配置根窗口的 `content_scale_mode`、`content_scale_aspect`、设计基准尺寸与整体缩放倍率。
-- **异形屏安全区逆矩阵投影 (`App.display.get_safe_area_rect` / `apply_safe_area`)**：
-  - 将物理屏幕安全区与当前窗口矩形求交，再通过 `Viewport.get_final_transform().affine_inverse()` 逆矩阵映射回逻辑画布坐标，并支持协同 `CoordUtils.fit_rect_aspect` 锁定设计宽高比。
+- **异形屏安全区与全局安全比例逆矩阵投影 (`App.display.get_safe_area_rect` / `apply_safe_area` / `set_safe_area_scale` / `set_lock_design_aspect`)**：
+  - 移动端将物理屏幕刘海/手势条安全区与当前窗口矩形求交，再通过 `Viewport.get_final_transform().affine_inverse()` 逆矩阵映射回逻辑画布坐标（桌面端自动忽略操作系统任务栏工作区裁剪，避免全屏/贴边窗口底部出现灰边）。
+  - 支持全局默认安全区缩放比例（`set_safe_area_scale(0.80 ~ 1.00)`，四周对称向内留白）与全局默认设计宽高比锁定（`set_lock_design_aspect(bool)`，超宽屏居中锁定项目基准设计宽高比安全框），变更时发射 `safe_area_changed` 信号驱动所有活动 `BaseView` 实时重排。
 - **VSync、帧率与硬件诊断 (`App.display.set_vsync_mode` / `set_max_fps`)**：
   - 提供垂直同步、最大帧率上限、显示器刷新率、DPI 与高分屏缩放系数读写。
 - **视口渲染管线原子控制与幂等防卡死保护 (`App.display.set_msaa_2d` / `set_screen_space_aa` / `set_scaling_3d_scale`)**：

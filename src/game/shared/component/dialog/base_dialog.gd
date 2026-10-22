@@ -36,8 +36,8 @@ var _is_closing: bool = false
 
 #region Lifecycle & Public API
 func _init() -> void:
-	# 模态弹窗默认居中展示，不强制拉伸为全屏安全区（全屏型弹窗可在检查器中开启）
-	apply_safe_area = false
+	# 模态弹窗默认居中展示，不强制拉伸为全屏安全区（全屏型弹窗可在检查器中改为 SAFE_RECT）
+	safe_area_mode = SafeAreaMode.NONE
 
 
 ## 打开弹窗（由 [DialogManager] 或调用端驱动）

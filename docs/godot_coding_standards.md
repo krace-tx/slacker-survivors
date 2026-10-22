@@ -51,7 +51,7 @@ flowchart TD
 | **顶层源码域** | 架构核心层 | **单数** | `src/framework/`, `src/game/`, `src/test/` | `frameworks/`, `games/`, `tests/` |
 | **基建与工具子域** | 垂直技术能力域 | **单数** | `infra/async/`, `infra/cache/`, `infra/param/`, `infra/scheduler/`, `infra/spine/`, `util/file/`, `util/coord/`, `util/codec/` | `params/`（复数）、`utils/files/` |
 | **框架模块目录** | 独立子系统域 | **单数** | `modules/asset/`, `modules/audio/`, `modules/clock/`, `modules/display/`, `modules/env/`, `modules/haptic/`, `modules/input/`, `modules/locale/`, `modules/logger/`, `modules/network/`, `modules/scene/`, `modules/storage/`, `modules/video/` | `log/`（非完整名词）、`ui/` |
-| **业务共享四支柱** | 跨模块共享内核职能 | **单数** | `shared/define/`, `shared/model/`, `shared/service/`, `shared/component/` | `models/`、`components/`、`constants/`、`events/`、`msvp/` |
+| **业务共享三支柱** | 跨模块共享内核职能 | **单数** | `shared/model/`, `shared/service/`, `shared/component/` | `define/`、`models/`、`components/`、`constants/`、`events/`、`msvp/` |
 | **模块内架构分层** | MSVP / MES 职能目录 | **单数** | `model/`, `service/`, `view/`, `presenter/`, `engine/` | `models/`, `views/`, `services/` |
 | **容器与集合目录** | 存放多个同质资产、业务切片、类型、驱动或任务 | **复数** | `src/assets/videos/`, `src/assets/textures/`, `src/resources/configs/`, `src/game/features/`, `types/`, `drivers/`, `adapters/`, `tasks/`, `addons/`, `docs/` | `video/`（资产目录用单数）、`type/`、`driver/` |
 
@@ -73,14 +73,15 @@ flowchart TD
 
 ### 3. 业务 `model/` 领域后缀强制标准 (Model Suffixes)
 
-在 `src/game/shared/model/` 与 `src/game/features/*/model/` 下，严禁将所有数据类笼统命名为 `XxxModel`，必须按数据生命周期使用 6 大标准后缀：
+在 `src/game/shared/model/` 与 `src/game/features/*/model/` 下，严禁将所有数据类笼统命名为 `XxxModel` 或将多个领域数据类堆叠在单一文件中，必须遵循**“一类一文件（`1 class_name = 1 .gd`）”**并按数据生命周期使用 7 大标准后缀：
 
 - **`*Config`**：静态只读策划配表（`HeroConfig`、`WeaponConfig`）；
-- **`*Model`**：跨周期持久化档案或核心领域实体，继承 [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)（[`PlayerProfileModel`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/model/save/player_profile_model.gd)、[`GameSettingsModel`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/model/save/game_settings_model.gd)）；
-- **`*State`**：单局战斗或当前界面的高频易变运行时状态（[`SplashBootState`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_state.gd)）；
-- **`*Params`**：跨场景路由（`App.scene`）或开弹窗（`DialogManager`）的瞬态强类型入参/出参包，继承 [`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)（[`SplashEnterParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_enter_params.gd)）；
-- **`*Context`**：MES 引擎推演或多步管线的共享上下文（[`SplashBootContext`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_context.gd)）；
-- **`*VO` / `*Data`**：复合模型内部的子条目或纯展示值对象。
+- **`*Req` / `*Resp`**：与服务端通信的网络协议契约（上行请求 `*Req`，下行响应 `*Resp`，继承 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)）；
+- **`*Model`**：跨周期持久化存档聚合根，继承 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)（[`PlayerProfileModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/player_profile_model.gd)、[`GameSettingsModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/game_settings_model.gd)）；
+- **`*State`**：单局战斗或当前界面的高频易变运行时状态（[`SplashBootState`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_state.gd)）；
+- **`*Data`**：内嵌于父容器的子数据块、背包/排行榜列表子项（[`DisplaySettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/display_settings_data.gd)、`RewardItemData`）；
+- **`*Params`**：跨场景路由（`App.scene`）或开弹窗（`DialogManager`）的瞬态强类型入参/出参包，继承 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)（[`SplashEnterParams`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_enter_params.gd)）；
+- **`*Context`**：MES 引擎推演或多步管线的共享上下文（[`SplashBootContext`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_context.gd)）。
 
 ---
 
@@ -211,8 +212,8 @@ func _log_info(msg: String) -> void:
 - **强制使用 `&"..."` 的场景**：
   1. 输入动作名：`App.input.is_action_just_pressed(&"ultimate")`、`App.input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")`；
   2. 模块 ID 与依赖清单：`const MODULE_ID: StringName = &"storage"`；
-  3. 领域事件名：`Bus.emit(GameEvents.PROFILE_UPDATED, payload)`（其中常量定义为 `const PROFILE_UPDATED: StringName = &"game:profile_updated"`）；
-  4. 缓存槽位与存储 Key：`BudgetCache.read(&"key")`、`StorageItem.new(GameConstants.KEY_PLAYER_PROFILE, ...)`；
+  3. 领域事件名：`Bus.emit(PlayerProfileService.EVENT_PROFILE_UPDATED, payload)`（其中常量定义为 `const EVENT_PROFILE_UPDATED: StringName = &"game:profile_updated"`）；
+  4. 缓存槽位与存储 Key：`BudgetCache.read(&"key")`、`StorageItem.new(PlayerProfileModel.STORAGE_KEY, ...)`；
   5. 音频总线名称：`&"Master"`、`&"BGM"`、`&"SFX"`。
 
 ### 3. 原生 `@abstract` 契约与编译期警告治理
@@ -230,7 +231,7 @@ func _log_info(msg: String) -> void:
 | :--- | :--- | :--- |
 | **1. 父节点 ➔ 子节点**<br>`Presenter` ➔ `View` | **直接调用公开方法 / 属性** | 父节点持有子节点 `@onready` 引用，或 `Presenter` 持有 `View` 引用，直接调用 `_view.render_progress(ratio, text)`。 |
 | **2. 子节点 ➔ 父节点**<br>`View` ➔ `Presenter` | **发射强类型 `signal`** | 子控件或 `View` 仅向外发射 `signal retry_requested`，**严禁**调用 `get_parent().on_retry()` 或在 `View` 内直接调用 `Service`。 |
-| **3. 跨业务模块**<br>`Feature A` ↔ `Feature B` | **全局事件总线 (`Bus`)** | 由 `Service` 层调用 `Bus.emit(GameEvents.XXX, payload)` 广播客观事实；节点侧优先使用 `Bus.on_scoped(GameEvents.XXX, self, _on_xxx)` 订阅，随节点退树自动解绑。 |
+| **3. 跨业务模块**<br>`Feature A` ↔ `Feature B` | **全局事件总线 (`Bus`)** | 由 `Service` 层调用 `Bus.emit(XxxService.EVENT_XXX, payload)` 广播客观事实；节点侧优先使用 `Bus.on_scoped(XxxService.EVENT_XXX, self, _on_xxx)` 订阅，随节点退树自动解绑。 |
 
 ### 2. 显式依赖注入 (DI) vs 服务定位器 (`App.xxx`)
 
@@ -313,7 +314,7 @@ func _on_enter(_params: BaseParams = null) -> void:
 ### 3. `RefCounted` 循环引用与信号泄漏防护
 
 1. **Presenter / 控制器显式 `dispose()`**：`RefCounted` 子类（如 `SplashPresenter`）若持有 `Node`（如 `_view`）引用并连接了信号，必须在 `View._on_exit()` 中调用 `_presenter.dispose()` 断开信号并将 `_view = null` 置空。
-2. **全局 `Bus` 订阅优先使用 `on_scoped`**：在任何 `Node` 子类中订阅动态领域事件，一律使用 `Bus.on_scoped(GameEvents.XXX, self, _on_xxx)`，确保节点退树时自动注销回调。
+2. **全局 `Bus` 订阅优先使用 `on_scoped`**：在任何 `Node` 子类中订阅动态领域事件，一律使用 `Bus.on_scoped(XxxService.EVENT_XXX, self, _on_xxx)`，确保节点退树时自动注销回调。
 3. **底层基建持有宿主节点使用 `instance_id`**：如 `TaskScope`、`SpinePool` 等长生命周期辅助对象引用宿主 `Node` 时，内部仅存储 `host.get_instance_id()` 并通过 `instance_from_id()` 动态还原，从根源斩断引用环路。
 
 ---
@@ -368,7 +369,7 @@ pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
 3. 视频资产复数容器路径 `assets/videos/`；
 4. 日志模块路径 `modules/logger/`；
 5. 显示层解耦（业务弹窗/飘字隔离于 `src/game/shared/component/`）；
-6. `src/game/shared/` 四支柱架构（`define/model/service/component`）与零向上依赖；
+6. `src/game/shared/` 三支柱架构（`model/service/component`）与零向上依赖；
 7. `src/framework/` 零反向依赖 `src/game/` 或 `src/test/`；
 8. `framework/modules|infra|util` 内部零隐式 `App.xxx` 调用（强制构造 DI）；
 9. 13 大核心模块完整声明 `MODULE_ID` / `REQUIRED_MODULES` / `OPTIONAL_MODULES`；

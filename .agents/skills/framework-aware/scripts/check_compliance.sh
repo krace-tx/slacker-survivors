@@ -87,7 +87,7 @@ else
 	echo -e "${C_GREEN}[PASS] Logger module path (modules/logger/)${C_RESET}"
 fi
 
-# 5. Display layer decoupling & shared 4-pillar directory architecture
+# 5. Display layer decoupling & shared 3-pillar directory architecture
 UI_DIALOG_MATCHES=""
 if [ -d "$ROOT/src/framework/modules/display" ]; then
 	UI_DIALOG_MATCHES="$(find "$ROOT/src/framework/modules/display" -type f \( -iname "*dialog*.gd" -o -iname "*modal*.gd" -o -iname "*toast*.gd" \) 2>/dev/null || true)"
@@ -102,11 +102,11 @@ else
 	echo -e "${C_GREEN}[PASS] Display layer decoupling (dialogs isolated in shared/component/)${C_RESET}"
 fi
 
-LEGACY_SHARED_MATCHES="$(grep -rnE --include="*.gd" --include="*.md" --include="*.tscn" 'shared/(components|models|constants|events|msvp)/' "${SEARCH_SRC_DOCS[@]}" 2>/dev/null || true)"
-SHARED_UPWARD_MATCHES="$(grep -rnE --include="*.gd" 'res://src/game/(features|bootstrap)/' "$ROOT/src/game/shared" 2>/dev/null | grep -vE 'define/generated/' | grep -vE ':[0-9]+:[[:space:]]*#' || true)"
+LEGACY_SHARED_MATCHES="$(grep -rnE --include="*.gd" --include="*.md" --include="*.tscn" 'shared/(define|components|models|constants|events|msvp)/' "${SEARCH_SRC_DOCS[@]}" 2>/dev/null || true)"
+SHARED_UPWARD_MATCHES="$(grep -rnE --include="*.gd" 'res://src/game/(features|bootstrap)/' "$ROOT/src/game/shared" 2>/dev/null | grep -vE 'model/config/game_scenes\.gd' | grep -vE ':[0-9]+:[[:space:]]*#' || true)"
 if [ -n "$LEGACY_SHARED_MATCHES" ] || [ -n "$SHARED_UPWARD_MATCHES" ]; then
 	if [ -n "$LEGACY_SHARED_MATCHES" ]; then
-		echo -e "${C_RED}[FAIL] Legacy shared path reference detected (use 'shared/define|model|service|component/'):${C_RESET}"
+		echo -e "${C_RED}[FAIL] Legacy shared path reference detected (use 'shared/model|service|component/'):${C_RESET}"
 		while IFS= read -r line; do
 			echo -e "${C_RED}       - ${line}${C_RESET}"
 			ERROR_COUNT=$((ERROR_COUNT + 1))
@@ -120,7 +120,7 @@ if [ -n "$LEGACY_SHARED_MATCHES" ] || [ -n "$SHARED_UPWARD_MATCHES" ]; then
 		done <<< "$SHARED_UPWARD_MATCHES"
 	fi
 else
-	echo -e "${C_GREEN}[PASS] Shared 4-pillar architecture (define/model/service/component & zero upward deps)${C_RESET}"
+	echo -e "${C_GREEN}[PASS] Shared 3-pillar architecture (model/service/component & zero upward deps)${C_RESET}"
 fi
 
 # 6. Unidirectional dependency boundary: src/framework/ must never reference src/game/ or src/test/

@@ -64,19 +64,19 @@ static func _classify_tscn(
 
 	# 1. 模态弹窗判定：文件名以 _dialog 结尾，或根节点脚本继承自 BaseDialog
 	if file_stem.ends_with("_dialog") or root_base == &"BaseDialog":
-		var key := _to_const_key(file_stem, "_dialog")
+		var key := _resolve_unique_key(dialogs, _to_const_key(file_stem, "_dialog"), tscn_path)
 		dialogs[key] = tscn_path
 		return
 
 	# 2. 顶层场景判定：文件名以 _scene 结尾，或根节点脚本继承自 BaseScene
 	if file_stem.ends_with("_scene") or root_base == &"BaseScene":
-		var key := _to_const_key(file_stem, "_scene")
+		var key := _resolve_unique_key(scenes, _to_const_key(file_stem, "_scene"), tscn_path)
 		scenes[key] = tscn_path
 		return
 
 	# 3. 跨模块通用组件预制件：位于 res://src/game/shared/component/ 下
 	if tscn_path.begins_with(SHARED_COMPONENT_PREFIX):
-		var key := _to_const_key(file_stem, "")
+		var key := _resolve_unique_key(components, _to_const_key(file_stem, ""), tscn_path)
 		components[key] = tscn_path
 
 
@@ -165,4 +165,23 @@ static func _to_const_key(stem: String, strip_suffix: String) -> String:
 	if not strip_suffix.is_empty() and cleaned.ends_with(strip_suffix) and cleaned.length() > strip_suffix.length():
 		cleaned = cleaned.substr(0, cleaned.length() - strip_suffix.length())
 	return cleaned.to_snake_case().to_upper()
+
+
+static func _resolve_unique_key(entries: Dictionary, base_key: String, tscn_path: String) -> String:
+	if not entries.has(base_key) or entries[base_key] == tscn_path:
+		return base_key
+	var feature_prefix := _extract_domain_prefix(tscn_path)
+	if not feature_prefix.is_empty() and not base_key.begins_with(feature_prefix + "_"):
+		return "%s_%s" % [feature_prefix, base_key]
+	return base_key
+
+
+static func _extract_domain_prefix(tscn_path: String) -> String:
+	var features_token := "res://src/game/features/"
+	if tscn_path.begins_with(features_token):
+		var rest := tscn_path.substr(features_token.length())
+		var feature_name := rest.get_slice("/", 0)
+		if not feature_name.is_empty():
+			return feature_name.to_snake_case().to_upper()
+	return ""
 #endregion

@@ -7,17 +7,22 @@ extends Control
 ## 1. [b]统一视图生命周期契约[/b]：提供标准的 [method open] / [method close] 及子类钩子 [method _on_open] / [method _on_close]；[br]
 ## 2. [b]强类型参数透传[/b]：通过 [method get_params] 持有强类型 [BaseParams] 入参契约实例；[br]
 ## 3. [b]异步生命周期作用域[/b]：内置 [member task_scope]（[TaskScope]），在 [method close] 或节点退树时自动取消悬挂异步任务；[br]
-## 4. [b]异形屏安全区与宽高比自适应[/b]：通过 [member apply_safe_area] 与 [member lock_design_aspect] 自动响应视口旋转与缩放重排。
+## 4. [b]异形屏安全区与宽高比自适应[/b]：通过 [member safe_area_mode] 三态枚举自动响应视口缩放与全局安全比例重排。
 
 signal opened
 signal closed
 
-#region Exports
+#region Enums & Exports
+## 视图安全区适配策略枚举
+enum SafeAreaMode {
+	NONE = 0,          ## 不应用安全区（用于模态弹窗 BaseDialog、内嵌子组件、全屏贴边背景/闪屏）
+	SAFE_RECT = 1,     ## 适配硬件异形屏与全局安全比例，宽高比自由铺满（用于战斗 HUD、大厅主视图）
+	DESIGN_ASPECT = 2, ## 适配安全区并强制居中锁定项目基准设计宽高比（用于固定构图的全屏系统面板）
+}
+
 @export_group("Layout")
-## 是否自动适配异形屏安全区（刘海屏 / 灵动岛 / 底部 Home 条）
-@export var apply_safe_area: bool = true
-## 是否在异形屏/超宽屏安全区内进一步锁定设计宽高比（居中内接，防止固定比例面板被拉宽变形）
-@export var lock_design_aspect: bool = false
+## 当前视图的安全区适配策略（全局安全区比例统一在 DisplaySystem / GameSettingsModel 中配置）
+@export var safe_area_mode: SafeAreaMode = SafeAreaMode.SAFE_RECT
 #endregion
 
 #region State
@@ -35,17 +40,19 @@ var task_scope: TaskScope:
 
 #region Lifecycle
 func _ready() -> void:
-	if apply_safe_area:
+	if safe_area_mode != SafeAreaMode.NONE:
 		_adapt_safe_area()
 		var vp := get_viewport()
 		if vp != null and not vp.size_changed.is_connected(_adapt_safe_area):
 			vp.size_changed.connect(_adapt_safe_area)
+		DisplaySystem.connect_safe_area_changed(_adapt_safe_area)
 
 
 func _exit_tree() -> void:
 	var vp := get_viewport()
 	if vp != null and vp.size_changed.is_connected(_adapt_safe_area):
 		vp.size_changed.disconnect(_adapt_safe_area)
+	DisplaySystem.disconnect_safe_area_changed(_adapt_safe_area)
 	if _task_scope != null:
 		_task_scope.cancel_all("View exited tree.")
 
@@ -98,8 +105,10 @@ func _on_close() -> void:
 #endregion
 
 #region Safe Area
-## 适配移动端异形屏与安全区边距（通过 DisplaySystem 执行逆矩阵逻辑像素投影与宽高比防拉伸保护）
+## 按 safe_area_mode 适配异形屏与全局安全比例边距
 func _adapt_safe_area() -> void:
-	if apply_safe_area:
-		DisplaySystem.adapt_control_safe_area(self, lock_design_aspect)
+	if safe_area_mode == SafeAreaMode.NONE:
+		return
+	var lock_aspect: bool = (safe_area_mode == SafeAreaMode.DESIGN_ASPECT)
+	DisplaySystem.adapt_control_safe_area(self, lock_aspect)
 #endregion

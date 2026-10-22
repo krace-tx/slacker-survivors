@@ -18,7 +18,7 @@
 - [ ] **路径与命名**：
   - 引用视频资源是否使用 `src/assets/videos/`（复数）？
   - 引用参数基类是否使用 `src/framework/infra/param/`（单数）？
-  - 引用业务共享内核是否使用 `src/game/shared/` 下的单数四支柱（`define/`、`model/`、`service/`、`component/`）二级子域？
+  - 引用业务共享内核是否使用 `src/game/shared/` 下的单数三支柱（`model/`、`service/`、`component/`）二级子域？
   - 引用日志服务是否使用 `App.logger`？
 
 ---

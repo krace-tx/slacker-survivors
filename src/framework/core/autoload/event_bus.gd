@@ -2,7 +2,7 @@ extends Node
 ## 全局领域事件总线 (Autoload / EventBus)
 ## 只广播已发生的事实，不承载命令；做事走 App.xxx。
 ## 1. 框架系统级事实：直接通过内置强类型 signal 订阅（如 Bus.app_paused.connect(...)）；
-## 2. 业务跨模块事实：通过动态主题方法订阅与广播（Bus.on / Bus.off / Bus.emit，配合 GameEvents 常量）。
+## 2. 业务跨模块事实：通过动态主题方法订阅与广播（Bus.on / Bus.off / Bus.emit，配合各业务 Service 公开的 EVENT_* 常量）。
 
 @warning_ignore_start("unused_signal") ## 信号按设计在外部 emit/connect
 
@@ -49,7 +49,7 @@ var _emit_depth: int = 0
 
 
 ## 订阅指定名称的领域事件（幂等：同一 Callable 不会重复订阅）。[br]
-## [param event_name] 事件名称（推荐使用 [GameEvents] 常量）。[br]
+## [param event_name] 事件名称（推荐使用各业务 Service 公开的 [code]EVENT_*[/code] `StringName` 常量）。[br]
 ## [param callback] 回调函数，支持无参 [code]func()[/code] 或单参 [code]func(payload)[/code]。
 func on(event_name: StringName, callback: Callable) -> void:
 	if event_name.is_empty() or not callback.is_valid():

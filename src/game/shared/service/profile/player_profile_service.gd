@@ -5,11 +5,14 @@ extends RefCounted
 ##
 ## [b]核心职责：[/b][br]
 ## 1. 统一持有并管理跨模块共享的 [PlayerProfileModel] 实例；[br]
-## 2. 封装档案读取、新账号初始化、会话登录记录、原子落盘及跨模块档案更新事件广播（[constant GameEvents.PROFILE_UPDATED]）。
+## 2. 封装档案读取、新账号初始化、会话登录记录、原子落盘及跨模块档案更新事件广播（[constant EVENT_PROFILE_UPDATED]）。
 
 #region Constants & Static State
 const _LOG_TAG: String = "ProfileService"
 const _ERR_STORAGE_MISSING: String = "Profile.StorageMissing"
+
+## 玩家全局档案数据已更新事件: {"profile": PlayerProfileModel}
+const EVENT_PROFILE_UPDATED: StringName = &"game:profile_updated"
 
 static var _current: PlayerProfileModel = null
 #endregion
@@ -64,7 +67,7 @@ static func save_async() -> Result:
 	return await App.storage.write_async(item, get_current().sanitize().to_dict(), StorageWriteMode.LOCAL_ONLY)
 
 
-## 修改玩家昵称，成功后自动广播 [constant GameEvents.PROFILE_UPDATED] 并按需落盘。
+## 修改玩家昵称，成功后自动广播 [constant EVENT_PROFILE_UPDATED] 并按需落盘。
 static func update_nickname(new_nickname: String, auto_save: bool = true) -> bool:
 	var profile := get_current()
 	if not profile.set_nickname(new_nickname):
@@ -75,7 +78,7 @@ static func update_nickname(new_nickname: String, auto_save: bool = true) -> boo
 	return true
 
 
-## 写入玩家档案自定义扩展数据，自动广播 [constant GameEvents.PROFILE_UPDATED] 并按需落盘。
+## 写入玩家档案自定义扩展数据，自动广播 [constant EVENT_PROFILE_UPDATED] 并按需落盘。
 static func set_custom_data(key: String, value: Variant, auto_save: bool = true) -> void:
 	if key.is_empty():
 		return
@@ -91,5 +94,5 @@ static func set_custom_data(key: String, value: Variant, auto_save: bool = true)
 static func _notify_profile_updated() -> void:
 	var profile := get_current()
 	if Bus != null:
-		Bus.emit(GameEvents.PROFILE_UPDATED, {"profile": profile})
+		Bus.emit(EVENT_PROFILE_UPDATED, {"profile": profile})
 #endregion

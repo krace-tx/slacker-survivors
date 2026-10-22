@@ -60,7 +60,7 @@ flowchart LR
     end
 
     subgraph Service ["service/ (领域服务层)"]
-        SplashBootService["SplashBootService + 5 BootTasks<br>• 按权重调度 LoadConfig -> SyncSession<br>  -> LoadProfile -> Warmup -> ResolveRoute<br>• 三级容灾 (CRITICAL/DEGRADABLE/OPTIONAL)<br>• 广播 GameEvents.BOOTSTRAP_COMPLETED"]
+        SplashBootService["SplashBootService + 5 BootTasks<br>• 按权重调度 LoadConfig -> SyncSession<br>  -> LoadProfile -> Warmup -> ResolveRoute<br>• 三级容灾 (CRITICAL/DEGRADABLE/OPTIONAL)<br>• 广播 SplashBootService.EVENT_BOOTSTRAP_COMPLETED"]
     end
 
     subgraph Model ["model/ (数据模型层)"]

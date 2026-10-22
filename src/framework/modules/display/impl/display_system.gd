@@ -22,6 +22,10 @@ const EPSILON: float = 0.00001
 const ERR_INVALID_SIZE: String = "Display.InvalidSize"
 const ERR_INVALID_NODE: String = "Display.InvalidNode"
 
+static var _default_safe_area_scale: float = DEFAULT_SAFE_AREA_SCALE
+static var _default_lock_design_aspect: bool = false
+static var _active_instance: DisplaySystem = null
+
 var _logger: BaseFrameworkLogger
 var _layers: Dictionary = {}  ## Layer enum -> CanvasLayer
 #endregion
@@ -29,13 +33,16 @@ var _layers: Dictionary = {}  ## Layer enum -> CanvasLayer
 #region Lifecycle
 func _init(logger: BaseFrameworkLogger = null) -> void:
 	_logger = logger
+	_active_instance = self
 
 
 func initialize() -> Result:
+	_active_instance = self
 	return Result.ok()
 
 
 func _ready() -> void:
+	_active_instance = self
 	_setup_layers()
 
 
@@ -44,6 +51,8 @@ func set_logger(logger: BaseFrameworkLogger) -> void:
 
 
 func dispose() -> void:
+	if _active_instance == self:
+		_active_instance = null
 	for layer: CanvasLayer in _layers.values():
 		if is_instance_valid(layer):
 			for child in layer.get_children():
@@ -159,11 +168,11 @@ func set_resolution(
 			FrameworkError.CATEGORY_PARAM
 		)
 
-	if _is_mobile_or_web():
+	if _is_mobile_or_web() or is_fullscreen():
 		return Result.ok(DisplayServer.window_get_size())
 
 	var target_size := size
-	if clamp_to_usable_screen and not is_fullscreen():
+	if clamp_to_usable_screen:
 		var usable := get_usable_screen_rect()
 		if usable.size.x > 0 and usable.size.y > 0:
 			target_size.x = mini(target_size.x, usable.size.x)
@@ -171,7 +180,7 @@ func set_resolution(
 
 	if DisplayServer.window_get_size() != target_size:
 		DisplayServer.window_set_size(target_size)
-	if center_on_screen and not is_fullscreen():
+	if center_on_screen:
 		center_window()
 
 	return Result.ok(target_size)
@@ -268,6 +277,43 @@ func get_window_aspect() -> float:
 
 
 #region 5. Display Safe Area & Aspect-Ratio Guard
+func set_safe_area_scale(scale_ratio: float) -> void:
+	var clamped := clampf(scale_ratio, MIN_SAFE_AREA_SCALE, MAX_SAFE_AREA_SCALE)
+	if is_equal_approx(_default_safe_area_scale, clamped):
+		return
+	_default_safe_area_scale = clamped
+	safe_area_changed.emit()
+
+
+func get_safe_area_scale() -> float:
+	return _default_safe_area_scale
+
+
+func set_lock_design_aspect(locked: bool) -> void:
+	if _default_lock_design_aspect == locked:
+		return
+	_default_lock_design_aspect = locked
+	safe_area_changed.emit()
+
+
+func is_lock_design_aspect() -> bool:
+	return _default_lock_design_aspect
+
+
+## 供同模块内 BaseView 绑定全局安全区配置变更信号（避免隐式访问 App.display）
+static func connect_safe_area_changed(callback: Callable) -> void:
+	if _active_instance != null and is_instance_valid(_active_instance):
+		if not _active_instance.safe_area_changed.is_connected(callback):
+			_active_instance.safe_area_changed.connect(callback)
+
+
+## 供同模块内 BaseView 解绑全局安全区配置变更信号
+static func disconnect_safe_area_changed(callback: Callable) -> void:
+	if _active_instance != null and is_instance_valid(_active_instance):
+		if _active_instance.safe_area_changed.is_connected(callback):
+			_active_instance.safe_area_changed.disconnect(callback)
+
+
 func get_safe_area_rect(viewport: Viewport = null) -> Rect2:
 	var vp := viewport if is_instance_valid(viewport) else get_viewport()
 	return compute_safe_area_rect(vp)
@@ -281,7 +327,10 @@ func get_safe_area_margins(
 	return compute_safe_area_margins(vp, lock_design_aspect)
 
 
-func apply_safe_area(control: Control, lock_design_aspect: bool = false) -> Result:
+func apply_safe_area(
+	control: Control,
+	lock_design_aspect: bool = false
+) -> Result:
 	return adapt_control_safe_area(control, lock_design_aspect)
 
 
@@ -297,6 +346,11 @@ static func compute_safe_area_rect(viewport: Viewport = null) -> Rect2:
 	var win_size_i := DisplayServer.window_get_size()
 	var design_size := compute_design_size()
 	var logical_rect := viewport.get_visible_rect() if is_instance_valid(viewport) else Rect2(Vector2.ZERO, design_size)
+
+	# 桌面端 DisplayServer.get_display_safe_area() 实际返回扣除系统任务栏的桌面工作区 (usable_rect)，
+	# 并非移动端屏幕内的刘海/底部手势条遮挡区；仅在移动端 (iOS / Android) 执行硬件异形屏安全区裁剪。
+	if not OS.has_feature("mobile"):
+		return logical_rect
 
 	if win_size_i.x <= 0 or win_size_i.y <= 0:
 		return logical_rect
@@ -332,7 +386,7 @@ static func compute_safe_area_rect(viewport: Viewport = null) -> Rect2:
 	return static_rect.intersection(logical_rect)
 
 
-## 静态纯计算入口：计算逻辑视口坐标系下的异形屏四向内边距
+## 静态纯计算入口：计算逻辑视口坐标系下的异形屏与全局安全比例四向内边距
 static func compute_safe_area_margins(
 	viewport: Viewport = null,
 	lock_design_aspect: bool = false
@@ -341,8 +395,14 @@ static func compute_safe_area_margins(
 	var full_rect := viewport.get_visible_rect() if is_instance_valid(viewport) else Rect2(Vector2.ZERO, design_size)
 	var safe_rect := compute_safe_area_rect(viewport)
 
-	if lock_design_aspect and design_size.x > EPSILON and design_size.y > EPSILON:
+	var use_aspect_lock: bool = lock_design_aspect or _default_lock_design_aspect
+	if use_aspect_lock and design_size.x > EPSILON and design_size.y > EPSILON:
 		safe_rect = CoordUtils.fit_rect_aspect(safe_rect, design_size.x / design_size.y)
+
+	if _default_safe_area_scale < 0.9999:
+		var scaled_size: Vector2 = safe_rect.size * _default_safe_area_scale
+		var inset: Vector2 = (safe_rect.size - scaled_size) * 0.5
+		safe_rect = Rect2(safe_rect.position + inset, scaled_size)
 
 	return {
 		"left": maxf(0.0, safe_rect.position.x - full_rect.position.x),
@@ -353,7 +413,10 @@ static func compute_safe_area_margins(
 
 
 ## 静态适配入口（供同模块内 BaseView 直接调用，无需隐式访问 App.display）
-static func adapt_control_safe_area(control: Control, lock_design_aspect: bool = false) -> Result:
+static func adapt_control_safe_area(
+	control: Control,
+	lock_design_aspect: bool = false
+) -> Result:
 	if not is_instance_valid(control):
 		return _err_invalid_node("apply_safe_area")
 

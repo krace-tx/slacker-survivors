@@ -57,7 +57,7 @@ src/framework/core/autoload/
 | 轨道类型 | 调用方式 | 适用范围 | 清单 / 特性 |
 | :--- | :--- | :--- | :--- |
 | **轨道 A：框架系统级信号**<br>(Built-in Signals) | `Bus.<signal>.connect(...)` | 由 Framework 核心模块发出的底层状态事实 | • `app_paused` / `app_resumed` / `app_back_pressed`<br>• `locale_changed`<br>• `input_device_changed(device_type, joy_brand)`<br>• `input_bindings_changed(action)`<br>• `joypad_connection_changed(device_id, connected)`<br>• `scene_changed(path)` / `scene_change_failed(path)` |
-| **轨道 B：业务跨模块主题**<br>(Dynamic Pub/Sub) | `Bus.on(...)`<br>`Bus.on_scoped(...)`<br>`Bus.off(...)`<br>`Bus.emit(...)` | `src/game/` 各垂直业务模块间的解耦广播（配合 [`GameEvents`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/define/game_events.gd) 常量） | • **作用域自动解绑（`on_scoped`）**：绑定宿主 `Node.tree_exiting` 信号，节点退树时自动 `off`，根除悬空回调泄漏<br>• **参数签名自适应**：回调既可写成无参 `func()` 也可写成单参 `func(payload)`<br>• **快照遍历与失效自洁**：派发前自动剔除已销毁对象的无效 `Callable`，并复制数组快照遍历防止回调内增删订阅引发错位<br>• **防死循环递归保护**：内置 `_MAX_RECURSION_DEPTH = 8`，拦截 `A -> B -> A` 无限事件环路 |
+| **轨道 B：业务跨模块主题**<br>(Dynamic Pub/Sub) | `Bus.on(...)`<br>`Bus.on_scoped(...)`<br>`Bus.off(...)`<br>`Bus.emit(...)` | `src/game/` 各垂直业务模块间的解耦广播（配合各业务 `Service` 公开的 `EVENT_*` 常量） | • **作用域自动解绑（`on_scoped`）**：绑定宿主 `Node.tree_exiting` 信号，节点退树时自动 `off`，根除悬空回调泄漏<br>• **参数签名自适应**：回调既可写成无参 `func()` 也可写成单参 `func(payload)`<br>• **快照遍历与失效自洁**：派发前自动剔除已销毁对象的无效 `Callable`，并复制数组快照遍历防止回调内增删订阅引发错位<br>• **防死循环递归保护**：内置 `_MAX_RECURSION_DEPTH = 8`，拦截 `A -> B -> A` 无限事件环路 |
 
 ### 2. 使用范式
 
@@ -68,8 +68,8 @@ func _ready() -> void:
 	Bus.input_device_changed.connect(_on_device_changed)
 
 # 2. 在 UI 或场景节点中使用 on_scoped 订阅业务领域事件（节点销毁退树时自动解绑！）
-	Bus.on_scoped(GameEvents.GOLD_CHANGED, self, _on_gold_changed)
+	Bus.on_scoped(PlayerProfileService.EVENT_PROFILE_UPDATED, self, _on_profile_updated)
 
 # 3. 广播跨模块领域事件（由 Service 层在状态变更后发出）
-Bus.emit(GameEvents.GOLD_CHANGED, {"gold": 1200, "delta": 200})
+Bus.emit(PlayerProfileService.EVENT_PROFILE_UPDATED, {"profile": profile})
 ```

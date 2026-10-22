@@ -174,16 +174,11 @@ func _read_json_payload(path: String, kwargs: Dictionary) -> Result:
 	if enc_key.is_empty() and not compressed:
 		return FileUtils.read_json(path)
 
-	var bytes_res: Result
-	if not enc_key.is_empty():
-		bytes_res = FileUtils.read_encrypted(path, enc_key)
-	else:
-		bytes_res = FileUtils.read_compressed(path)
-
+	var bytes_res := _read_decoded_bytes(path, enc_key, compressed)
 	if bytes_res.is_err():
 		return bytes_res
 
-	var raw_bytes: PackedByteArray = bytes_res.value
+	var raw_bytes: PackedByteArray = bytes_res.value as PackedByteArray
 	var text := raw_bytes.get_string_from_utf8().strip_edges()
 	if text.is_empty():
 		return Result.err_ex(StorageError.PARSE_ERROR, "Decoded JSON file '%s' is empty." % path, {"path": path}, false, null, FrameworkError.CATEGORY_VALIDATION)
@@ -224,9 +219,7 @@ func _write_json_payload(path: String, data: Variant, kwargs: Dictionary, atomic
 		return Result.err_ex(StorageError.PARSE_ERROR, "Failed to serialize JSON for '%s'." % path, {"path": path}, false, null, FrameworkError.CATEGORY_VALIDATION)
 
 	var raw_bytes := json_str.to_utf8_buffer()
-	if not enc_key.is_empty():
-		return FileUtils.write_encrypted(path, raw_bytes, enc_key, atomic)
-	return FileUtils.write_compressed(path, raw_bytes, FileAccess.COMPRESSION_ZSTD, atomic)
+	return _write_encoded_bytes(path, raw_bytes, enc_key, compressed, atomic)
 
 
 func _read_file_payload(path: String, kwargs: Dictionary) -> Result:
@@ -245,11 +238,7 @@ func _read_file_payload(path: String, kwargs: Dictionary) -> Result:
 
 	var enc_key := str(kwargs.get("encryption_key", ""))
 	var compressed := bool(kwargs.get("compressed", false))
-	if not enc_key.is_empty():
-		return FileUtils.read_encrypted(path, enc_key)
-	if compressed:
-		return FileUtils.read_compressed(path)
-	return FileUtils.read_bytes(path)
+	return _read_decoded_bytes(path, enc_key, compressed)
 
 
 func _write_file_payload(path: String, data: Variant, kwargs: Dictionary, atomic: bool) -> Result:
@@ -266,17 +255,74 @@ func _write_file_payload(path: String, data: Variant, kwargs: Dictionary, atomic
 	var bytes := data as PackedByteArray
 	var enc_key := str(kwargs.get("encryption_key", ""))
 	var compressed := bool(kwargs.get("compressed", false))
+	return _write_encoded_bytes(path, bytes, enc_key, compressed, atomic)
+
+
+## 正交组合编码写入管线：支持「先内存 ZSTD 压缩 ➔ 再 AES-256 加密」及独立压缩/加密模式。
+static func _write_encoded_bytes(
+	path: String,
+	raw_bytes: PackedByteArray,
+	enc_key: String,
+	compressed: bool,
+	atomic: bool
+) -> Result:
 	if not enc_key.is_empty():
-		return FileUtils.write_encrypted(path, bytes, enc_key, atomic)
+		var payload_to_encrypt := raw_bytes
+		if compressed:
+			var comp_res := CryptoUtils.compress_bytes(raw_bytes, FileAccess.COMPRESSION_ZSTD)
+			if comp_res.is_err():
+				return comp_res
+			payload_to_encrypt = comp_res.value as PackedByteArray
+		return FileUtils.write_encrypted(path, payload_to_encrypt, enc_key, atomic)
+
 	if compressed:
-		return FileUtils.write_compressed(path, bytes, FileAccess.COMPRESSION_ZSTD, atomic)
-	return FileUtils.write_bytes(path, bytes, atomic)
+		return FileUtils.write_compressed(path, raw_bytes, FileAccess.COMPRESSION_ZSTD, atomic)
+
+	return FileUtils.write_bytes(path, raw_bytes, atomic)
+
+
+## 正交组合解码读取管线：支持「先 AES-256 解密 ➔ 再识别 SLKZ 帧解压」，并向下兼容历史单步格式。
+static func _read_decoded_bytes(path: String, enc_key: String, compressed: bool) -> Result:
+	if not enc_key.is_empty():
+		var dec_res := FileUtils.read_encrypted(path, enc_key)
+		if dec_res.is_err():
+			# 兼容直接使用 CryptoUtils.encrypt_bytes (SLKE 信封) 落盘的文件
+			var raw_file_res := FileUtils.read_bytes(path)
+			if raw_file_res.is_ok() and CryptoUtils.is_encrypted_envelope(raw_file_res.value as PackedByteArray):
+				dec_res = CryptoUtils.decrypt_bytes(raw_file_res.value as PackedByteArray, enc_key)
+			if dec_res.is_err():
+				return Result.err_ex(
+					StorageError.DECRYPT_FAILED,
+					dec_res.error_message(),
+					{"path": path},
+					false,
+					dec_res.error,
+					FrameworkError.CATEGORY_VALIDATION
+				)
+
+		var decrypted_bytes: PackedByteArray = dec_res.value as PackedByteArray
+		if CryptoUtils.is_compressed_frame(decrypted_bytes):
+			return CryptoUtils.decompress_bytes(decrypted_bytes)
+		return Result.ok(decrypted_bytes)
+
+	if compressed:
+		var comp_res := FileUtils.read_compressed(path)
+		if comp_res.is_ok():
+			return comp_res
+		var raw_res := FileUtils.read_bytes(path)
+		if raw_res.is_ok() and CryptoUtils.is_compressed_frame(raw_res.value as PackedByteArray):
+			return CryptoUtils.decompress_bytes(raw_res.value as PackedByteArray)
+		return comp_res
+
+	return FileUtils.read_bytes(path)
 
 
 static func _wrap_disk_error(res: Result, path: String) -> Result:
 	var code := res.error_code()
 	if code.begins_with("Storage."):
 		return res
+	if code == CryptoUtils.ERR_TAMPERED or code == CryptoUtils.ERR_DECRYPT_FAILED or code == CryptoUtils.ERR_SIGNATURE_MISMATCH:
+		return Result.err_ex(StorageError.DECRYPT_FAILED, res.error_message(), {"path": path}, false, res.error, FrameworkError.CATEGORY_VALIDATION)
 	if code == FileUtils.ERR_HASH_MISMATCH:
 		return Result.err_ex(StorageError.HASH_MISMATCH, res.error_message(), {"path": path}, false, res.error, FrameworkError.CATEGORY_VALIDATION)
 	if code == FileUtils.ERR_PARSE_ERROR:

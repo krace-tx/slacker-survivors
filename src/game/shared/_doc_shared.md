@@ -1,38 +1,37 @@
 # Game · Shared (跨模块业务共享内核与防膨胀架构规范)
 
-> 游戏业务层全模块通用的共享内核（Shared Kernel）：仅承载跨 **2 个及以上独立业务模块**共同依赖的静态契约（`define/`）、共享数据模型（`model/`）、跨模块业务服务（`service/`）与无业务流通用交互组件（`component/`）。
+> 游戏业务层全模块通用的共享内核（Shared Kernel）：对齐 **MSVP** 的 `M-S-V` 分层，仅承载跨 **2 个及以上独立业务模块**共同依赖的共享数据模型（`model/`）、跨模块业务服务（`service/`）与无业务流通用交互组件（`component/`）。
 
 ---
 
-## 一、 顶层四支柱 + 二级子域分包架构
+## 一、 顶层三支柱（M-S-V 对齐）+ 二级子域分包架构
 
-为防止随着游戏版本迭代导致 `shared/` 退化为平铺数十个文件的“公共垃圾桶”，`src/game/shared/` 严格执行 **“一级按架构职能分 4 柱（单数），二级按功能子域分包（深度封顶 2 层）”**：
+为防止随着游戏版本迭代导致 `shared/` 退化为平铺数十个文件的“公共垃圾桶”，同时消除按词性堆砌的 `define/` 大杂烩反模式，`src/game/shared/` 严格执行 **“一级按 M-S-V 架构职能分 3 柱（单数），二级按功能子域分包（深度封顶 2 层），枚举/常量/事件遵循高内聚就近归属原则”**：
 
 ```text
 src/game/shared/
 ├── _doc_shared.md                            # 本架构规范文档
 │
-├── define/                                   # [支柱 1] 静态契约定义层（零逻辑、纯编译期常量/枚举/事件）
-│   ├── game_constants.gd                     # 全局存档 Key 与音频总线名常量 (GameConstants)
-│   ├── game_events.gd                        # 跨模块解耦事件名与 Payload 契约 (GameEvents)
-│   ├── game_enums.gd                         # 跨模块共享业务枚举 (GameEnums: QualityPreset)
-│   └── generated/                            # [插件自动注入子域 · 严禁手改]
-│       └── game_scenes.gd                    # 路由级场景契约自动生成表 (GameScenes: Scene / Dialog / Component)
-│
-├── model/                                    # [支柱 2] 共享数据模型层（纯数据结构 + 序列化/自愈校验）
-│   ├── save/                                 # 子域 A：持久化存档模型（继承 BaseParams，对接 App.storage）
-│   │   ├── game_settings_model.gd            # 游戏全局偏好设置存档模型 (GameSettingsModel)
+├── model/                                    # [支柱 1 · M] 共享数据模型层（纯数据结构 + 内聚枚举/Key + 序列化/自愈校验）
+│   ├── save/                                 # 子域 A：持久化存档聚合根模型 (*Model，继承 BaseParams，内聚 STORAGE_KEY 对接 App.storage)
+│   │   ├── game_settings_model.gd            # 游戏全局偏好设置存档聚合根 (GameSettingsModel)
 │   │   └── player_profile_model.gd           # 玩家全局持久化基础档案模型 (PlayerProfileModel)
-│   ├── config/                               # 子域 B：(随项目扩展) 跨模块静态策划配表模型 (*Config)
-│   └── vo/                                   # 子域 C：(随项目扩展) 跨模块传输值对象与参数包 (*VO / *Params)
+│   ├── data/                                 # 子域 B：内嵌子数据块与跨模块通用条目 (*Data / *Params / *Req / *Resp，内聚所属业务枚举)
+│   │   ├── display_settings_data.gd          # 显示与窗口设置子数据块 (DisplaySettingsData)
+│   │   ├── graphics_settings_data.gd         # 画质与视口渲染子数据块 (GraphicsSettingsData: 内聚 QualityPreset / ShadowQuality)
+│   │   ├── audio_settings_data.gd            # 音频与正交静音子数据块 (AudioSettingsData)
+│   │   ├── control_settings_data.gd          # 操作、震动与改键子数据块 (ControlSettingsData: 内聚 VirtualJoystickMode)
+│   │   └── general_settings_data.gd          # 语言与通用偏好子数据块 (GeneralSettingsData)
+│   └── config/                               # 子域 C：跨模块静态配置表与路由配置 (*Config / GameScenes)
+│       └── game_scenes.gd                    # [插件自动注入 · 严禁手改] 路由级场景配置表 (GameScenes: Scene / Dialog / Component)
 │
-├── service/                                  # [支柱 3] 共享业务服务层（跨模块状态协调与底层硬件/存档编排）
+├── service/                                  # [支柱 2 · S] 共享业务服务层（跨模块状态协调、底层硬件/存档编排与领域事件 EVENT_* 发布）
 │   ├── settings/                             # 子域 A：全局游戏设置服务
-│   │   └── game_settings_service.gd          # 协调 GameSettingsModel <-> App.audio/display/haptic/input/locale/storage
+│   │   └── game_settings_service.gd          # 协调 GameSettingsModel <-> App.*，广播 EVENT_SETTINGS_CHANGED / EVENT_QUALITY_PRESET_CHANGED
 │   └── profile/                              # 子域 B：玩家全局档案服务
-│       └── player_profile_service.gd         # 协调 PlayerProfileModel 读写、会话登录记录与 Bus 事件广播
+│       └── player_profile_service.gd         # 协调 PlayerProfileModel 读写、会话登录记录与 EVENT_PROFILE_UPDATED 广播
 │
-└── component/                                # [支柱 4] 跨模块通用 UI 组件与容器调度（无特定业务流）
+└── component/                                # [支柱 3 · V] 跨模块通用 UI 组件与容器调度（无特定业务流）
 	├── button/                               # 子域 A：通用交互按钮族
 	│   └── base_texture_button.gd            # 通用贴图按钮 (BaseTextureButton: 缩放/音效/震动/滑动消抖中继)
 	├── dialog/                               # 子域 B：模态弹窗基类与栈调度器
@@ -65,23 +64,32 @@ flowchart LR
 	Component --> Service
 	Service --> Model["shared/model/*"]
 	Component --> Model
-	Model --> Define["shared/define/*"]
-	Define --> Framework["framework/*"]
+	Model --> Framework["framework/*"]
 ```
-1. **外部隔离红线**：`src/game/shared/` **严禁**反向引用任何 `src/game/features/` 或 `src/game/bootstrap/` 代码（由 `check_compliance` 静态门禁强制拦截）。
+1. **外部隔离红线**：`src/game/shared/` **严禁**反向引用任何 `src/game/features/` 或 `src/game/bootstrap/` 代码（由 `check_compliance` 静态门禁强制拦截，仅自动生成的静态路径路由表 `model/config/game_scenes.gd` 豁免）。
 2. **内部单向红线**：
-   - `define/` 零外部业务依赖；
-   - `model/` 仅承载数据结构、范围校验（`sanitize()`）与序列化，严禁直接调用 `App.*` 或引用 `service/`、`component/`；
-   - `service/` 负责连接 `model/` 与 `App.*` / `Bus`，严禁直接操作具体 UI 控件；
+   - `model/` 仅承载数据结构、内聚枚举/常量、范围校验（`sanitize()`）与序列化，严禁直接调用 `App.*` 或引用 `service/`、`component/`；
+   - `service/` 负责连接 `model/` 与 `App.*` / `Bus` 并内聚定义对外发布的 `EVENT_*` 常量，严禁直接操作具体 UI 控件；
 3. **上浮毕业（Graduation）**：若某个 `shared/service/` 随需求演进长出专属的多步交互界面与独立状态机，应立即将其上浮拆分为独立的 `src/game/features/<domain>/`。
 
 ---
 
-## 三、 全局游戏设置架构 (`GameSettingsModel` + `GameSettingsService`)
+## 三、 跨项目通用游戏设置内核 (`GameSettingsModel` + `GameSettingsService`)
 
-- **数据层 [`GameSettingsModel`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/model/save/game_settings_model.gd)**：
-  - 完整覆盖四大通用维度：**音频总线与独立静音（含后台失焦静音 `mute_in_background`）**、**窗口模式与分辨率/VSync/帧率**、**画质预设档位（`LOW/MEDIUM/HIGH/ULTRA/CUSTOM`）与底层视口渲染参数（MSAA 2D/3D、FXAA/SMAA、3D 渲染缩放、2D 纹理过滤）** 以及 **多语言、物理触感震动与手柄死区/自定义键位映射**。
-- **服务层 [`GameSettingsService`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/settings/game_settings_service.gd)**：
-  - 启动期由 [`BootstrapScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/bootstrap_scene.gd) 在渲染首帧前调用 `await GameSettingsService.load_and_apply()` 一键完成磁盘读取、边界钳制与全系统硬件同步；
-  - 运行期提供 `set_quality_preset()`（一键展开预设档位并广播 `GameEvents.QUALITY_PRESET_CHANGED`）与 `set_custom_graphics()`（单项微调自动切入 `CUSTOM` 档位）；
-  - 自动监听 `Bus.app_paused` / `Bus.app_resumed`，按 `mute_in_background` 动态控制后台音频暂停。
+> **跨项目零成本复用设计**：`GameSettingsModel` 与 `GameSettingsService` 是完全 **UI 无关（UI-Agnostic）** 的跨项目通用设置内核。开启新项目时可直接连同 `src/framework/` 一起复用，新项目只需编写自己的 UI 视图（`.tscn`）并绑定 `GameSettingsService` 的原子 API。
+
+- **数据层 [`GameSettingsModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/game_settings_model.gd) + 五大独立 `*Data` 文件**：
+  - 采用顶层聚合根 `GameSettingsModel` + 五个独立拆分的 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd) 子数据块（[`DisplaySettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/display_settings_data.gd)、[`GraphicsSettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/graphics_settings_data.gd)、[`AudioSettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/audio_settings_data.gd)、[`ControlSettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/control_settings_data.gd)、[`GeneralSettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/general_settings_data.gd)）正交建模，每个子块均支持独立的 `sanitize()`、`reset()` 与 `clone()`：
+    1. `display`（`DisplaySettingsData`）：显示器索引、窗口模式、分辨率、VSync、前台帧率上限、后台失焦降帧（`background_max_fps`）、全局 HUD 安全区比例（`safe_area_scale`）、设计宽高比锁定（`lock_design_aspect`）与亮度；
+    2. `graphics`（`GraphicsSettingsData`）：画质预设档位（`LOW/MEDIUM/HIGH/ULTRA/CUSTOM`）、3D 渲染缩放、MSAA 2D/3D、FXAA/SMAA、2D 纹理过滤、特效粒子密度与阴影质量；
+    3. `audio`（`AudioSettingsData`）：主音量/BGM/SFX/语音/环境音五通道音量、正交静音开关与后台失焦自动静音（`mute_in_background`）；
+    4. `control`（`ControlSettingsData`）：物理震动开关与强度、手柄死区、鼠标灵敏度、移动端虚拟摇杆模式与自定义改键映射补丁（`input_bindings`）；
+    5. `general`（`GeneralSettingsData`）：多语言区域标识（支持首次启动自动匹配 OS 系统语言）。
+- **服务内核 [`GameSettingsService`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/service/settings/game_settings_service.gd)**：
+  - **启动与持久化**：启动期由 [`BootstrapScene`](file:///d:/code/GodotProject/slacker-survivors/src/game/bootstrap/bootstrap_scene.gd) 在渲染首帧前调用 `await GameSettingsService.load_and_apply()` 一键完成磁盘读取、边界钳制与全系统硬件同步；
+  - **切屏事务与 15 秒回滚内核**：内置 `begin_display_transaction()` / `commit_display_transaction()` / `rollback_display_transaction()`，任何项目的切屏确认框只需调这三个方法即可完成安全回滚；
+  - **全维度原子级设置 API**：
+    - 显示：`set_window_mode()`、`set_resolution()`、`toggle_fullscreen()`、`set_vsync()`、`set_max_fps()`、`set_safe_area_scale()`、`set_lock_design_aspect()`；
+    - 画质：`set_quality_preset()`（自动展开预设）与 `set_msaa()` / `set_screen_space_aa()` / `set_render_scale()`（单项微调自动切入 `CUSTOM`）；
+    - 音频：`set_volumes(..., auto_save=false)`（滑块拖动实时听音）+ `save_async()`（松手落盘）、`set_master_muted()` / `set_music_enabled()` / `set_sfx_enabled()` / `set_mute_in_background()`；
+    - 多语言与输入：`set_locale()`、`set_haptic_enabled()`、`set_joy_deadzone()`、`sync_input_bindings_from_system()`。

@@ -52,7 +52,7 @@
 > - **容器 / 资源 / 实例集合 ➔ 复数 (Plural)**：表达物理或逻辑上存放多个具体同质对象、文件、资源或插件的集合。
 
 ### 核心对比查照
-- **单数技术/共享域**：`src/framework/`、`src/framework/infra/param/`、`src/framework/modules/logger/`、`src/framework/util/file/`、`src/game/shared/define/`、`src/game/shared/model/`、`src/game/shared/service/`、`src/game/shared/component/`、业务切片内 `view/scene/<domain>/` 与 `view/component/<domain>/`（每个单元文件夹按纯领域命名、无后缀，包裹 `1 个 .tscn + 多个 .gd`）。
+- **单数技术/共享域**：`src/framework/`、`src/framework/infra/param/`、`src/framework/modules/logger/`、`src/framework/util/file/`、`src/game/shared/model/`、`src/game/shared/service/`、`src/game/shared/component/`、业务切片内 `view/scene/<domain>/` 与 `view/component/<domain>/`（每个单元文件夹按纯领域命名、无后缀，包裹 `1 个 .tscn + 多个 .gd`）。
 - **复数容器域**：`src/assets/videos/`、`src/assets/textures/`、`src/game/features/`、`addons/`、`docs/`、各模块内的 `types/`、`adapters/`。
 
 ---

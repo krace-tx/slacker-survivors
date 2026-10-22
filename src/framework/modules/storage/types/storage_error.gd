@@ -23,6 +23,9 @@ const PARSE_ERROR: String = "Storage.ParseError"
 ## 磁盘或远端下载文件的 MD5 哈希校验不匹配（数据损坏或被篡改）
 const HASH_MISMATCH: String = "Storage.HashMismatch"
 
+## 本地加密存档解密失败、口令不匹配或密文信封被篡改
+const DECRYPT_FAILED: String = "Storage.DecryptFailed"
+
 ## 单条数据体积超过 L1 内存预算缓存（BudgetCache）的最大可用容量
 const MEMORY_LIMIT_EXCEEDED: String = "Storage.MemoryLimitExceeded"
 

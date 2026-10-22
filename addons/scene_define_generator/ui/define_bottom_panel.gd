@@ -84,7 +84,7 @@ func _build_toolbar() -> void:
 
 	_inject_btn = Button.new()
 	_inject_btn.text = "Inject"
-	_inject_btn.tooltip_text = "Write constants to res://src/game/shared/define/generated/game_scenes.gd"
+	_inject_btn.tooltip_text = "Write constants to res://src/game/shared/model/config/game_scenes.gd"
 	_inject_btn.icon = _editor_icon(&"Save")
 	_inject_btn.pressed.connect(func(): inject_requested.emit())
 	bar.add_child(_inject_btn)

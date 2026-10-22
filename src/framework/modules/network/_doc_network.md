@@ -23,7 +23,7 @@ src/framework/modules/network/
 ## 一、 核心工程设计机制 (12 维治理契约)
 
 1. **职责边界 (Responsibility)**：
-   - **负责**：HTTP/HTTPS 短连接 API 请求（`GET`/`POST`/`PUT`/`DELETE`/`PATCH`/`HEAD`）、URL Query 自动编码拼接、全局 `base_url` 与公共 Header 管理、Bearer Token 注入与 401 刷新重放、`multipart/form-data` 上传、`.tmp` 原子流式下载与 MD5 校验。
+   - **负责**：HTTP/HTTPS 短连接 API 请求（`GET`/`POST`/`PUT`/`DELETE`/`PATCH`/`HEAD`）、URL Query 自动编码拼接、全局 `base_url` 与公共 Header 管理、Bearer Token 注入与 401 刷新重放、HMAC-SHA256 防篡改与防重放请求签名（`set_request_signing`）、`multipart/form-data` 上传、`.tmp` 原子流式下载与 MD5 校验。
    - **不负责**：具体业务 DTO 语义解析、本地多级缓存编排（由 `App.storage` 负责）、实时帧同步或长连接状态同步（WebSocket / ENet 需独立通道模块）。
 2. **有界并发队列与连接池预算 (Performance Budget)**：
    - `RequestQueue` 默认限制**最大并发飞行请求数为 `6`**（`max_concurrent_requests = 6`），超出上限的请求自动进入 FIFO 等待队列；

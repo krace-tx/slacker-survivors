@@ -69,7 +69,7 @@ App.audio.play_sfx_by_path("res://assets/audio/click.wav")
 
 只广播**已发生的客观事实**，绝不替代需要返回值与失败感知的直接服务调用（如切场景应直接调用 `await App.scene.replace(...)`）：
 - **框架系统级事实**：通过内置 `signal` 直接连接（如 `app_paused`、`scene_changed`、`locale_changed`）；
-- **业务跨模块事实**：通过动态主题方法 `Bus.on()` / `Bus.on_scoped()` / `Bus.off()` / `Bus.emit()` 配合 `GameEvents` 常量解耦广播（内置最大递归深度 8 保护、自动清理已销毁对象的悬空回调，并支持 `on_scoped(event, owner_node, cb)` 随节点退树自动解绑）。
+- **业务跨模块事实**：通过动态主题方法 `Bus.on()` / `Bus.on_scoped()` / `Bus.off()` / `Bus.emit()` 配合各业务 `Service` 公开的 `EVENT_*` 常量解耦广播（内置最大递归深度 8 保护、自动清理已销毁对象的悬空回调，并支持 `on_scoped(event, owner_node, cb)` 随节点退树自动解绑）。
 
 ```gdscript
 # 1. 订阅框架系统级信号
@@ -77,6 +77,6 @@ Bus.scene_changed.connect(_on_scene_changed)
 Bus.app_paused.connect(_on_app_paused)
 
 # 2. 订阅与广播业务跨模块领域事件（推荐节点使用 on_scoped 自动随退树解绑）
-Bus.on_scoped(GameEvents.GOLD_CHANGED, self, _on_gold_changed)
-Bus.emit(GameEvents.GOLD_CHANGED, {"gold": 500, "delta": 100})
+Bus.on_scoped(PlayerProfileService.EVENT_PROFILE_UPDATED, self, _on_profile_updated)
+Bus.emit(PlayerProfileService.EVENT_PROFILE_UPDATED, {"profile": profile})
 ```
