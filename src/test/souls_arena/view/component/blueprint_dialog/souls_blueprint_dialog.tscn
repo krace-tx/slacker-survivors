@@ -1,0 +1,204 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/test/souls_arena/view/component/blueprint_dialog/souls_blueprint_dialog.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://src/test/souls_arena/assets/textures/ico_souls_arena_ast_blueprint.svg" id="2_ast_ico"]
+[ext_resource type="Texture2D" path="res://src/test/souls_arena/assets/textures/ui_souls_arena_boss_frame.svg" id="3_frame_div"]
+[ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/blueprint_dialog/souls_ast_blueprint_view.tscn" id="4_ast_view"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+bg_color = Color(0.05, 0.06, 0.09, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.36, 0.56, 0.68, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_rerun"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.08, 0.16, 0.14, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.36, 0.68, 0.54, 0.82)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_close"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.09, 0.1, 0.14, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56, 0.46, 0.28, 0.82)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inner_panel"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.03, 0.04, 0.07, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.32, 0.44, 0.72)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="SoulsBlueprintDialog" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.01, 0.02, 0.04, 0.76)
+
+[node name="ModalCard" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -460.0
+offset_top = -270.0
+offset_right = 460.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="RootVBox" type="VBoxContainer" parent="ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderRow" type="HBoxContainer" parent="ModalCard/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderIcon" type="TextureRect" parent="ModalCard/RootVBox/HeaderRow"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("2_ast_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="ModalCard/RootVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "AI 行为树与状态机蓝图"
+
+[node name="Spacer" type="Control" parent="ModalCard/RootVBox/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SummaryLabel" type="Label" parent="ModalCard/RootVBox/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.96, 0.68, 1)
+theme_override_font_sizes/font_size = 12
+text = "自检 6 / 6 通过"
+
+[node name="RerunBtn" type="Button" parent="ModalCard/RootVBox/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.92, 0.98, 0.94, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_rerun")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_rerun")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_rerun")
+text = "重跑自检"
+
+[node name="CloseBtn" type="Button" parent="ModalCard/RootVBox/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.96, 0.94, 0.94, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_close")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_close")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_close")
+text = "关闭 [B]"
+
+[node name="DividerFrame" type="TextureRect" parent="ModalCard/RootVBox"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+texture = ExtResource("3_frame_div")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SplitRow" type="HBoxContainer" parent="ModalCard/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="LeftPanel" type="PanelContainer" parent="ModalCard/RootVBox/SplitRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_inner_panel")
+
+[node name="AstBlueprintView" parent="ModalCard/RootVBox/SplitRow/LeftPanel" instance=ExtResource("4_ast_view")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RightPanel" type="PanelContainer" parent="ModalCard/RootVBox/SplitRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_inner_panel")
+
+[node name="RightVBox" type="VBoxContainer" parent="ModalCard/RootVBox/SplitRow/RightPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="LogTitle" type="Label" parent="ModalCard/RootVBox/SplitRow/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.91, 0.98, 1)
+theme_override_font_sizes/font_size = 13
+text = "自检与战斗日志"
+
+[node name="LogRichText" type="RichTextLabel" parent="ModalCard/RootVBox/SplitRow/RightPanel/RightVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 12
+bbcode_enabled = true
+scroll_following = true

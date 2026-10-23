@@ -80,6 +80,7 @@ func verify_and_issue_async(credential: AuthCredential, options: AuthOptions, no
 		"account_id": account_id,
 		"provider": credential.provider,
 		"platform_user_id": credential.platform_user_id,
+		"platform_ticket": credential.raw_ticket,
 		"display_name": display_name,
 		"avatar_url": str(payload.get("avatar_url", credential.avatar_url)),
 		"access_token": access_token,

@@ -14,7 +14,7 @@ src/framework/core/autoload/
 
 ## 一、 `App` 全局服务聚合根 (`app.gd`)
 
-### 1. 14 大核心子系统强类型门面
+### 1. 15 大核心子系统强类型门面
 
 业务层（`src/game/`）统一通过 `App.<service>` 面向抽象基类（`Base*`）编程；框架实现层（`src/framework/modules/`、`infra/`、`util/`）**严禁**调用 `App.xxx`，必须通过构造函数显式依赖注入。
 
@@ -31,7 +31,8 @@ src/framework/core/autoload/
 | `App.storage` | [`BaseStorageSystem`](../../modules/storage/base_storage_system.gd) | L1 内存 + L2 磁盘（`.tmp/.bak` 原子自愈 + ZSTD + AES-256）+ L3 远端（HTTP & Steam Cloud）三级存储 |
 | `App.locale` | [`BaseLocalizationSystem`](../../modules/locale/base_localization_system.gd) | 多语言区域切换、`TranslationServer` 适配与缺省回退保底 |
 | `App.scene` | [`BaseSceneRouter`](../../modules/scene/base_scene_router.gd) | 顶层场景栈路由（`bind` / `replace` / `push` / `pop`）与流式视觉转场 |
-| `App.display` | [`BaseDisplaySystem`](../../modules/display/base_display_system.gd) | 窗口/全屏状态机、分辨率钳制、异形屏安全区逆矩阵投影、渲染抗锯齿与五大 `CanvasLayer` |
+| `App.display` | [`BaseDisplaySystem`](../../modules/display/base_display_system.gd) | 窗口/全屏状态机、分辨率钳制、异形屏安全区逆矩阵投影、渲染抗锯齿与六大 `CanvasLayer` |
+| `App.cursor` | [`BaseCursorSystem`](../../modules/cursor/base_cursor_system.gd) | 11 种语义光标形态、五层交互优先级漏斗、硬/软指针双擎与拖尾/点击波粒子伴生舞台 |
 | `App.audio` | [`BaseAudioSystem`](../../modules/audio/base_audio_system.gd) | 零协程缓存热路径、BGM 双轨交叉淡入淡出、正交音画避让（`duck_bgm`）与 16 通道 SFX 池 |
 | `App.video` | [`BaseVideoPlayer`](../../modules/video/base_video_player.gd) | 跨平台视频播放控制（桌面 FFmpeg / 移动原生 ExoPlayer & AVPlayer / 引擎 Theora 保底） |
 

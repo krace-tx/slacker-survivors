@@ -53,7 +53,7 @@ flowchart TD
 | **框架模块目录** | 独立子系统域 | **单数** | `modules/asset/`, `modules/audio/`, `modules/clock/`, `modules/display/`, `modules/env/`, `modules/haptic/`, `modules/input/`, `modules/locale/`, `modules/logger/`, `modules/network/`, `modules/scene/`, `modules/storage/`, `modules/video/` | `log/`（非完整名词）、`ui/` |
 | **业务共享三支柱** | 跨模块共享内核职能 | **单数** | `shared/model/`, `shared/service/`, `shared/component/` | `define/`、`models/`、`components/`、`constants/`、`events/`、`msvp/` |
 | **模块内架构分层** | MSVP / MES 职能目录 | **单数** | `model/`, `service/`, `view/`, `presenter/`, `engine/` | `models/`, `views/`, `services/` |
-| **容器与集合目录** | 存放多个同质资产、业务切片、类型、驱动或任务 | **复数** | `src/assets/videos/`, `src/assets/textures/`, `src/resources/configs/`, `src/game/features/`, `types/`, `drivers/`, `adapters/`, `tasks/`, `addons/`, `docs/` | `video/`（资产目录用单数）、`type/`、`driver/` |
+| **容器与集合目录** | 存放多个同质资产、业务切片、类型、驱动或任务 | **复数** | `src/assets/videos/`, `src/assets/textures/`, `src/resources/envs/`, `src/resources/tables/`, `src/resources/defs/`, `src/game/features/`, `types/`, `drivers/`, `adapters/`, `tasks/`, `addons/`, `docs/` | `video/`（资产目录用单数）、`type/`、`driver/` |
 
 ### 2. 代码标识符命名规范 (Identifier Casing)
 
@@ -265,10 +265,10 @@ func _log_info(msg: String) -> void:
 ### 2. 显式依赖注入 (DI) vs 服务定位器 (`App.xxx`)
 
 - **业务层 (`src/game/`) 与测试层 (`src/test/`)**：
-  - 允许且应当通过全局门面 `App.<service>` 调用 13 大系统能力（`App.env`、`App.logger`、`App.clock`、`App.asset`、`App.input`、`App.haptic`、`App.net`、`App.storage`、`App.locale`、`App.scene`、`App.display`、`App.audio`、`App.video`）。
+  - 允许且应当通过全局门面 `App.<service>` 调用 15 大系统能力（`App.env`、`App.logger`、`App.clock`、`App.asset`、`App.input`、`App.haptic`、`App.net`、`App.auth`、`App.storage`、`App.locale`、`App.scene`、`App.display`、`App.cursor`、`App.audio`、`App.video`）。
 - **框架层内部 (`src/framework/modules/`、`infra/`、`util/`)**：
   - **绝对禁止**在代码中出现 `App.xxx` 调用！
-  - 模块间依赖必须在主实现类中显式声明 `MODULE_ID`、`REQUIRED_MODULES` 与 `OPTIONAL_MODULES`，并由唯一组合根 [`FrameworkRuntime`](../src/framework/core/runtime/framework_runtime.gd) 通过 `_init(...)` 或 `set_xxx(...)` 注入抽象门面类型（`Base*`）。
+  - 模块间依赖必须在主实现类中显式声明 `MODULE_ID`、`REQUIRED_MODULES` 与 `OPTIONAL_MODULES`，并由唯一组合根 [`FrameworkRuntime`](../src/framework/core/runtime/framework_runtime.gd) 通过 `_init(...)` 显式构造注入抽象门面类型（`Base*`），由 [`RuntimeServiceHost.install()`](../src/framework/core/runtime/impl/runtime_service_host.gd) 自动核对拓扑契约。
 
 ---
 
@@ -389,19 +389,20 @@ func _on_enter(_params: BaseParams = null) -> void:
 python .agents/skills/framework-aware/scripts/check_compliance.py
 ```
 
-门禁脚本将自动核验以下 15 项工程铁律：
-1. 网络门面统一使用 `App.net`（禁用 `App.network`）；
-2. 参数契约单数路径 `infra/param/`；
-3. 视频资产复数容器路径 `assets/videos/`；
-4. 日志模块路径 `modules/logger/`；
-5. 显示与视频层解耦（业务弹窗/飘字隔离于 `src/game/shared/component/`）；
-6. `src/game/shared/` 三支柱架构（`model/service/component`）与零向上依赖；
-7. `src/framework/` 零反向依赖 `src/game/` 或 `src/test/`；
-8. `framework/modules|infra|util` 内部零隐式 `App.xxx` 调用（强制构造 DI）；
-9. 13 大核心模块完整声明 `MODULE_ID` / `REQUIRED_MODULES` / `OPTIONAL_MODULES`；
-10. `src/game/` 零跨界引用 `impl/` 内部私有实现类；
-11. 废弃工具类清零（统一收敛至 `FileCodecUtils`、`ResourceCodecUtils`、`TaskScope`、`SpinePool`）；
-12. Godot Headless 全项目 `.gd` 脚本静态类型与语法编译 100% 通过，且无裸 `print()` 残留；
-13. `src/assets/` 资产拓扑、命名与归属合规（容器/扩展名/前缀白名单、文件名域段 == 目录域、零跨 Feature 资产引用、框架零资产引用）；
-14. `src/` 内零冗余脚本别名（已声明 `class_name` 的脚本禁止 `preload` / `load` 起别名，统一直呼全局类名）；
-15. `user://` 本地沙盒持久化拓扑与二级架构域 `STORAGE_DOMAIN` 归属合规（`src/game/` 禁止裸写 `"user://"`、禁止非 `*_model.gd` 构造 `StorageItem`）。
+门禁脚本将自动核验以下 16 项工程铁律（`R01 ~ R16`）：
+1. **`R01`**：网络门面统一使用 `App.net`（禁用 `App.network`）；
+2. **`R02`**：参数契约单数路径 `infra/param/`；
+3. **`R03`**：视频资产复数容器路径 `assets/videos/`；
+4. **`R04`**：日志模块路径 `modules/logger/`；
+5. **`R05`**：显示与视频层解耦（业务弹窗/飘字隔离于 `src/game/shared/component/`）；
+6. **`R06`**：`src/game/shared/` 三支柱架构（`model/service/component`）与零向上依赖；
+7. **`R07`**：`src/framework/` 零反向依赖 `src/game/` 或 `src/test/` 及零项目名硬编码；
+8. **`R08`**：`framework/modules|infra|util` 内部零隐式 `App.xxx` 调用（强制构造 DI）；
+9. **`R09`**：15 大核心模块完整声明 `MODULE_ID` / `REQUIRED_MODULES` / `OPTIONAL_MODULES`；
+10. **`R10`**：`src/game/` 零跨界引用 `impl/` 内部私有实现类；
+11. **`R11`**：废弃工具类清零（统一收敛至 `FileCodecUtils`、`ResourceCodecUtils`、`TaskScope`、`SpinePool`）；
+12. **`R12`**：Godot Headless 全项目 `.gd` 脚本静态类型与语法编译 100% 通过（0 Error, 0 Warning）；
+13. **`R13`**：全项目 `src/` 零裸 `print()` 残留（统一走 `App.logger`）；
+14. **`R14`**：`src/assets/` 资产拓扑、命名与归属合规（容器/扩展名/前缀白名单、文件名域段 == 目录域、零跨 Feature 资产引用、框架零资产引用）；
+15. **`R15`**：`src/` 内零冗余脚本别名（已声明 `class_name` 的脚本禁止 `preload` / `load` 起别名，统一直呼全局类名）；
+16. **`R16`**：`user://` 本地沙盒持久化拓扑与二级架构域 `STORAGE_DOMAIN` 归属合规（`src/game/` 禁止裸写 `"user://"`、仅允许 `*_model.gd` 调用 `StorageItem.for_config/for_save` 且 `STORAGE_DOMAIN` 与目录域一致）。

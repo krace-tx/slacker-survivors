@@ -12,7 +12,7 @@
 ```text
 src/test/
 ├── _doc_test.md                 # 本架构规范文档
-└── <feature_name>/              # 独立功能测试模块 (遵循单复数黄金法则，使用单数能力名，如 video/, audio/, dialog/)
+└── <feature_name>/              # 独立功能测试模块 (遵循单复数黄金法则，使用单数能力名，如 auth/, input/, display/, video/)
 ```
 
 ---
@@ -77,7 +77,7 @@ src/test/office_3d/assets/
 ## 三、 独立运行与调试机制
 
 1. **编辑器一键运行（`F6`）**：
-   - [`App`](../framework/core/autoload/app.gd#L60-L65) 内置 `_ensure_standalone_bootstrap()` 保底机制：当直接运行任何非 `BootstrapScene` 的测试场景时，会自动完成 `await App.bootstrap()` 装配全部 13 个框架底层服务并绑定当前场景路由。
+   - [`App`](../framework/core/autoload/app.gd#L60-L65) 内置 `_ensure_standalone_bootstrap()` 保底机制：当直接运行任何非 `BootstrapScene` 的测试场景时，会自动完成 `await App.bootstrap()` 装配全部 14 个框架底层服务并绑定当前场景路由。
    - 在 Godot 编辑器中打开任意 `src/test/<feature_name>/` 下的 `.tscn` 场景并按下 `F6`（运行当前场景），即可直接测试该功能。
 2. **命令行运行**：
    ```bash

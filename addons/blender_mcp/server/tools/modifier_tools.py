@@ -1,80 +1,63 @@
-"""修改器相关的 MCP Tool 定义。
-
-提供 Blender 修改器的添加、应用、移除和列表查询操作。
-"""
+"""修改器 Tools：添加、应用、移除、列出。"""
 from __future__ import annotations
 
-from mcp.server.mcpserver import MCPServer
+from typing import Any
 
-from ..bridge import BlenderBridge
-from ._fmt import fmt
+from ..utils import call
+from ._group import ToolGroup
+
+modifier_tools = ToolGroup("modifier")
 
 
-def register_modifier_tools(mcp: MCPServer, bridge: BlenderBridge) -> None:
-    """注册所有修改器相关的 MCP Tools。
+@modifier_tools.tool()
+async def blender_add_modifier(
+    object_name: str,
+    type: str = "SUBSURF",
+    name: str | None = None,
+    properties: dict[str, Any] | None = None,
+) -> str:
+    """Add a modifier to an object.
 
     Args:
-        mcp: MCP 服务器实例。
-        bridge: 与 Blender Addon 通信的 TCP 桥接客户端。
+        object_name: Target object.
+        type: SUBSURF, MIRROR, BOOLEAN, SOLIDIFY, ARRAY, BEVEL, DECIMATE, SMOOTH, WEIGHTED_NORMAL,
+            SHRINKWRAP, SIMPLE_DEFORM ...
+        name: Custom modifier name.
+        properties: Modifier properties, e.g. {"levels": 2} for SUBSURF, {"count": 5} for ARRAY,
+            {"operation": "DIFFERENCE", "object": "Cutter"} for BOOLEAN (object refs accept names).
+            Unknown or invalid properties are reported back in 'ignored_properties'.
     """
+    return await call("Add Modifier", "modifier.add", object_name=object_name, type=type,
+                      name=name, properties=properties)
 
-    @mcp.tool()
-    async def blender_add_modifier(
-        object_name: str,
-        type: str = "SUBSURF",
-        name: str = "",
-        **kwargs: object,
-    ) -> str:
-        """Add a modifier to an object.
 
-        Args:
-            object_name: Name of the target object.
-            type: Modifier type: SUBSURF, MIRROR, BOOLEAN, SOLIDIFY, ARRAY, BEVEL, DECIMATE, SMOOTH.
-            name: Optional custom name for the modifier.
-        """
-        params: dict = {"object_name": object_name, "type": type}
-        if name:
-            params["name"] = name
-        params.update(kwargs)
-        result = await bridge.send_command("modifier.add", params)
-        return fmt("Add Modifier", result)
+@modifier_tools.tool(destructive=True)
+async def blender_apply_modifier(object_name: str, modifier_name: str) -> str:
+    """Apply (bake) a modifier permanently onto the mesh.
 
-    @mcp.tool()
-    async def blender_apply_modifier(object_name: str, modifier_name: str) -> str:
-        """Apply (bake) a modifier permanently onto the mesh.
+    Args:
+        object_name: Target object.
+        modifier_name: Modifier to apply.
+    """
+    return await call("Apply Modifier", "modifier.apply", object_name=object_name, modifier_name=modifier_name)
 
-        Args:
-            object_name: Name of the target object.
-            modifier_name: Name of the modifier to apply.
-        """
-        result = await bridge.send_command(
-            "modifier.apply",
-            {"object_name": object_name, "modifier_name": modifier_name},
-        )
-        return fmt("Apply Modifier", result)
 
-    @mcp.tool()
-    async def blender_remove_modifier(object_name: str, modifier_name: str) -> str:
-        """Remove a modifier from an object.
+@modifier_tools.tool(destructive=True)
+async def blender_remove_modifier(object_name: str, modifier_name: str) -> str:
+    """Remove a modifier from an object.
 
-        Args:
-            object_name: Name of the target object.
-            modifier_name: Name of the modifier to remove.
-        """
-        result = await bridge.send_command(
-            "modifier.remove",
-            {"object_name": object_name, "modifier_name": modifier_name},
-        )
-        return fmt("Remove Modifier", result)
+    Args:
+        object_name: Target object.
+        modifier_name: Modifier to remove.
+    """
+    return await call("Remove Modifier", "modifier.remove", object_name=object_name, modifier_name=modifier_name)
 
-    @mcp.tool()
-    async def blender_list_modifiers(object_name: str) -> str:
-        """List all modifiers on an object.
 
-        Args:
-            object_name: Name of the target object.
-        """
-        result = await bridge.send_command(
-            "modifier.list", {"object_name": object_name}
-        )
-        return fmt("Modifiers", result)
+@modifier_tools.tool(read_only=True)
+async def blender_list_modifiers(object_name: str) -> str:
+    """List all modifiers on an object with their key properties.
+
+    Args:
+        object_name: Target object.
+    """
+    return await call("Modifiers", "modifier.list", object_name=object_name)

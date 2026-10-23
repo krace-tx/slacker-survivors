@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <!-- Bonfire Ash Mound -->
+  <ellipse cx="14" cy="24" rx="9" ry="2.4" fill="#3a2c24" stroke="#d49b35" stroke-width="1"/>
+  <!-- Outer Flame -->
+  <path d="M14,9 C19,14 21,18 18,23 L10,23 C7,18 9,14 14,9 Z" fill="#ff6b2b" fill-opacity="0.85"/>
+  <path d="M14,13 C17,16 18,19 16,23 L12,23 C10,19 11,16 14,13 Z" fill="#ffd866"/>
+  <!-- Coiled Greatsword -->
+  <line x1="14" y1="2" x2="14" y2="23" stroke="#e2ecf8" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="9" y1="7" x2="19" y2="7" stroke="#ffd875" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="14" cy="2.5" r="1.6" fill="#ffd875"/>
+</svg>

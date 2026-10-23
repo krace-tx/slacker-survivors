@@ -228,13 +228,24 @@ static func _get_steam_singleton() -> Object:
 	return null
 
 
-## 按需执行进程级 GodotSteam 单次初始化（调用 steamInitEx 或 steamInit），支持多实例重复安全调用。
+## 按需执行进程级 GodotSteam 单次初始化（调用 steamInitEx 或 steamInit），支持多实例重复安全调用。[br]
+## 在正式导出包（非编辑器模式）且配置了有效 AppID 时，自动调用 [code]restartAppIfNecessary[/code] 唤起 Steam 客户端。
 static func _ensure_steam_initialized() -> bool:
 	if _steam_initialized:
 		return true
 	var steam := _get_steam_singleton()
 	if steam == null:
 		return false
+
+	# 正式导出包（非编辑器环境）：若玩家直接双击 exe 且未开 Steam，由 SteamAPI 自动拉起 Steam 客户端并重启游戏
+	if not OS.has_feature("editor") and steam.has_method("restartAppIfNecessary"):
+		var configured_app_id := int(ProjectSettings.get_setting("steam/initialization/app_id", 0))
+		if configured_app_id > 0 and bool(steam.call("restartAppIfNecessary", configured_app_id)):
+			var tree := Engine.get_main_loop() as SceneTree
+			if tree != null:
+				tree.quit(0)
+			return false
+
 	if steam.has_method("isSteamRunning") and not bool(steam.call("isSteamRunning")):
 		return false
 	if steam.has_method("steamInitEx"):

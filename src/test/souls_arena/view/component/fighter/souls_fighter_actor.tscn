@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/test/souls_arena/view/component/fighter/souls_fighter_actor.gd" id="1_actor"]
+[ext_resource type="Script" path="res://src/test/souls_arena/view/component/fighter/souls_knight_rig_3d.gd" id="2_rig"]
+[ext_resource type="Script" path="res://src/test/souls_arena/view/component/fighter/souls_overhead_hud_3d.gd" id="3_hud3d"]
+
+[node name="SoulsFighterActor" type="Node3D"]
+script = ExtResource("1_actor")
+
+[node name="KnightRig3D" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_rig")
+
+[node name="OverheadHud3D" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_hud3d")
+
+[node name="StatusLabel3D" type="Label3D" parent="OverheadHud3D"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+billboard = 1
+no_depth_test = true
+modulate = Color(0.92, 0.97, 1, 0.95)
+font_size = 26
+outline_size = 10
+
+[node name="PopupLabel3D" type="Label3D" parent="OverheadHud3D"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.05, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.92, 0.35, 1)
+font_size = 34
+outline_size = 12

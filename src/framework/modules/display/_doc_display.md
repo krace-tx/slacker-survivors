@@ -13,12 +13,13 @@
 ## 细节
 
 ### 1. 全局显示与舞台门面 (`BaseDisplaySystem` / `DisplaySystem`)
-- **五大标准 CanvasLayer 分层 (`App.display.get_layer`)**：
+- **六大标准 CanvasLayer 分层 (`App.display.get_layer`)**：
   - `BACKGROUND` (Layer 10)：动态背景、暗角。
   - `MAIN` (Layer 20)：HUD、主场景全屏 UI。
   - `POPUP` (Layer 30)：模态弹窗层、升级选卡、结算面板。
   - `TOAST` (Layer 40)：轻量飘字提醒、系统成就通知。
   - `TOP` (Layer 50)：全局 Loading 转圈、新手引导高亮、Debug 控制台。
+  - `CURSOR` (Layer 120)：最高层自定义软件光标、星尘拖尾与点击波粒子伴生舞台。
 - **窗口显示模式状态机 (`App.display.set_window_mode` / `toggle_fullscreen`)**：
   - 支持 `WINDOWED`、`BORDERLESS_WINDOWED`、`FULLSCREEN`、`EXCLUSIVE_FULLSCREEN` 四态切换，切回窗口化时自动恢复边框并居中。
 - **分辨率钳制与多显示器居中 (`App.display.set_resolution` / `get_available_resolutions`)**：

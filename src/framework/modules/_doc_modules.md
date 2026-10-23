@@ -12,6 +12,7 @@ src/framework/modules/
 ├── network/      # HTTP 通讯
 ├── scene/        # 场景栈与转场
 ├── display/      # 显示控制、异形屏安全区与全局画布分层
+├── cursor/       # 自定义鼠标光标、五层交互优先级与粒子伴生
 ├── audio/        # BGM / SFX
 ├── locale/       # 多语言与区域
 ├── haptic/       # 触觉反馈
@@ -134,6 +135,19 @@ display/
 ├── base_view.gd
 └── impl/
 	└── display_system.gd
+
+cursor/
+├── _doc_cursor.md
+├── base_cursor_system.gd
+├── types/
+│   ├── cursor_shape_type.gd
+│   ├── cursor_style_entry.gd
+│   └── cursor_theme_config.gd
+└── impl/
+	├── cursor_system.gd
+	├── cursor_state_resolver.gd
+	├── cursor_pointer_driver.gd
+	└── cursor_vfx_stage.gd
 
 audio/
 ├── _doc_audio.md

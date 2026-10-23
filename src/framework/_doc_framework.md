@@ -39,6 +39,7 @@ flowchart TD
 		HapticFace["BaseHapticFeedback"]
 		InputFace["BaseInputSystem"]
 		DisplayFace["BaseDisplaySystem"]
+		CursorFace["BaseCursorSystem"]
 		VideoFace["BaseVideoPlayer"]
 	end
 
@@ -129,9 +130,10 @@ flowchart TD
 | **Clock** | `src/framework/modules/clock/` | `BaseClockSystem` (`App.clock`) | 防作弊单调权威时钟、服务器 Unix 毫秒校准与时钟系统 | [_doc_clock.md](modules/clock/_doc_clock.md) |
 | **Haptic** | `src/framework/modules/haptic/` | `BaseHapticFeedback` (`App.haptic`) | 触觉振动统一裁决、振动节奏模式、硬件震动执行器（含手柄马达联动） | [_doc_haptic.md](modules/haptic/_doc_haptic.md) |
 | **Input** | `src/framework/modules/input/` | `BaseInputSystem` (`App.input`) | 键鼠/手柄双轨双槽隔离映射、`InputChord` 组合键优先消费、二段式免勾选录制与增量持久化 | [_doc_input.md](modules/input/_doc_input.md) |
-| **Display** | `src/framework/modules/display/` | `BaseDisplaySystem` (`App.display`) / `BaseView` | 窗口/全屏状态机、分辨率钳制、宽高比拉伸策略、异形屏安全区（Safe Area）投影与五大 CanvasLayer 分层管理 | [_doc_display.md](modules/display/_doc_display.md) |
+| **Display** | `src/framework/modules/display/` | `BaseDisplaySystem` (`App.display`) / `BaseView` | 窗口/全屏状态机、分辨率钳制、宽高比拉伸策略、异形屏安全区（Safe Area）投影与六大 CanvasLayer 分层管理 | [_doc_display.md](modules/display/_doc_display.md) |
+| **Cursor** | `src/framework/modules/cursor/` | `BaseCursorSystem` (`App.cursor`) | 11 种语义光标形态、五层交互优先级漏斗、硬/软指针双擎与拖尾/点击波粒子伴生舞台 | [_doc_cursor.md](modules/cursor/_doc_cursor.md) |
 | **Video** | `src/framework/modules/video/` | `BaseVideoPlayer` (`App.video`) | 视频播放控制、开源专业插件（EIRTeam.FFmpeg）动态桥接与 BGM 避让播放器 | [_doc_video.md](modules/video/_doc_video.md) |
-| **Infra** | `src/framework/infra/` | `TaskScope` / `CancellationToken` / `BudgetCache` / `CooldownScheduler` / `BaseParams` / `SpineController` / `SpinePool` / `ShaderWarmer` | 通用基建组件：异步任务生命周期作用域与并发编排、LRU 缓存预算、异步冷却防抖调度、强类型参数契约、Spine 骨骼流式控制与享元对象池、零实例化预制体材质穿透提取与分帧 GPU PSO 预热基建 | [_doc_async.md](infra/async/_doc_async.md) / [_doc_cache.md](infra/cache/_doc_cache.md) / [_doc_param.md](infra/param/_doc_param.md) / [_doc_scheduler.md](infra/scheduler/_doc_scheduler.md) / [_doc_spine.md](infra/spine/_doc_spine.md) / [_doc_shader.md](infra/shader/_doc_shader.md) |
+| **Infra** | `src/framework/infra/` | `TaskScope` / `CancellationToken` / `BudgetCache` / `CooldownScheduler` / `BaseParams` / `SpineController` / `SpinePool` / `ShaderWarmer` / `StateMachine` / `BTTree` | 通用基建组件：异步任务生命周期作用域与并发编排、LRU 缓存预算、异步冷却防抖调度、强类型参数契约、Spine 骨骼流式控制与享元对象池、零实例化预制体材质穿透提取与分帧 GPU PSO 预热基建、有限/层次状态机与享元行为树 AST 编译内核 | [_doc_async.md](infra/async/_doc_async.md) / [_doc_cache.md](infra/cache/_doc_cache.md) / [_doc_param.md](infra/param/_doc_param.md) / [_doc_scheduler.md](infra/scheduler/_doc_scheduler.md) / [_doc_spine.md](infra/spine/_doc_spine.md) / [_doc_shader.md](infra/shader/_doc_shader.md) / [_doc_fsm.md](infra/fsm/_doc_fsm.md) / [_doc_bt.md](infra/bt/_doc_bt.md) |
 | **Util** | `src/framework/util/` | `NodeUtils` / `FileUtils` / `ResourceCodecUtils` / `FileCodecUtils` 等 | 跨平台无状态纯函数工具集与资源编解码器 | [_doc_util.md](util/_doc_util.md) |
 | **Governance** | `src/framework/` | `_doc_module_standard.md` | 模块依赖矩阵、12 维设计模板与五大完成验收标准 | [_doc_module_standard.md](_doc_module_standard.md) |
 

@@ -20,9 +20,13 @@ src/
 │   ├── fonts/                   # 字体文件与 FontVariation
 │   └── videos/                  # CG 与过场视频 (.mp4 + 同名 .ogv 兜底)
 │
-├── resources/                   # [Godot 资源与静态配置表]
-│   ├── configs/                 # 游戏策划数值配置、关卡表、物品表
-│   └── data/                    # 静态数据定义
+├── resources/                   # [静态配置、策划表与引擎预设] 规范详见 src/resources/_doc_resources.md
+│   ├── envs/                    # 阶段 1：多环境部署配置 (env_local / env_staging / env_prod)
+│   ├── locales/                 # 阶段 2：多语言本地化字典 (.csv / .translation / LocaleConfig)
+│   ├── presets/                 # 阶段 3：引擎与全局系统预设 (AudioBusLayout / ShaderWarmupConfig / 全局常数)
+│   ├── tables/                  # 阶段 4：批量二维策划导表 (.json / .csv / .bin，一表多行)
+│   ├── defs/                    # 阶段 5：游戏实体 Resource 定义 (.tres，一文件一实体：heroes/ weapons/ buffs/)
+│   └── stages/                  # 阶段 6：关卡、波次时间轴与地图编排 (.tres / .json)
 │
 ├── framework/                   # [通用游戏引擎基建层]
 │   └── (core, modules, infra, util)

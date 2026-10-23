@@ -14,6 +14,9 @@ var provider: StringName = AuthProviderType.GUEST
 ## 平台侧原始用户 ID（如 SteamID64）。
 var platform_user_id: String = ""
 
+## 平台 SDK 颁发的原始验证票据或授权码（如 Steam WebAPI Ticket 十六进制串，未请求时为空字符串）。
+var platform_ticket: String = ""
+
 ## 玩家展示昵称。
 var display_name: String = "Player"
 

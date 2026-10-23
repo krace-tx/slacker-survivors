@@ -20,6 +20,7 @@ func verify_and_issue_async(credential: AuthCredential, _options: AuthOptions, n
 		"account_id": account_id,
 		"provider": credential.provider,
 		"platform_user_id": uid_str,
+		"platform_ticket": credential.raw_ticket,
 		"display_name": credential.display_name,
 		"avatar_url": credential.avatar_url,
 		"access_token": "",

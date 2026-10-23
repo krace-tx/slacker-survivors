@@ -1,0 +1,370 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/cursor/view/scene/playground/cursor_playground_scene.gd" id="1_scene"]
+[ext_resource type="Script" path="res://src/test/cursor/view/scene/playground/cursor_playground_view.gd" id="2_view"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
+bg_color = Color(0.08, 0.11, 0.17, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.72, 0.96, 0.35)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 7.0
+content_margin_right = 14.0
+content_margin_bottom = 7.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.08, 0.1, 0.15, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.12)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+
+[node name="CursorPlaygroundScene" type="Node"]
+script = ExtResource("1_scene")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BgColor" type="ColorRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.05, 0.06, 0.09, 1)
+
+[node name="PlaygroundView" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_view")
+
+[node name="SafeMargin" type="MarginContainer" parent="PlaygroundView"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 28
+
+[node name="MainLayout" type="VBoxContainer" parent="PlaygroundView/SafeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TopBar" type="HBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "自定义鼠标架构教学演练场  ·  App.cursor (MSVP)"
+
+[node name="TopSpacer" type="Control" parent="PlaygroundView/SafeMargin/MainLayout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusPill" type="PanelContainer" parent="PlaygroundView/SafeMargin/MainLayout/TopBar"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="StatusPillLabel" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/TopBar/StatusPill"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.93, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "主题：[赛博青白主题]  ·  生效形状：[DEFAULT]  ·  胜出层：[L1_DEFAULT]"
+
+[node name="RerunVerifyBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(168, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 13
+text = "重新运行 6 项契约自检"
+
+[node name="ThemeCard" type="PanelContainer" parent="PlaygroundView/SafeMargin/MainLayout"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="ThemeVBox" type="VBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/ThemeCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ThemeRow" type="HBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/ThemeCard/ThemeVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Step1Label" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/ThemeCard/ThemeVBox/ThemeRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "第 1 步 · 切换或卸载鼠标主题："
+
+[node name="ThemeOptionBtn" type="OptionButton" parent="PlaygroundView/SafeMargin/MainLayout/ThemeCard/ThemeVBox/ThemeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 13
+
+[node name="ThemeHintLabel" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/ThemeCard/ThemeVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.73, 0.84, 1)
+theme_override_font_sizes/font_size = 12
+text = "教学要点：工程默认启动不挂载自定义鼠标（保持 OS 原生光标）。业务侧按需调用 App.cursor.set_theme(theme) 挂载主题，或传 null 随时恢复系统原生鼠标（详见 CursorTestService.build_crimson_tactical_theme()）。"
+autowrap_mode = 2
+
+[node name="InteractiveGrid" type="HBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="L4Card" type="PanelContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="L4VBox" type="VBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/L4Card"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="L4Title" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/L4Card/L4VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "第 2 步 · L4 UI 控件悬停与按压变态"
+
+[node name="NormalPointerBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/L4Card/L4VBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 13
+text = "普通按钮 (原生手型 -> 自动映射 POINTER)"
+
+[node name="DisabledBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/L4Card/L4VBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 8
+disabled = true
+theme_override_font_sizes/font_size = 13
+text = "灰置禁按按钮 (原生禁行 -> 自动映射 DISABLED)"
+
+[node name="SampleInputEdit" type="LineEdit" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/L4Card/L4VBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 1
+theme_override_font_sizes/font_size = 13
+placeholder_text = "悬浮输入框体验 TEXT_EDIT (I-Beam)..."
+
+[node name="GrabCardBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/L4Card/L4VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "可拖拽卡牌 (bind_control: GRAB，按住左键变 GRABBED)"
+
+[node name="HelpTipBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/L4Card/L4VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "词条解释按钮 (bind_control: HELP 问号光标)"
+
+[node name="SemanticCard" type="PanelContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="SemanticVBox" type="VBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SemanticTitle" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "第 3 步 · 局内交互与战术语义形状预览"
+
+[node name="TargetInteractBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "宝箱 / NPC 交互靶标 (INTERACT 琥珀齿轮)"
+
+[node name="TargetAttackBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "敌方 Boss 攻击靶标 (ATTACK 绯红战剑)"
+
+[node name="TargetCrosshairBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "远程武器瞄准靶标 (CROSSHAIR 战术准星)"
+
+[node name="ZoomRow" type="HBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TargetZoomInBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox/ZoomRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "地图放大 (ZOOM_IN)"
+
+[node name="TargetZoomOutBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox/ZoomRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "地图缩小 (ZOOM_OUT)"
+
+[node name="WorldHoverHint" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/SemanticCard/SemanticVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.7, 0.82, 1)
+theme_override_font_sizes/font_size = 12
+text = "提示：2D/3D 世界实体使用 App.cursor.bind_hover_node(area, shape, priority) 绑定，实体销毁时自动清理。"
+autowrap_mode = 2
+
+[node name="ControlCard" type="PanelContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="ControlVBox" type="VBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ControlTitle" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "第 4 步 · 五层漏斗、软指针脉冲与粒子控制"
+
+[node name="GameplayModeBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 13
+text = "L2 局内基准：DEFAULT"
+
+[node name="WaitOverrideBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 13
+text = "L5 强锁覆盖：压入 WAIT 沙漏"
+
+[node name="SoftwareModeBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 13
+text = "渲染驱动：OS 硬件光标"
+
+[node name="RecoilPulseBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 13
+text = "触发射击后坐力脉冲 App.cursor.pulse(1.5, 0.18)"
+
+[node name="VfxRow" type="HBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TrailVfxBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox/VfxRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 12
+text = "星尘拖尾：开启"
+
+[node name="ClickVfxBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox/VfxRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 12
+text = "点击波纹：开启"
+
+[node name="ConfinedBtn" type="Button" parent="PlaygroundView/SafeMargin/MainLayout/InteractiveGrid/ControlCard/ControlVBox/VfxRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 12
+text = "双屏锁边：关闭"
+
+[node name="LogCard" type="PanelContainer" parent="PlaygroundView/SafeMargin/MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="LogVBox" type="VBoxContainer" parent="PlaygroundView/SafeMargin/MainLayout/LogCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LogHeader" type="Label" parent="PlaygroundView/SafeMargin/MainLayout/LogCard/LogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.96, 1)
+theme_override_font_sizes/font_size = 13
+text = "实时操作日志 & 6 项自动化契约验证报告"
+
+[node name="LogOutput" type="RichTextLabel" parent="PlaygroundView/SafeMargin/MainLayout/LogCard/LogVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+theme_override_font_sizes/normal_font_size = 13
+theme_override_font_sizes/bold_font_size = 13

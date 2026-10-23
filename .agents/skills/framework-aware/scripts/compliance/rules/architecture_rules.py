@@ -66,7 +66,7 @@ def check_shared_three_pillar_architecture(ctx: WorkspaceContext) -> RuleResult:
 
 
 def check_module_dependency_manifests(ctx: WorkspaceContext) -> RuleResult:
-    """R09: Verify all 14 core modules declare MODULE_ID, REQUIRED_MODULES, and OPTIONAL_MODULES."""
+    """R09: Verify all 15 core modules declare MODULE_ID, REQUIRED_MODULES, and OPTIONAL_MODULES."""
     module_impls = (
         "env/impl/runtime_environment.gd",
         "logger/impl/framework_logger.gd",
@@ -80,6 +80,7 @@ def check_module_dependency_manifests(ctx: WorkspaceContext) -> RuleResult:
         "locale/impl/localization_system.gd",
         "scene/impl/scene_router.gd",
         "display/impl/display_system.gd",
+        "cursor/impl/cursor_system.gd",
         "audio/impl/audio_system.gd",
         "video/impl/video_player.gd",
     )

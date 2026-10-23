@@ -69,7 +69,13 @@ func apply_auth_session(session: AuthSession) -> bool:
 	if session == null or not session.is_valid():
 		return false
 	var changed := false
-	if not session.account_id.is_empty() and (profile_id.is_empty() or profile_id.begins_with("local_") or profile_id.begins_with("guest_")):
+	var can_update_id := (
+		not session.is_guest
+		or profile_id.is_empty()
+		or profile_id.begins_with("local_")
+		or profile_id.begins_with("guest_")
+	)
+	if not session.account_id.is_empty() and can_update_id:
 		if profile_id != session.account_id:
 			profile_id = session.account_id
 			changed = true
@@ -80,7 +86,7 @@ func apply_auth_session(session: AuthSession) -> bool:
 	if not session.platform_user_id.is_empty() and platform_user_id != session.platform_user_id:
 		platform_user_id = session.platform_user_id
 		changed = true
-	if not session.display_name.is_empty() and (nickname.is_empty() or nickname == _DEFAULT_NICKNAME or nickname.begins_with("Player_")):
+	if not session.display_name.is_empty() and (not session.is_guest or nickname.is_empty() or nickname == _DEFAULT_NICKNAME or nickname.begins_with("Player_")):
 		if nickname != session.display_name:
 			nickname = session.display_name
 			changed = true

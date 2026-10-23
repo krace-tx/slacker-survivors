@@ -122,6 +122,8 @@ func stop(fade: float = DEFAULT_FADE) -> void:
 		_is_stopping = false
 		active.volume_db = SILENT_DB
 		active.stop()
+		active.stream = null
+		standby.stream = null
 		return
 
 	_is_stopping = true

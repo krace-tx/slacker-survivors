@@ -41,8 +41,9 @@
 | 10 | `&"locale"` | `BaseLocalizationSystem` | `LocalizationSystem` | `[]` | `[]` | `RefCounted` |
 | 11 | `&"scene"` | `BaseSceneRouter` | `SceneRouter` | `[&"asset"]` | `[&"logger"]` | `Node` |
 | 12 | `&"display"` | `BaseDisplaySystem` | `DisplaySystem` | `[]` | `[&"logger"]` | `Node` |
-| 13 | `&"audio"` | `BaseAudioSystem` | `AudioSystem` | `[]` | `[&"asset", &"logger"]` | `Node` |
-| 14 | `&"video"` | `BaseVideoPlayer` | `VideoPlayer` | `[]` | `[&"audio", &"logger"]` | `Node` |
+| 13 | `&"cursor"` | `BaseCursorSystem` | `CursorSystem` | `[]` | `[&"display", &"input", &"logger"]` | `Node` |
+| 14 | `&"audio"` | `BaseAudioSystem` | `AudioSystem` | `[]` | `[&"asset", &"logger"]` | `Node` |
+| 15 | `&"video"` | `BaseVideoPlayer` | `VideoPlayer` | `[]` | `[&"audio", &"logger"]` | `Node` |
 
 ---
 

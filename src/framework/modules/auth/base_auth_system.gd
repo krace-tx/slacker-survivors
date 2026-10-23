@@ -12,15 +12,19 @@ extends RefCounted
 
 #region Signals
 ## 当认证状态机发生迁移时触发（见 [AuthState]）。
+@warning_ignore("unused_signal")
 signal state_changed(new_state: int, old_state: int)
 
 ## 当登录或账号绑定成功并签发有效 [AuthSession] 时触发。
+@warning_ignore("unused_signal")
 signal authenticated(session: AuthSession)
 
 ## 当主动登出或会话失效被清除时触发。
+@warning_ignore("unused_signal")
 signal logged_out(reason: String)
 
 ## 当登录或刷新过程中发生错误时触发（见 [AuthError]）。
+@warning_ignore("unused_signal")
 signal auth_error(error_code: String, message: String)
 #endregion
 

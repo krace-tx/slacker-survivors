@@ -16,10 +16,10 @@
 
 ```mermaid
 flowchart LR
-    Path["res://src/assets/textures/splash/btn_splash_retry_normal.svg"]
-    Path --> M["轴1 媒介容器<br/>textures/ (导入预设族)"]
-    Path --> D["轴2 架构域<br/>splash/ (归属 features/splash)"]
-    Path --> R["轴3 语义角色<br/>btn_ 前缀 + _normal 状态后缀"]
+	Path["res://src/assets/textures/splash/btn_splash_retry_normal.svg"]
+	Path --> M["轴1 媒介容器<br/>textures/ (导入预设族)"]
+	Path --> D["轴2 架构域<br/>splash/ (归属 features/splash)"]
+	Path --> R["轴3 语义角色<br/>btn_ 前缀 + _normal 状态后缀"]
 ```
 
 > **设计依据**：一级按媒介切分保证「**同一容器 = 同一导入预设族**」（贴图压缩、音频循环、视频编码完全不同），便于批量调参与审计；二级按架构域切分保证资产与代码模块 **1:1 镜像**，模块删除/拆分时资产可整包迁移。
@@ -211,12 +211,12 @@ src/assets/
 
 ```mermaid
 flowchart LR
-    Test["src/test/*"] --> AF["assets/*/&lt;feature&gt;/"]
-    Test --> AS["assets/*/shared/"]
-    Feature["src/game/features/&lt;f&gt;/"] --> AF
-    Feature --> AS
-    Shared["src/game/shared/ & bootstrap/"] --> AS
-    Framework["src/framework/"] -.-x|禁止| AS
+	Test["src/test/*"] --> AF["assets/*/&lt;feature&gt;/"]
+	Test --> AS["assets/*/shared/"]
+	Feature["src/game/features/&lt;f&gt;/"] --> AF
+	Feature --> AS
+	Shared["src/game/shared/ & bootstrap/"] --> AS
+	Framework["src/framework/"] -.-x|禁止| AS
 ```
 
 ### 2. 代码内引用方式
@@ -266,11 +266,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A["1. 定域<br/>判定归属 Feature<br/>或 shared (Rule of 2+)"] --> B["2. 命名<br/>前缀_域_主体_后缀<br/>查第三节词典"]
-    B --> C["3. 入库<br/>art/ 源文件 + src/assets/ 产物<br/>按第六节设导入参数"]
-    C --> D["4. 引用<br/>.tscn 拖拽 / 脚本 _PATH 常量<br/>遵守依赖矩阵"]
-    D --> E["5. 门禁<br/>check_compliance #13"]
-    E --> F["6. 演进<br/>晋升 shared / 降级 / 随 Feature 迁移删除"]
+	A["1. 定域<br/>判定归属 Feature<br/>或 shared (Rule of 2+)"] --> B["2. 命名<br/>前缀_域_主体_后缀<br/>查第三节词典"]
+	B --> C["3. 入库<br/>art/ 源文件 + src/assets/ 产物<br/>按第六节设导入参数"]
+	C --> D["4. 引用<br/>.tscn 拖拽 / 脚本 _PATH 常量<br/>遵守依赖矩阵"]
+	D --> E["5. 门禁<br/>check_compliance #13"]
+	E --> F["6. 演进<br/>晋升 shared / 降级 / 随 Feature 迁移删除"]
 ```
 
 ---

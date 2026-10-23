@@ -190,7 +190,7 @@ static func warmup_resources_async(
 		if frame_elapsed_ms < budget * 0.5:
 			batch_size = mini(batch_size * 2, _MAX_BATCH_SIZE)
 		elif frame_elapsed_ms > budget * 1.25:
-			batch_size = maxi(1, batch_size / 2)
+			batch_size = maxi(1, batch_size >> 1)
 
 	# 阶段 5：原子销毁暗箱容器，确保场景树 100% 零残留
 	if is_instance_valid(sandbox_root):

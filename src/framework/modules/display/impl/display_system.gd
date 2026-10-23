@@ -71,6 +71,7 @@ func _setup_layers() -> void:
 		Layer.POPUP: "PopupLayer",
 		Layer.TOAST: "ToastLayer",
 		Layer.TOP: "TopLayer",
+		Layer.CURSOR: "CursorLayer",
 	}
 
 	for layer_val: int in layer_configs:

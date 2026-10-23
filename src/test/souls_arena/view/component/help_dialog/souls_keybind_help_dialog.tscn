@@ -1,0 +1,206 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/test/souls_arena/view/component/help_dialog/souls_keybind_help_dialog.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://src/test/souls_arena/assets/textures/ico_souls_arena_help_tome.svg" id="2_help_ico"]
+[ext_resource type="Texture2D" path="res://src/test/souls_arena/assets/textures/ui_souls_arena_boss_frame.svg" id="3_frame_div"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 18.0
+bg_color = Color(0.05, 0.06, 0.09, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.62, 0.5, 0.28, 0.88)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.09, 0.1, 0.14, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56, 0.46, 0.28, 0.82)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sub_panel"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.03, 0.04, 0.07, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.3, 0.4, 0.72)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="SoulsKeybindHelpDialog" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.01, 0.02, 0.04, 0.76)
+
+[node name="ModalCard" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -210.0
+offset_right = 380.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="RootVBox" type="VBoxContainer" parent="ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderRow" type="HBoxContainer" parent="ModalCard/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderIcon" type="TextureRect" parent="ModalCard/RootVBox/HeaderRow"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("2_help_ico")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="ModalCard/RootVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.89, 0.74, 1)
+theme_override_font_sizes/font_size = 16
+text = "操作与机制指南"
+
+[node name="Spacer" type="Control" parent="ModalCard/RootVBox/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CloseBtn" type="Button" parent="ModalCard/RootVBox/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.94, 0.92, 0.88, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_close_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_close_btn")
+text = "关闭 [H]"
+
+[node name="DividerFrame" type="TextureRect" parent="ModalCard/RootVBox"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+texture = ExtResource("3_frame_div")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Columns" type="HBoxContainer" parent="ModalCard/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="LeftSubPanel" type="PanelContainer" parent="ModalCard/RootVBox/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_sub_panel")
+
+[node name="LeftVBox" type="VBoxContainer" parent="ModalCard/RootVBox/Columns/LeftSubPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LeftTitle" type="Label" parent="ModalCard/RootVBox/Columns/LeftSubPanel/LeftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.91, 0.98, 1)
+theme_override_font_sizes/font_size = 14
+text = "操控键位"
+
+[node name="KeybindRichText" type="RichTextLabel" parent="ModalCard/RootVBox/Columns/LeftSubPanel/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 12
+bbcode_enabled = true
+text = "[b][color=#ffd875][WASD][/color][/b]   3D 走位 / 锁定环绕
+
+[b][color=#7ce8ff][Space][/color][/b]   8 向翻滚（0.30s 无敌帧，可取消后摇）
+
+[b][color=#ff9e7c][左键 / J][/color][/b]   三段连击 / 破防处决
+
+[b][color=#9df08e][右键 / K][/color][/b]   点按 0.18s 弹反 / 按住举盾格挡
+
+[b][color=#ffd875][Q / 中键][/color][/b]   切换目标锁定
+
+[b][color=#c5d4eb][鼠标滚轮][/color][/b]   缩放相机视距
+
+[b][color=#c5d4eb][B / Tab][/color][/b]   行为树蓝图     [b][color=#c5d4eb][R][/color][/b]   重置对局"
+
+[node name="RightSubPanel" type="PanelContainer" parent="ModalCard/RootVBox/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_sub_panel")
+
+[node name="RightVBox" type="VBoxContainer" parent="ModalCard/RootVBox/Columns/RightSubPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RightTitle" type="Label" parent="ModalCard/RootVBox/Columns/RightSubPanel/RightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.91, 0.98, 1)
+theme_override_font_sizes/font_size = 14
+text = "战斗机制"
+
+[node name="MechanicsRichText" type="RichTextLabel" parent="ModalCard/RootVBox/Columns/RightSubPanel/RightVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 12
+bbcode_enabled = true
+text = "[b][color=#66e6ff]三段连击[/color][/b]
+斜斩 -> 反手斩 -> 霸体破军劈，支持攻击中预输入续连。
+
+[b][color=#ffd875]快慢刀博弈[/color][/b]
+Boss 慢刀悬停 1.05s 抓早滚，衔接 0.20s 瞬发快刀。
+
+[b][color=#ffae42]黄金霸体[/color][/b]
+琥珀金光护体期间免受击硬直，唯弹反或打满架势可断。
+
+[b][color=#ff6b6b]红光危技[/color][/b]
+不可格挡与弹反，需利用翻滚无敌帧或走位规避。
+
+[b][color=#9df08e]收刀破绽[/color][/b]
+Boss 连招结束后暴露后摇并撤步对峙，为最佳反击窗口。"

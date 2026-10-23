@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe28a"/>
+      <stop offset="50%" stop-color="#d49b35"/>
+      <stop offset="100%" stop-color="#7a4e12"/>
+    </linearGradient>
+    <radialGradient id="crimsonCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff4d4d"/>
+      <stop offset="65%" stop-color="#a8131d"/>
+      <stop offset="100%" stop-color="#2b0509"/>
+    </radialGradient>
+  </defs>
+  <!-- Outer Gothic Octagon Medallion -->
+  <polygon points="24,2 38,8 46,24 38,40 24,46 10,40 2,24 10,8" fill="url(#crimsonCore)" stroke="url(#goldGrad)" stroke-width="2.2"/>
+  <polygon points="24,5 35,10 42,24 35,38 24,43 13,38 6,24 13,10" fill="none" stroke="#ffd875" stroke-width="0.8" stroke-opacity="0.55"/>
+  <!-- Abyssal Curved Horns -->
+  <path d="M12,20 C6,13 7,6 15,4 C12,9 13,14 17,17 Z" fill="url(#goldGrad)"/>
+  <path d="M36,20 C42,13 41,6 33,4 C36,9 35,14 31,17 Z" fill="url(#goldGrad)"/>
+  <!-- Five-Pointed Crown of Cinders -->
+  <polygon points="14,19 16,10 20,16 24,8 28,16 32,10 34,19" fill="url(#goldGrad)" stroke="#3a1c08" stroke-width="0.9"/>
+  <!-- Iron Greathelm Visor -->
+  <path d="M15,19 L33,19 L35,30 L24,40 L13,30 Z" fill="#1d222e" stroke="url(#goldGrad)" stroke-width="1.6"/>
+  <!-- Glowing Crimson Eye Slits & Nasal Cross -->
+  <polygon points="16,25 22,27 16,28" fill="#ff3b30"/>
+  <polygon points="32,25 26,27 32,28" fill="#ff3b30"/>
+  <rect x="23" y="19" width="2" height="19" fill="url(#goldGrad)"/>
+</svg>

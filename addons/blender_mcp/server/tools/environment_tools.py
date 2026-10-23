@@ -1,144 +1,101 @@
-"""相机、灯光、渲染相关的 MCP Tool 定义。
-
-提供场景环境设置：相机创建与朝向、灯光创建、
-渲染快照和渲染引擎切换。
-"""
+"""相机与灯光 Tools：相机创建 / 朝向 / 激活，光源创建，世界 HDRI。"""
 from __future__ import annotations
 
-from mcp.server.mcpserver import MCPServer
+from ..utils import call
+from ._group import ToolGroup
 
-from ..bridge import BlenderBridge
-from ._fmt import fmt
+camera_tools = ToolGroup("camera")
+light_tools = ToolGroup("light")
 
 
-def register_environment_tools(mcp: MCPServer, bridge: BlenderBridge) -> None:
-    """注册所有相机、灯光、渲染相关的 MCP Tools。
+# ── 相机 ───────────────────────────────────────────────────────
+
+
+@camera_tools.tool()
+async def blender_create_camera(
+    name: str | None = None,
+    location: list[float] | None = None,
+    rotation: list[float] | None = None,
+    lens: float | None = None,
+    type: str | None = None,
+    ortho_scale: float | None = None,
+    look_at: list[float] | None = None,
+    set_active: bool = False,
+) -> str:
+    """Create a camera.
 
     Args:
-        mcp: MCP 服务器实例。
-        bridge: 与 Blender Addon 通信的 TCP 桥接客户端。
+        name: Camera name. Default "Camera".
+        location: [x, y, z] position.
+        rotation: [rx, ry, rz] Euler rotation in radians (ignored if look_at is given).
+        lens: Focal length in mm. Default 50.
+        type: PERSP (default), ORTHO or PANO.
+        ortho_scale: Orthographic scale (ORTHO only).
+        look_at: [x, y, z] point to aim the camera at.
+        set_active: Make it the scene's render camera.
     """
+    return await call("Create Camera", "camera.create", name=name, location=location, rotation=rotation,
+                      lens=lens, type=type, ortho_scale=ortho_scale, look_at=look_at, set_active=set_active)
 
-    # ------------------------------------------------------------------
-    # 相机
-    # ------------------------------------------------------------------
 
-    @mcp.tool()
-    async def blender_create_camera(
-        name: str = "Camera",
-        location: list[float] = [0.0, 0.0, 0.0],  # noqa: B006
-        rotation: list[float] = [0.0, 0.0, 0.0],  # noqa: B006
-        lens: float = 50.0,
-    ) -> str:
-        """Create a camera in the scene.
+@camera_tools.tool(idempotent=True)
+async def blender_camera_look_at(camera_name: str, target: list[float]) -> str:
+    """Rotate a camera so it points at a target location.
 
-        Args:
-            name: Camera name.
-            location: [x, y, z] position.
-            rotation: [rx, ry, rz] rotation in radians.
-            lens: Focal length in mm.
-        """
-        result = await bridge.send_command(
-            "camera.create",
-            {
-                "name": name,
-                "location": location,
-                "rotation": rotation,
-                "lens": lens,
-            },
-        )
-        return fmt("Create Camera", result)
+    Args:
+        camera_name: Camera object name.
+        target: [x, y, z] point to look at.
+    """
+    return await call("Camera Look At", "camera.look_at", camera_name=camera_name, target=target)
 
-    @mcp.tool()
-    async def blender_camera_look_at(camera_name: str, target: list[float]) -> str:
-        """Point a camera at a target location.
 
-        Args:
-            camera_name: Name of the camera.
-            target: [x, y, z] point to look at.
-        """
-        result = await bridge.send_command(
-            "camera.look_at",
-            {"camera_name": camera_name, "target": target},
-        )
-        return fmt("Camera Look At", result)
+@camera_tools.tool(idempotent=True)
+async def blender_set_active_camera(camera_name: str) -> str:
+    """Set the scene's active (render) camera.
 
-    # ------------------------------------------------------------------
-    # 灯光
-    # ------------------------------------------------------------------
+    Args:
+        camera_name: Camera object name.
+    """
+    return await call("Active Camera", "camera.set_active", camera_name=camera_name)
 
-    @mcp.tool()
-    async def blender_create_light(
-        name: str = "Light",
-        type: str = "POINT",
-        location: list[float] = [0.0, 0.0, 0.0],  # noqa: B006
-        energy: float = 1000.0,
-        color: list[float] = [1.0, 1.0, 1.0],  # noqa: B006
-    ) -> str:
-        """Create a light source.
 
-        Args:
-            name: Light name.
-            type: POINT, SUN, SPOT, or AREA.
-            location: [x, y, z] position.
-            energy: Light power in watts.
-            color: [r, g, b] light color.
-        """
-        result = await bridge.send_command(
-            "light.create",
-            {
-                "name": name,
-                "type": type,
-                "location": location,
-                "energy": energy,
-                "color": color,
-            },
-        )
-        return fmt("Create Light", result)
+# ── 灯光 ───────────────────────────────────────────────────────
 
-    # ------------------------------------------------------------------
-    # 渲染
-    # ------------------------------------------------------------------
 
-    @mcp.tool()
-    async def blender_render_snapshot(
-        output_path: str,
-        width: int = 1920,
-        height: int = 1080,
-        samples: int = 64,
-        engine: str = "",
-        transparent: bool = False,
-    ) -> str:
-        """Render the current scene to an image file.
+@light_tools.tool()
+async def blender_create_light(
+    name: str | None = None,
+    type: str | None = None,
+    location: list[float] | None = None,
+    rotation: list[float] | None = None,
+    energy: float | None = None,
+    color: list[float] | None = None,
+    radius: float | None = None,
+) -> str:
+    """Create a light source.
 
-        Args:
-            output_path: Absolute path to save the image (e.g. /tmp/render.png).
-            width: Width in pixels.
-            height: Height in pixels.
-            samples: Render samples (higher = better quality).
-            engine: Render engine: BLENDER_EEVEE_NEXT, CYCLES, BLENDER_WORKBENCH. Empty keeps current.
-            transparent: If true, render with transparent background.
-        """
-        params: dict = {
-            "output_path": output_path,
-            "width": width,
-            "height": height,
-            "samples": samples,
-            "transparent": transparent,
-        }
-        if engine:
-            params["engine"] = engine
-        result = await bridge.send_command("render.snapshot", params)
-        return fmt("Render", result)
+    Args:
+        name: Light name. Default "Light".
+        type: POINT (default), SUN, SPOT or AREA.
+        location: [x, y, z] position.
+        rotation: [rx, ry, rz] radians (direction matters for SUN / SPOT / AREA).
+        energy: Power in watts. Default 1000. For SUN this is irradiance (typically 1~10).
+        color: [r, g, b] in 0~1. Default white.
+        radius: Soft shadow radius. Default 0.25.
+    """
+    return await call("Create Light", "light.create", name=name, type=type, location=location,
+                      rotation=rotation, energy=energy, color=color, radius=radius)
 
-    @mcp.tool()
-    async def blender_set_render_engine(engine: str = "BLENDER_EEVEE_NEXT") -> str:
-        """Set the render engine.
 
-        Args:
-            engine: BLENDER_EEVEE_NEXT, CYCLES, or BLENDER_WORKBENCH.
-        """
-        result = await bridge.send_command(
-            "render.set_engine", {"engine": engine}
-        )
-        return fmt("Render Engine", result)
+@light_tools.tool(idempotent=True)
+async def blender_set_world_hdri(hdri_path: str, strength: float | None = None,
+                                 rotation_z: float | None = None) -> str:
+    """Use an HDRI image (.hdr / .exr) as world environment lighting (replaces the world node tree).
+
+    Args:
+        hdri_path: Absolute path to the HDRI file.
+        strength: Background strength. Default 1.0.
+        rotation_z: Environment rotation around Z in radians. Default 0.
+    """
+    return await call("World HDRI", "light.set_world_hdri", hdri_path=hdri_path,
+                      strength=strength, rotation_z=rotation_z)

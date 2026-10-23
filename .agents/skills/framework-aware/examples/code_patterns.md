@@ -1,155 +1,238 @@
 # Skill Wiki · 框架编码正反范例库 (Code Patterns)
 
-> **Wiki 定位**：通过黄金示例 (Golden Patterns) 与反模式 (Anti-Patterns) 的直观对比，指导 Agent 编写完全贴合框架约定的规范代码。
+> **Wiki 定位**：通过黄金范式 (Golden Patterns) 与反模式 (Anti-Patterns) 的直观对比，指导 Agent 编写 100% 符合架构铁律与静态类型规范的代码。
 
 ---
 
-## 范例 1：场景系统生命周期
+## 范例 1：场景生命周期、强类型入参与 `TaskScope` 并发守卫
 
 ### 典型反模式 (Anti-Pattern)
 ```gdscript
-# 错误：直接继承 Node，使用 Godot 原生生命周期，无法被 App.scene 管理
-class_name BattleScene extends Node
+# 错误 1：直接继承 Node，无法接入 App.scene 历史栈与转场管线
+# 错误 2：使用裸 Dictionary 传参，且使用裸 create_timer 引发退场后 UAF 崩溃
+# 错误 3：残留原生 print() (触发 R13 违规)
+class_name BattleScene
+extends Node
 
 func _ready() -> void:
-    # 臆造场景初始化，未接入框架传参和生命周期
-    print("Battle started")
+	print("Battle started")
+	await get_tree().create_timer(1.0).timeout
+	$UI.visible = true # 若 1 秒内玩家切走场景，此处直接 Use-After-Free 崩溃！
 ```
 
 ### 黄金范式 (Golden Pattern)
 ```gdscript
-# 正确：继承 BaseScene，重写 4 大生命周期钩子，通过 App.logger 记录
-class_name BattleScene extends BaseScene
+# 1. 强类型场景入参契约 (model/battle_enter_params.gd)
+class_name BattleEnterParams
+extends BaseParams
 
-func _on_enter(params: Dictionary = {}) -> void:
-    App.logger.info("Battle", "关卡场景进入，注入参数: %s" % str(params))
-    # 初始化关卡逻辑
+var stage_id: int = 1
+var difficulty: int = 0
+
+
+# 2. 顶层场景舞台 (view/scene/battle/battle_scene.gd)
+class_name BattleScene
+extends BaseScene
+
+@onready var _ui: BattleView = $UI
+
+
+func _on_enter(params: BaseParams = null) -> void:
+	var enter_params: BattleEnterParams = params as BattleEnterParams
+	var stage_id: int = enter_params.stage_id if enter_params != null else 1
+	App.logger.info("Battle", "Enter stage %d" % stage_id)
+
+	# 绑定宿主 task_scope：若等待期间场景退出，自动取消并返还 Async.Cancelled，杜绝 UAF
+	if (await task_scope.sleep(0.5)).is_err():
+		return
+	_ui.set_View_visible(true)
+
 
 func _on_exit() -> void:
-    App.logger.info("Battle", "关卡场景退出，释放临时资源")
-
-func _on_pause() -> void:
-    App.logger.info("Battle", "关卡暂停")
-
-func _on_resume() -> void:
-    App.logger.info("Battle", "关卡恢复")
+	App.logger.info("Battle", "Exit stage")
 ```
 
 ---
 
-## 范例 2：UI 视图编排与业务弹窗
+## 范例 2：MSVP 视图拆分与模态弹窗调度 (`R05`)
 
 ### 典型反模式 (Anti-Pattern)
 ```gdscript
-# 错误 1：UI 根节点继承 Control 并直接写业务弹窗逻辑
-# 错误 2：将弹窗放到 framework/modules/ui 中
-class_name MyUIPanel extends Control
+# 错误 1：将 .tscn 平铺在 view/ 根目录，且在 View 内部直接读写 App.storage
+# 错误 2：在 src/framework/ 下编写业务弹窗或绕过 DialogManager 直接 add_child
+class_name BadSettingsPanel
+extends Control
 
-func open_dialog() -> void:
-    var dialog = preload("res://src/framework/modules/ui/my_dialog.tscn").instantiate()
-    add_child(dialog)
+func _on_save_pressed() -> void:
+	App.storage.write_async(...) # 违规：View 层严禁直接触碰存储或网络 I/O
+	var dlg := preload("res://src/framework/modules/display/my_dialog.tscn").instantiate()
+	add_child(dlg)
 ```
 
 ### 黄金范式 (Golden Pattern)
 ```gdscript
-# 1. 场景内 UI 根节点：继承 BaseView，节点命名为 UI
-class_name BattleUIView extends BaseView
+# 1. 场景内 UI 根节点 (view/scene/lobby/lobby_view.gd)：继承 BaseView，节点名固定为 UI
+class_name LobbyView
+extends BaseView
 
-# 2. 弹窗类：继承 BaseDialog（位于 src/game/shared/component/dialog/），业务弹窗放在 features/<feature>/view/
-class_name SettingsDialog extends BaseDialog
+signal settings_requested
 
-func _on_dialog_opened() -> void:
-    App.logger.info("SettingsDialog", "设置弹窗已打开")
+@onready var _settings_btn: BaseTextureButton = $SafeArea/SettingsButton
 
-# 3. 业务调用弹窗：通过 DialogManager 统一调度
-func _on_settings_button_pressed() -> void:
-    DialogManager.open("res://src/game/features/settings/view/settings_dialog.tscn")
-```
-
----
-
-## 范例 3：按钮点击反馈与动效
-
-### 典型反模式 (Anti-Pattern)
-```gdscript
-# 错误：使用原生 TextureButton，手写 Tween 缩放和 AudioServer 播放，代码臃肿且全项目风格不一
-@onready var btn: TextureButton = $StartButton
 
 func _ready() -> void:
-    btn.pressed.connect(func():
-        AudioServer.play(...) # 臆造或侵入式音频调用
-        var tw = create_tween()
-        tw.tween_property(btn, "scale", Vector2(0.9, 0.9), 0.1)
-        tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.1)
-        _on_start_game()
-    )
+	super._ready()
+	_settings_btn.pressed.connect(func() -> void: settings_requested.emit())
+
+
+# 2. 业务弹窗预制体 (view/component/settings/settings_dialog.gd)：继承 BaseDialog
+class_name SettingsDialog
+extends BaseDialog
+
+func _on_dialog_opened(_params: BaseParams = null) -> void:
+	App.logger.info("SettingsDialog", "Opened")
+
+
+# 3. 通过 DialogManager 统一打开（自动管理 UI 输入上下文压栈与防穿透）
+func open_settings_dialog() -> void:
+	await DialogManager.open("res://src/game/features/lobby/view/component/settings/settings_dialog.tscn")
 ```
 
-### 黄金范式 (Golden Pattern)
+---
+
+## 范例 3：交互按钮反馈 (`BaseTextureButton`)
+
+### 典型反模式 (Anti-Pattern)
 ```gdscript
-# 正确：使用 BaseTextureButton（位于 src/game/shared/component/button/）
-# 基类自动处理了：缩放反馈、悬停动画、禁用态着色、点击音效与触感震动
-@onready var btn: BaseTextureButton = $StartButton
+# 错误：使用原生 TextureButton 手写 Tween 缩放与 AudioServer 调用
+@onready var _start_btn: TextureButton = $StartButton
 
 func _ready() -> void:
-    btn.pressed.connect(_on_start_game)
-```
-
----
-
-## 范例 4：全局网络调用与参数契约
-
-### 典型反模式 (Anti-Pattern)
-```gdscript
-# 错误 1：使用已废弃的 App.network 别名或原生 HTTPRequest 节点
-# 错误 2：裸拼字典传参，无类型校验
-func fetch_player_data(player_id: String) -> void:
-    var dict = {"id": player_id}
-    var http = HTTPRequest.new()
-    add_child(http)
-    # 裸写请求和回调解析...
+	_start_btn.pressed.connect(func() -> void:
+		var tw := create_tween()
+		tw.tween_property(_start_btn, "scale", Vector2(0.9, 0.9), 0.08)
+	)
 ```
 
 ### 黄金范式 (Golden Pattern)
 ```gdscript
-# 1. 契约实体：继承 BaseParams（位于 src/framework/infra/param/）
-class_name PlayerFetchParams extends BaseParams
+# 正确：使用 BaseTextureButton（内置按压缩放 Tween、悬停高亮、SFX 音效与 Haptic 轻触震动）
+@onready var _start_btn: BaseTextureButton = $StartButton
 
-var player_id: String = ""
-
-# 2. 网络调用：统一面向 App.net 编程，接收强类型 Result
-func fetch_player_data(params: PlayerFetchParams) -> void:
-    var result := await App.net.post_request("/api/v1/player", params.to_dict())
-    if result.is_err():
-        App.logger.error("PlayerService", "[%s] 获取玩家信息失败: %s" % [result.error_code(), result.error_message()])
-        return
-    
-    var data: Dictionary = result.value
-    App.logger.info("PlayerService", "成功获取玩家数据: %s" % str(data))
+func _ready() -> void:
+	_start_btn.pressed.connect(_on_start_pressed)
 ```
 
 ---
 
-## 范例 5：工具函数调用
+## 范例 4：本地沙盒持久化与二级架构域绑定 (`R16`)
 
 ### 典型反模式 (Anti-Pattern)
 ```gdscript
-# 错误：自己手写递归深度遍历查找子节点
-func find_child_recursive(parent: Node, name: String) -> Node:
-    for child in parent.get_children():
-        if child.name == name:
-            return child
-        var found = find_child_recursive(child, name)
-        if found: return found
-    return null
+# 错误 1：在 Service 或 View 中裸写 "user://..." 字符串字面量 (触发 R16 违规)
+# 错误 2：使用原生 FileAccess 硬编码读写存档，绕过 .tmp/.bak 事务自愈与版本迁移
+func save_talent_tree(data: Dictionary) -> void:
+	var f := FileAccess.open("user://talent_save.json", FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
 ```
 
 ### 黄金范式 (Golden Pattern)
 ```gdscript
-# 正确：节点查找直接使用引擎内置 API（recursive=true, owned=false），无需任何工具类封装
-var target_node := find_child("HealthBar", true, false)
+# 1. 仅在 model/*_model.gd 中声明 STORAGE_DOMAIN 并通过语义工厂构造 StorageItem
+# 路径：src/game/features/talent/model/talent_tree_model.gd
+class_name TalentTreeModel
+extends BaseParams
 
-# 节点生命周期操作（挂载 / 实例化 / 销毁 / 就绪等待）才使用 NodeUtils（位于 src/framework/util/node/node_utils.gd）
-var spawn_res := NodeUtils.spawn(card_prefab, $CardContainer, "Card")
-NodeUtils.safe_free(old_card)
+## 二级架构域必须与所在 Feature 目录名 "talent" 逐字一致 (shared/ 下则为 &"shared")
+const STORAGE_DOMAIN: StringName = &"talent"
+const STORAGE_SUBJECT: StringName = &"tree"
+const SCHEMA_VERSION: int = 1
+
+var unlocked_ids: Array[int] = []
+
+
+## 语义工厂自动映射至 user://saves/talent/tree.sav
+static func storage_item() -> StorageItem:
+	return StorageItem.for_save(STORAGE_DOMAIN, STORAGE_SUBJECT, SCHEMA_VERSION) \
+		.with_compression(FileAccess.COMPRESSION_ZSTD) \
+		.with_device_encryption("slacker.talent.v1")
+
+
+# 2. 在 Service 层通过 App.storage 异步读写
+func save_async(model: TalentTreeModel) -> Result:
+	return await App.storage.write_async(TalentTreeModel.storage_item(), model.to_dict())
+```
+
+---
+
+## 范例 5：框架模块显式构造注入与组合根装配 (`R08`, `R09`)
+
+### 典型反模式 (Anti-Pattern)
+```gdscript
+# 错误 1：未声明 MODULE_ID / REQUIRED_MODULES / OPTIONAL_MODULES (触发 R09 违规)
+# 错误 2：在 src/framework/modules/ 内部直接调用 App.logger / App.asset (触发 R08 违规)
+class_name BadAudioSystem
+extends BaseAudioSystem
+
+func play_sfx(path: String) -> void:
+	var res := App.asset.get_cached(path)
+	App.logger.info("Audio", "Playing %s" % path)
+```
+
+### 黄金范式 (Golden Pattern)
+```gdscript
+# 1. 模块主实现类显式声明依赖清单与构造函数注入
+class_name AudioSystem
+extends BaseAudioSystem
+
+#region Module Dependency Manifest
+const MODULE_ID: StringName = &"audio"
+const REQUIRED_MODULES: Array[StringName] = []
+const OPTIONAL_MODULES: Array[StringName] = [&"asset", &"logger"]
+#endregion
+
+var _asset: BaseAssetSystem = null
+var _logger: BaseFrameworkLogger = null
+
+
+func _init(asset: BaseAssetSystem = null, logger: BaseFrameworkLogger = null) -> void:
+	_asset = asset
+	_logger = logger
+
+
+# 2. 在 FrameworkRuntime._assemble_modules_async() 中显式注入并由 _host.install() 核对拓扑契约
+var audio := AudioSystem.new(asset, logger)
+res = await _host.install(audio)
+if res.is_err(): return res
+```
+
+---
+
+## 范例 6：强类型 `Variant` 解包与全局 `class_name` 直呼 (`R12`, `R15`)
+
+### 典型反模式 (Anti-Pattern)
+```gdscript
+# 错误 1：对已声明 class_name 的脚本使用 preload 别名 (触发 R15 违规)
+const _FileUtils = preload("res://src/framework/util/file/file_utils.gd")
+
+func parse_response(res: Result, payload: Dictionary) -> void:
+	# 错误 2：res.value 与 payload.get() 返回 Variant，直接用 := 会触发编译器类型推导报错 (R12)
+	var tex := res.value
+	var count := payload.get("count", 0)
+```
+
+### 黄金范式 (Golden Pattern)
+```gdscript
+func parse_response(res: Result, payload: Dictionary) -> void:
+	# 1. 直接使用全局 class_name 调用工具方法
+	var dir_res := FileUtils.ensure_dir(FileUtils.USER_CACHE_RES_DIR)
+	if dir_res.is_err():
+		return
+
+	# 2. 从 Variant 容器取值时显式标注目标类型并使用 as 或类型转换函数
+	var tex: Texture2D = res.value as Texture2D
+	var count: int = int(payload.get("count", 0))
+	var ratio: float = clampf(float(payload.get("ratio", 1.0)), 0.0, 1.0)
+	if tex != null and count > 0 and ratio > 0.0:
+		pass
 ```

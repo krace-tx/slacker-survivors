@@ -1,0 +1,51 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/test/souls_arena/view/scene/arena/souls_arena_scene.gd" id="1_scene"]
+[ext_resource type="Script" path="res://src/test/souls_arena/view/scene/arena/souls_arena_view.gd" id="2_view"]
+[ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/stage/souls_arena_stage_3d.tscn" id="3_stage"]
+[ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/camera/souls_camera_rig_3d.tscn" id="4_cam"]
+[ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/fighter/souls_fighter_actor.tscn" id="5_actor"]
+[ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/hud/souls_combat_hud_bar.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/help_dialog/souls_keybind_help_dialog.tscn" id="7_help"]
+[ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/blueprint_dialog/souls_blueprint_dialog.tscn" id="8_bp"]
+
+[node name="SoulsArenaScene" type="Node3D"]
+script = ExtResource("1_scene")
+
+[node name="World3D" type="Node3D" parent="."]
+
+[node name="ArenaStage3D" parent="World3D" instance=ExtResource("3_stage")]
+unique_name_in_owner = true
+
+[node name="CameraRig3D" parent="World3D" instance=ExtResource("4_cam")]
+unique_name_in_owner = true
+
+[node name="PlayerActor" parent="World3D" instance=ExtResource("5_actor")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.2)
+
+[node name="BossActor" parent="World3D" instance=ExtResource("5_actor")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.2)
+
+[node name="ArenaView" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_view")
+
+[node name="CombatHudBar" parent="ArenaView" instance=ExtResource("6_hud")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="KeybindHelpDialog" parent="ArenaView" instance=ExtResource("7_help")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="BlueprintDialog" parent="ArenaView" instance=ExtResource("8_bp")]
+unique_name_in_owner = true
+layout_mode = 1

@@ -323,9 +323,9 @@ func _verify_and_activate_credential_async(
 	linked_from_id: String
 ) -> Result:
 	var verifier: AuthSessionVerifier = (
-		_remote_verifier
+		(_remote_verifier as AuthSessionVerifier)
 		if opts.use_remote_gateway
-		else _local_verifier
+		else (_local_verifier as AuthSessionVerifier)
 	)
 	var now_ms := _get_now_ms()
 	var verify_res := await verifier.verify_and_issue_async(credential, opts, now_ms)

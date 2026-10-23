@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://c5d5h1cejxbm8"]
+
+[ext_resource type="Script" path="res://src/test/cursor/cursor_test.gd" id="1_test"]
+[ext_resource type="Script" uid="uid://d4k51ynibr3no" path="res://src/framework/modules/display/base_view.gd" id="2_view"]
+
+[node name="CursorTestScene" type="Node2D" unique_id=1283477364]
+script = ExtResource("1_test")
+
+[node name="UI" type="Control" parent="." unique_id=565685070]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_view")

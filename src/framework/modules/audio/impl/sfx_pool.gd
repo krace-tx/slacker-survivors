@@ -41,12 +41,13 @@ func play(stream: AudioStream, volume: float = 0.0, pitch_scale: float = 1.0) ->
 	p.stream_paused = _is_paused
 
 
-## 立即停止池内全部正在播放的音效。
+## 立即停止池内全部正在播放的音效并释放流引用。
 func stop_all() -> void:
 	for i in _players.size():
 		var p := _players[i]
 		if p.playing:
 			p.stop()
+		p.stream = null
 		_started_at[i] = 0
 
 

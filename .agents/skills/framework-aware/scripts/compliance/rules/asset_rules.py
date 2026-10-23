@@ -112,9 +112,63 @@ def check_asset_governance(ctx: WorkspaceContext) -> RuleResult:
 
     for sf in ctx.iter_files(prefixes=("src/framework/",), exts=(".gd", ".tscn", ".tres")):
         for ln, line in sf.code_lines:
-            if "res://src/assets/" in line:
+            if "res://src/assets/" in line or "res://src/resources/" in line:
                 res.errors.append(
-                    Violation(location=f"{sf.rel_path}:{ln}", message="Framework references business asset")
+                    Violation(location=f"{sf.rel_path}:{ln}", message="Framework references business asset or resource")
+                )
+
+    res_containers: Dict[str, Tuple[Set[str], Set[str]]] = {
+        "envs": ({"tres", "json"}, {"env"}),
+        "locales": ({"csv", "po", "translation", "tres"}, {"loc"}),
+        "presets": ({"tres"}, {"prs"}),
+        "tables": ({"json", "csv", "bin"}, {"tbl"}),
+        "defs": ({"tres"}, {"def"}),
+        "stages": ({"tres", "json"}, {"stg", "tls"}),
+    }
+    resource_root = ctx.root / "src" / "resources"
+    res_count = 0
+    if resource_root.is_dir():
+        for child in sorted(resource_root.iterdir()):
+            if child.is_dir() and child.name not in res_containers:
+                res.errors.append(
+                    Violation(
+                        location=f"src/resources/{child.name}",
+                        message=f"Unknown resource container '{child.name}' (allowed: {sorted(res_containers)})",
+                    )
+                )
+        for fp in sorted(resource_root.rglob("*")):
+            if not fp.is_file():
+                continue
+            name = fp.name
+            if (
+                name.endswith((".import", ".uid"))
+                or name in {".gitkeep", ".gdignore"}
+                or (name.startswith("_doc_") and name.endswith(".md"))
+            ):
+                continue
+            res_count += 1
+            rel = fp.relative_to(resource_root).as_posix()
+            parts = rel.split("/")
+            container = parts[0]
+            if container not in res_containers:
+                continue
+            stem, ext = name.split(".", 1) if "." in name else (name, "")
+            allowed_exts, allowed_prefixes = res_containers[container]
+            if ext not in allowed_exts:
+                res.errors.append(
+                    Violation(
+                        location=f"src/resources/{rel}",
+                        message=f"Extension '.{ext}' not allowed in 'src/resources/{container}/'",
+                    )
+                )
+                continue
+            prefix = stem.split("_")[0]
+            if prefix not in allowed_prefixes:
+                res.errors.append(
+                    Violation(
+                        location=f"src/resources/{rel}",
+                        message=f"Prefix '{prefix}_' not allowed in 'src/resources/{container}/' (expect {sorted(allowed_prefixes)})",
+                    )
                 )
 
     re_asset_ref = re.compile(r"res://src/assets/([A-Za-z0-9_\-./]+)")
@@ -139,5 +193,5 @@ def check_asset_governance(ctx: WorkspaceContext) -> RuleResult:
                         )
                     )
 
-    res.pass_summary = f"Asset topology, naming & ownership ({asset_count} assets verified)"
+    res.pass_summary = f"Asset & resource topology, naming & ownership ({asset_count} assets, {res_count} resources verified)"
     return res

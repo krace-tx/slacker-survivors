@@ -114,7 +114,7 @@ DECLARATIVE_PATTERN_SPECS: Tuple[ForbiddenPatternSpec, ...] = (
             r"MemoryStorageDriver|DiskStorageDriver|RemoteStorageDriver|NetworkClient|RequestQueue|"
             r"AuthSystem|GuestAuthProvider|SteamAuthProvider|AppleAuthProvider|GooglePlayAuthProvider|"
             r"CustomTokenAuthProvider|LocalPassthroughVerifier|RemoteGatewayVerifier|"
-            r"SceneRouter|SceneStack|SceneTransition|DisplaySystem|AudioSystem|BgmPlayer|SfxPool|"
+            r"SceneRouter|SceneStack|SceneTransition|DisplaySystem|CursorSystem|CursorStage|AudioSystem|BgmPlayer|SfxPool|"
             r"LocalizationSystem|TranslationServerAdapter|HapticFeedback|InputSystem|InputDeviceTracker|"
             r"InputRebindCapturer|InputMapAdapter|VideoPlayer|VideoStreamHost|VideoPrewarmer|VideoCacheManager)\b"
         ),

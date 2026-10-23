@@ -13,7 +13,7 @@ src/framework/core/runtime/
 ├── types/
 │   └── runtime_state.gd          # 生命周期状态枚举与名称映射 (RuntimeState)
 └── impl/
-	├── runtime_manifest.gd       # 14大模块拓扑清单与 DAG 依赖图校验器 (RuntimeManifest)
+	├── runtime_manifest.gd       # 15大模块拓扑清单与 DAG 依赖图校验器 (RuntimeManifest)
 	└── runtime_service_host.gd   # 服务安装宿主、耗时采集与逆序销毁器 (RuntimeServiceHost)
 ```
 
@@ -21,17 +21,17 @@ src/framework/core/runtime/
 
 | 组件 | 职责边界 |
 |---|---|
-| [`FrameworkRuntime`](framework_runtime.gd) | 组合根门面：驱动运行时状态机流转、管理根级 `TaskScope`，并显式声明 14 个核心模块的构造依赖注入（DI Wiring）。 |
-| [`RuntimeState`](types/runtime_state.gd) | 定义运行时 7 种状态枚举（`UNINITIALIZED`、`INITIALIZING`、`READY`、`INITIALIZATION_FAILED`、`ROLLING_BACK`、`SHUTTING_DOWN`、`STOPPED`）。 |
-| [`RuntimeManifest`](impl/runtime_manifest.gd) | 集中维护 14 个核心模块的拓扑清单（`MODULES`），提供静态 `validate_dag()` 有向无环图与启动顺序校验。 |
-| [`RuntimeServiceHost`](impl/runtime_service_host.gd) | 封装 `RefCounted` / `Node` 服务的统一安装（`install_ref` / `install_node`）、单步耗时指标记录（`_boot_metrics`）、`App` 属性绑定，以及回滚/停机时的统一逆序销毁（`teardown_async` / `teardown_sync`）。 |
+| [`FrameworkRuntime`](framework_runtime.gd) | 组合根门面：驱动受控状态机流转（含 `state_changed` 信号与并发停机同步等待）、管理根级 `TaskScope`，并显式声明 15 个核心模块的构造依赖注入（Constructor DI Wiring）。 |
+| [`RuntimeState`](types/runtime_state.gd) | 定义运行时 7 种状态枚举（`UNINITIALIZED`、`INITIALIZING`、`READY`、`INITIALIZATION_FAILED`、`ROLLING_BACK`、`SHUTTING_DOWN`、`STOPPED`）与合法状态流转邻接表（`VALID_TRANSITIONS` / `can_transition`）。 |
+| [`RuntimeManifest`](impl/runtime_manifest.gd) | 集中维护 15 个核心模块的拓扑清单（`MODULES`），提供静态 `validate_dag()` 有向无环图校验与装配期的 `verify_step_contract()` 实例级契约双端核对（校验 `MODULE_ID`、`REQUIRED_MODULES`、`OPTIONAL_MODULES`）。 |
+| [`RuntimeServiceHost`](impl/runtime_service_host.gd) | 封装 `RefCounted` / `Node` 服务的统一拓扑游标安装（`install`）、节点名自动推导、单步耗时指标记录（`_boot_metrics`）、`App` 属性绑定，以及回滚/停机时的逐级逆序销毁与门面解绑（`teardown_async` / `teardown_sync`）。 |
 
 ## 初始化顺序与依赖校验
  
 ```text
 Env → Logger → Clock → Asset → Input → Haptic
 	→ Network → Auth → Storage → Locale
-	→ Scene → Display → Audio → Video
+	→ Scene → Display → Cursor → Audio → Video
 ```
  
 - 启动前首先调用 `FrameworkRuntime.validate_dependency_graph()`（委托 `RuntimeManifest.validate_dag()`）校验全量模块的 `MODULE_MANIFEST` 有向无环图（DAG）与拓扑顺序。

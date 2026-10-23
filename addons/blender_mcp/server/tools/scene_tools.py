@@ -1,85 +1,65 @@
-"""场景管理相关的 MCP Tool 定义。
-
-每个 Tool 函数是 AI 可调用的外部接口，通过 BlenderBridge
-将命令转发到 Blender Addon 端的对应 handler 执行。
-"""
+"""场景管理 Tools：场景信息、对象列表、清空、选择、撤销 / 重做。"""
 from __future__ import annotations
 
-from mcp.server.mcpserver import MCPServer
+from ..utils import call
+from ._group import ToolGroup
 
-from ..bridge import BlenderBridge
-from ._fmt import fmt
+scene_tools = ToolGroup("scene")
 
 
-def register_scene_tools(mcp: MCPServer, bridge: BlenderBridge) -> None:
-    """注册所有场景相关的 MCP Tools。
+@scene_tools.tool(read_only=True)
+async def blender_scene_info() -> str:
+    """Get current scene info: name, frame range, FPS, render engine, resolution, active camera, selection."""
+    return await call("Scene Info", "scene.get_info")
 
-    包含：列出对象、场景信息、清空场景、选择操作、撤销。
+
+@scene_tools.tool(read_only=True)
+async def blender_list_objects(type_filter: str | None = None) -> str:
+    """List all objects in the current scene with transform, dimensions, materials and modifiers.
 
     Args:
-        mcp: MCP 服务器实例。
-        bridge: 与 Blender Addon 通信的 TCP 桥接客户端。
+        type_filter: Only list this type: MESH, CURVE, ARMATURE, EMPTY, CAMERA, LIGHT ... Omit for all.
     """
+    return await call("Scene Objects", "scene.list_objects", type_filter=type_filter)
 
-    @mcp.tool()
-    async def blender_list_objects(type_filter: str = "") -> str:
-        """List all objects in the current Blender scene.
 
-        Args:
-            type_filter: Optional filter by type: MESH, ARMATURE, CAMERA,
-                LIGHT, EMPTY.  Leave empty for all.
-        """
-        params: dict = {}
-        if type_filter:
-            params["type_filter"] = type_filter
-        result = await bridge.send_command("scene.list_objects", params)
-        return fmt("Scene Objects", result)
+@scene_tools.tool(destructive=True)
+async def blender_clear_scene(type_filter: str = "MESH") -> str:
+    """⚠️ Destructive: delete objects from the scene by type.
 
-    @mcp.tool()
-    async def blender_scene_info() -> str:
-        """Get information about the current Blender scene (name, frame range, FPS, render engine, etc.)."""
-        result = await bridge.send_command("scene.get_info")
-        return fmt("Scene Info", result)
+    Args:
+        type_filter: Object type to delete (MESH, CAMERA, LIGHT, EMPTY ...) or ALL.
+    """
+    return await call("Clear Scene", "scene.clear", type_filter=type_filter)
 
-    @mcp.tool()
-    async def blender_clear_scene(type_filter: str = "MESH") -> str:
-        """⚠️ Destructive: Clear objects from the Blender scene.
 
-        Args:
-            type_filter: Type of objects to remove: MESH, ARMATURE, CAMERA,
-                LIGHT, EMPTY, or ALL.
-        """
-        result = await bridge.send_command(
-            "scene.clear", {"type_filter": type_filter, "confirm": True}
-        )
-        return fmt("Clear Scene", result)
+@scene_tools.tool()
+async def blender_select(
+    object_names: list[str] | None = None,
+    select_all: bool = False,
+    deselect_all: bool = False,
+    replace: bool = False,
+) -> str:
+    """Select or deselect objects. The first found object in object_names becomes active.
 
-    @mcp.tool()
-    async def blender_select(
-        object_names: list[str] = [],  # noqa: B006
-        select_all: bool = False,
-        deselect_all: bool = False,
-    ) -> str:
-        """Select or deselect objects in the Blender scene.
+    Args:
+        object_names: Objects to select.
+        select_all: Select every object.
+        deselect_all: Deselect every object.
+        replace: Clear the existing selection before selecting object_names.
+    """
+    if deselect_all or select_all:
+        return await call("Selection", "scene.select", all=True, deselect=deselect_all)
+    return await call("Selection", "scene.select", object_names=object_names or [], replace=replace)
 
-        Args:
-            object_names: List of object names to select.
-            select_all: If true, select all objects.
-            deselect_all: If true, deselect all objects.
-        """
-        params: dict = {}
-        if deselect_all:
-            params["deselect"] = True
-            params["all"] = True
-        elif select_all:
-            params["all"] = True
-        else:
-            params["object_names"] = object_names
-        result = await bridge.send_command("scene.select", params)
-        return fmt("Selection", result)
 
-    @mcp.tool()
-    async def blender_undo() -> str:
-        """Undo the last operation in Blender."""
-        result = await bridge.send_command("scene.undo")
-        return fmt("Undo", result)
+@scene_tools.tool()
+async def blender_undo() -> str:
+    """Undo the last operation in Blender (Ctrl+Z). Every MCP write operation is one undo step."""
+    return await call("Undo", "scene.undo")
+
+
+@scene_tools.tool()
+async def blender_redo() -> str:
+    """Redo the last undone operation in Blender (Ctrl+Shift+Z)."""
+    return await call("Redo", "scene.redo")

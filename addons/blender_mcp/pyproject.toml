@@ -1,6 +1,6 @@
 [project]
 name = "blender-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "A game-asset-pipeline-oriented Blender MCP server for AI-assisted 3D modeling"
 requires-python = ">=3.10"
 dependencies = [
@@ -11,8 +11,23 @@ dependencies = [
 blender-mcp = "blender_mcp.server.main:main"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
 
-[tool.hatch.build.targets.wheel]
-packages = ["blender_mcp"]
+# 本目录本身即为 blender_mcp 包根（同时也是 Blender 插件根），
+# 通过 package-dir 将当前目录映射为 blender_mcp 包。
+[tool.setuptools]
+package-dir = { "blender_mcp" = "." }
+packages = [
+    "blender_mcp",
+    "blender_mcp.shared",
+    "blender_mcp.addon",
+    "blender_mcp.addon.modules",
+    "blender_mcp.addon.registry",
+    "blender_mcp.addon.rpc",
+    "blender_mcp.addon.transport",
+    "blender_mcp.server",
+    "blender_mcp.server.resources",
+    "blender_mcp.server.tools",
+    "blender_mcp.server.utils",
+]
