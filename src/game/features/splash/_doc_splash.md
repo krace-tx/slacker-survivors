@@ -1,6 +1,6 @@
 # Feature · Splash (闪屏展示与加权业务启动管线模块)
 
-> 承接 [`BootstrapScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/bootstrap/bootstrap_scene.gd) 首棒交接的业务启动加载模块，同时也是 `src/game/features/` 下标准 **MSVP (`model/` - `service/` - `view/` - `presenter/`)** 以及 **`view/` 内部 `scene/` + `component/` 领域单元包架构**的标杆实现。
+> 承接 [`BootstrapScene`](../../bootstrap/bootstrap_scene.gd) 首棒交接的业务启动加载模块，同时也是 `src/game/features/` 下标准 **MSVP (`model/` - `service/` - `view/` - `presenter/`)** 以及 **`view/` 内部 `scene/` + `component/` 领域单元包架构**的标杆实现。
 
 ---
 
@@ -82,6 +82,6 @@ flowchart LR
 
 | 容灾级别 | 枚举值 | 触发行为 | 对应任务 |
 | :--- | :--- | :--- | :--- |
-| **致命阻断** | `FailurePolicy.CRITICAL` | 挂起管线、保留当前失败索引 `_current_task_index`，并将 [`SplashBootState`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_state.gd) 置为 `FAILED`，触发 [`SplashScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/scene/splash/splash_scene.gd) ➔ [`BootProgressPanel`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/component/progress/boot_progress_panel.gd) 展示重试按钮；点击重试时调用 `retry_failed()` 从失败任务**原地续跑**，绝不重复执行前置已完成任务。 | [`LoadConfigTask`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/tasks/load_config_task.gd)、[`LoadProfileTask`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/tasks/load_profile_task.gd)、[`ResolveRouteTask`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/tasks/resolve_route_task.gd) |
-| **优雅降级** | `FailurePolicy.DEGRADABLE` | 将异常原因记入 [`SplashBootContext.warnings`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_context.gd)，自动标记 `is_offline_mode = true` 并继续后续任务，保障单机离线可玩性。 | [`SyncSessionTask`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/tasks/sync_session_task.gd) |
-| **可选优化** | `FailurePolicy.OPTIONAL` | 记入日志后静默跳过，绝不因非核心预热资产缺失阻断玩家进入游戏。 | [`WarmupAssetsTask`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/service/tasks/warmup_assets_task.gd) |
+| **致命阻断** | `FailurePolicy.CRITICAL` | 挂起管线、保留当前失败索引 `_current_task_index`，并将 [`SplashBootState`](model/splash_boot_state.gd) 置为 `FAILED`，触发 [`SplashScene`](view/scene/splash/splash_scene.gd) ➔ [`BootProgressPanel`](view/component/progress/boot_progress_panel.gd) 展示重试按钮；点击重试时调用 `retry_failed()` 从失败任务**原地续跑**，绝不重复执行前置已完成任务。 | [`LoadConfigTask`](service/tasks/load_config_task.gd)、[`LoadProfileTask`](service/tasks/load_profile_task.gd)、[`ResolveRouteTask`](service/tasks/resolve_route_task.gd) |
+| **优雅降级** | `FailurePolicy.DEGRADABLE` | 将异常原因记入 [`SplashBootContext.warnings`](model/splash_boot_context.gd)，自动标记 `is_offline_mode = true` 并继续后续任务，保障单机离线可玩性。 | [`SyncSessionTask`](service/tasks/sync_session_task.gd) |
+| **可选优化** | `FailurePolicy.OPTIONAL` | 记入日志后静默跳过，绝不因非核心预热资产缺失阻断玩家进入游戏。 | [`WarmupAssetsTask`](service/tasks/warmup_assets_task.gd) |

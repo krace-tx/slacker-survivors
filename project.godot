@@ -29,13 +29,12 @@ gdscript/warnings/redundant_await=0
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/ffmpeg/plugin.cfg", "res://addons/godot_mcp/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg", "res://addons/scene_define_generator/plugin.cfg", "res://addons/video_player_android/plugin.cfg", "res://addons/video_player_ios/plugin.cfg")
+enabled=PackedStringArray("res://addons/ffmpeg/plugin.cfg", "res://addons/godot_mcp/plugin.cfg", "res://addons/godotsteam/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg", "res://addons/scene_define_generator/plugin.cfg", "res://addons/video_player_android/plugin.cfg", "res://addons/video_player_ios/plugin.cfg")
 
 [file_customization]
 

@@ -5,7 +5,7 @@
 提供全框架与业务层通用的无状态纯函数工具集合。
 覆盖场景树节点操作、安全文件 I/O、资源与图像编解码、时间格式化、坐标数学计算与内存大小评估等基础领域。
 所有工具类仅包含 `static func` 纯函数，不维护内部状态，不持有业务实例引用，失败操作严格通过 `Result` 显式向上传递。
-*(注：有状态的异步任务生命周期作用域已收敛于 [`src/framework/infra/async/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/async/_doc_async.md) 的 `TaskScope` 中；Spine 骨骼动画流式控制器、享元对象池、视口内真预热与分频错峰调度已统一升级收敛于 [`src/framework/infra/spine/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/_doc_spine.md) 的 `SpineController` 与 `SpinePool` 中；有状态的显示控制、窗口模式、分辨率与异形屏安全区已收敛于 [`src/framework/modules/display/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/_doc_display.md) 的 `App.display` 中。)*
+*(注：有状态的异步任务生命周期作用域已收敛于 [`src/framework/infra/async/`](../infra/async/_doc_async.md) 的 `TaskScope` 中；Spine 骨骼动画流式控制器、享元对象池、视口内真预热与分频错峰调度已统一升级收敛于 [`src/framework/infra/spine/`](../infra/spine/_doc_spine.md) 的 `SpineController` 与 `SpinePool` 中；有状态的显示控制、窗口模式、分辨率与异形屏安全区已收敛于 [`src/framework/modules/display/`](../modules/display/_doc_display.md) 的 `App.display` 中。)*
 
 ---
 
@@ -17,7 +17,7 @@
 - **职责划分**：
   - `NodeUtils`：节点场景树生命周期（`@abstract` 纯静态）——入树挂载（`mount` / `mount_required`）、预制体实例化（`spawn`）、子树复制（`clone`）、安全销毁（`safe_free` / `clear_children`）与信号驱动的 `wait_ready` 等待；失败返回 `Node.{Reason}` 错误码。节点查找直接用引擎内置 `find_child` / `get_node_or_null`，不在此封装。
   - `FileUtils`：工业级安全文件 I/O、`.tmp` 事务级原子落盘、ZSTD 压缩 / AES-256 加密读写（含 `write_encrypted_json` / `read_encrypted_json` 组合管线）、MD5 / SHA-256 完整性校验、64KB 分块流式复制、文件头 OS PageCache 预热（`warm_file_head`）、目录树生命周期管理与 `res://` 导出包资源实体化（`materialize_res_file` / `get_materialized_cache_path`）。
-  - `CryptoUtils`：纯内存无状态密码学与二进制压缩原语，包含 Encrypt-then-MAC 认证加密信封（`AES-256-CBC + PKCS#7 + 随机 IV + HMAC-SHA256`，魔数 `SLKE`）、精确长度头 ZSTD 内存压缩帧（魔数 `SLKZ`）、HMAC-SHA256 请求签名、恒定时间防时序比对与硬件设备指纹密钥派生（`derive_passphrase`）。
+  - `CryptoUtils`：纯内存无状态密码学与二进制压缩原语，包含 Encrypt-then-MAC 认证加密信封（`AES-256-CBC + PKCS#7 + 随机 IV + HMAC-SHA256`，魔数 `FWKE`）、精确长度头 ZSTD 内存压缩帧（魔数 `FWKZ`）、HMAC-SHA256 请求签名、恒定时间防时序比对与硬件设备指纹密钥派生（`derive_passphrase`）。
   - `TimeUtils`：系统墙钟（`now_string`）与格式化时间（`format_mm_ss` / `format_hh_mm_ss`）。
   - `CoordUtils`：零开方空间距离/圆环/扇形锥（`is_within_cone`）判定、双向网格坐标换算（`world_to_grid` / `grid_to_world` / `snap_to_grid`）、Control 全局变换包围盒（`get_global_rect`）、等比内接矩形（`fit_rect_aspect`）与跨 CanvasLayer / 3D 视口投影桥接（`map_canvas_position` / `world3d_to_screen`）。
   - `MemoryUtils`：全类型严格 $O(1)$ 零循环、零堆分配的 `Variant`、全系 `Packed*Array`、`Image`（C++ `get_data_size()`）与 `Texture2D` 内存/显存占用字节估算（`estimate_bytes` / `estimate_resource_bytes`）。

@@ -74,15 +74,15 @@ flowchart TD
 
 ## 四、 策划文档与 Godot 代码架构映射矩阵 (Design-to-Code Mapping)
 
-严格遵循 [`docs/godot_coding_standards.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/godot_coding_standards.md) 与 [`src/game/_doc_game.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/_doc_game.md) 的 **MSVP / MES 双轨架构**，各策划卷宗对应代码落点如下：
+严格遵循 [`docs/godot_coding_standards.md`](../godot_coding_standards.md) 与 [`src/game/_doc_game.md`](../../src/game/_doc_game.md) 的 **MSVP / MES 双轨架构**，各策划卷宗对应代码落点如下：
 
 | 策划卷宗 | 架构模式 | 目标代码域 (`src/game/`) | 关键领域模型后缀 (`model/`) |
 | :--- | :--- | :--- | :--- |
-| **卷二：流水线与模块契约**<br>([`02_pipeline_and_modules.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/02_pipeline_and_modules.md)) | **MES**<br>*(纯逻辑演算)* | `features/pipeline/`<br>(`model/`, `engine/`, `service/`) | • `PipelineModuleConfig` (静态配表)<br>• `PipelineQueueState` (队列槽位状态)<br>• `WorkPacketContext` (工单步进上下文) |
-| **卷三：操控、资源与救火**<br>([`03_control_resources_and_intervention.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/03_control_resources_and_intervention.md)) | **MES + MSVP** | `features/combat/`<br>`features/battle_hud/` | • `CombatResourceState` (干预额度与未处理麻烦)<br>• `InterventionParams` (干预动作入参) |
-| **卷四：敌人与波次压力**<br>([`04_enemies_and_pressure_events.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/04_enemies_and_pressure_events.md)) | **MES** | `features/wave/`<br>`features/enemy/` | • `EnemyArchetypeConfig` (反工作流敌人配表)<br>• `WavePressureConfig` (30秒压力事件配表)<br>• `WaveRuntimeState` (波次运行状态) |
-| **卷五：机器重构与 AI 接入**<br>([`05_progression_and_ai_hooks.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/05_progression_and_ai_hooks.md)) | **MSVP** | `features/upgrade/`<br>`features/agent_module/` *(Phase 2)* | • `ModuleUpgradeConfig` (减负改造配表)<br>• `AgentPersonalityState` (AI 角色模块情绪状态) |
-| **卷六：60 秒最小原型**<br>([`06_mvp_60s_prototype_spec.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/06_mvp_60s_prototype_spec.md)) | **MSVP 场景组合** | `features/battle/` | • `BattleScene` (`BaseScene`)<br>• `BattlePresenter` / `BattleService` |
+| **卷二：流水线与模块契约**<br>([`02_pipeline_and_modules.md`](02_pipeline_and_modules.md)) | **MES**<br>*(纯逻辑演算)* | `features/pipeline/`<br>(`model/`, `engine/`, `service/`) | • `PipelineModuleConfig` (静态配表)<br>• `PipelineQueueState` (队列槽位状态)<br>• `WorkPacketContext` (工单步进上下文) |
+| **卷三：操控、资源与救火**<br>([`03_control_resources_and_intervention.md`](03_control_resources_and_intervention.md)) | **MES + MSVP** | `features/combat/`<br>`features/battle_hud/` | • `CombatResourceState` (干预额度与未处理麻烦)<br>• `InterventionParams` (干预动作入参) |
+| **卷四：敌人与波次压力**<br>([`04_enemies_and_pressure_events.md`](04_enemies_and_pressure_events.md)) | **MES** | `features/wave/`<br>`features/enemy/` | • `EnemyArchetypeConfig` (反工作流敌人配表)<br>• `WavePressureConfig` (30秒压力事件配表)<br>• `WaveRuntimeState` (波次运行状态) |
+| **卷五：机器重构与 AI 接入**<br>([`05_progression_and_ai_hooks.md`](05_progression_and_ai_hooks.md)) | **MSVP** | `features/upgrade/`<br>`features/agent_module/` *(Phase 2)* | • `ModuleUpgradeConfig` (减负改造配表)<br>• `AgentPersonalityState` (AI 角色模块情绪状态) |
+| **卷六：60 秒最小原型**<br>([`06_mvp_60s_prototype_spec.md`](06_mvp_60s_prototype_spec.md)) | **MSVP 场景组合** | `features/battle/` | • `BattleScene` (`BaseScene`)<br>• `BattlePresenter` / `BattleService` |
 
 ---
 
@@ -90,5 +90,5 @@ flowchart TD
 
 1. **先改文档，后动代码**：任何涉及队列槽位规则、模块输入输出逻辑、资源增减公式或新敌人机制的改动，必须先更新 `docs/design/` 下对应的分卷文档，再进入 `src/game/` 编码。
 2. **阶段隔离（Phase Gating）**：
-   - **Phase 1（当前阶段：MVP 60s 原型）**：严格锁定 [`06_mvp_60s_prototype_spec.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/06_mvp_60s_prototype_spec.md) 的裁剪范围（1 种基础工单、5 槽位、6 模块、1 干预、3 敌人），禁止提前混入多武器或 AI 剧情代码。
-   - **Phase 2（核心循环跑通后）**：按 [`05_progression_and_ai_hooks.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/05_progression_and_ai_hooks.md) 的接口协议，将 AI Galgame 角色作为“具备自主情绪与谈判条件的特殊模块”无损挂载进流水线槽位。
+   - **Phase 1（当前阶段：MVP 60s 原型）**：严格锁定 [`06_mvp_60s_prototype_spec.md`](06_mvp_60s_prototype_spec.md) 的裁剪范围（1 种基础工单、5 槽位、6 模块、1 干预、3 敌人），禁止提前混入多武器或 AI 剧情代码。
+   - **Phase 2（核心循环跑通后）**：按 [`05_progression_and_ai_hooks.md`](05_progression_and_ai_hooks.md) 的接口协议，将 AI Galgame 角色作为“具备自主情绪与谈判条件的特殊模块”无损挂载进流水线槽位。

@@ -5,16 +5,16 @@ extends RefCounted
 ##
 ## [b]核心设计（第一性原理）：[/b][br]
 ## 1. [b]纯内存无状态原语（Zero-State Pure Functions）[/b]：与磁盘 I/O（[FileUtils]）完全正交解耦，专职处理内存态 [PackedByteArray] / [String] / [Dictionary] 的加解密与摘要计算；[br]
-## 2. [b]Encrypt-then-MAC 认证加密信封（Authenticated Encryption）[/b]：采用 [code]AES-256-CBC + PKCS#7 Padding + 16B 随机 IV + HMAC-SHA256[/code] 组合信封（魔数 [code]SLKE[/code]），
+## 2. [b]Encrypt-then-MAC 认证加密信封（Authenticated Encryption）[/b]：采用 [code]AES-256-CBC + PKCS#7 Padding + 16B 随机 IV + HMAC-SHA256[/code] 组合信封（魔数 [code]FWKE[/code]），
 ##    任何 1 比特密文篡改或错误密钥均在解密前被恒定时间签名比对 100% 拦截，彻底杜绝 Padding Oracle 与乱码脏数据解析；[br]
-## 3. [b]精确帧头内存压缩（Framed ZSTD Compression）[/b]：内置携带 8 字节原始长度头的 [code]SLKZ[/code] 压缩帧封装，支持 $O(1)$ 精确缓冲预分配解压，打通「先压缩、后加密」的正交数据管线；[br]
+## 3. [b]精确帧头内存压缩（Framed ZSTD Compression）[/b]：内置携带 8 字节原始长度头的 [code]FWKZ[/code] 压缩帧封装，支持 $O(1)$ 精确缓冲预分配解压，打通「先压缩、后加密」的正交数据管线；[br]
 ## 4. [b]设备指纹密钥派生（Device-Bound Key Derivation）[/b]：支持混入应用盐值与硬件唯一标识（[method OS.get_unique_id]）进行双轮 HMAC-SHA256 密钥派生，防御跨设备拷贝替档。
 
 
 #region Constants & Error Codes
 
-const CIPHER_MAGIC: String = "SLKE" ## 认证加密二进制信封魔数（Slacker Encrypted，4 字节）。
-const COMPRESS_MAGIC: String = "SLKZ" ## 内存压缩帧二进制魔数（Slacker ZSTD，4 字节）。
+const CIPHER_MAGIC: String = "FWKE" ## 认证加密二进制信封魔数（Framework Encrypted，4 字节）。
+const COMPRESS_MAGIC: String = "FWKZ" ## 内存压缩帧二进制魔数（Framework ZSTD，4 字节）。
 
 const AES_KEY_SIZE: int = 32 ## AES-256 标准密钥长度（32 字节 / 256 位）。
 const AES_BLOCK_SIZE: int = 16 ## AES 分组块与 CBC IV 长度（16 字节 / 128 位）。
@@ -24,7 +24,7 @@ const _CIPHER_HEADER_SIZE: int = 4 + AES_BLOCK_SIZE ## 4B Magic + 16B IV = 20 �
 const _CIPHER_MIN_SIZE: int = _CIPHER_HEADER_SIZE + AES_BLOCK_SIZE + HMAC_SHA256_SIZE ## 最小合法密文长度（68 字节）。
 const _COMPRESS_HEADER_SIZE: int = 13 ## 4B Magic + 1B Mode + 8B OriginalSize = 13 字节。
 const _MAX_DECOMPRESS_BYTES: int = 256 * 1024 * 1024 ## 单次内存解压安全上限（256 MB，防 Zip Bomb 内存耗尽攻击）。
-const _KDF_DEFAULT_SALT: String = "slacker_survivors_kdf_v1"
+const _KDF_DEFAULT_SALT: String = "framework_kdf_v1"
 
 const ERR_EMPTY_KEY: String = "Crypto.EmptyKey"
 const ERR_INVALID_PARAM: String = "Crypto.InvalidParam"
@@ -266,7 +266,7 @@ static func sign_http_request(
 #region Public API - AES-256-CBC Authenticated Encryption (Encrypt-then-MAC)
 
 ## 使用 AES-256-CBC + PKCS#7 + 随机 IV + HMAC-SHA256 将内存字节流加密为防篡改密文信封。[br]
-## [b]信封二进制布局：[/b][code][4B Magic "SLKE"][16B Random IV][N*16B AES-256-CBC Ciphertext][32B HMAC-SHA256][/code]。[br]
+## [b]信封二进制布局：[/b][code][4B Magic "FWKE"][16B Random IV][N*16B AES-256-CBC Ciphertext][32B HMAC-SHA256][/code]。[br]
 ## 成功时 [member Result.value] 为加密后的 [PackedByteArray]。
 static func encrypt_bytes(plain_bytes: PackedByteArray, passphrase: String) -> Result:
 	var clean_pass := passphrase.strip_edges()
@@ -449,7 +449,7 @@ static func decrypt_text(cipher_base64: String, passphrase: String) -> Result:
 	return Result.ok(plain_bytes.get_string_from_utf8())
 
 
-## 判断二进制字节流是否携带 [constant CIPHER_MAGIC]（[code]"SLKE"[/code]）认证加密信封头。
+## 判断二进制字节流是否携带 [constant CIPHER_MAGIC]（[code]"FWKE"[/code]）认证加密信封头。
 static func is_encrypted_envelope(bytes: PackedByteArray) -> bool:
 	if bytes.size() < _CIPHER_MIN_SIZE:
 		return false
@@ -460,8 +460,8 @@ static func is_encrypted_envelope(bytes: PackedByteArray) -> bool:
 
 #region Public API - Framed Memory Compression (ZSTD)
 
-## 将内存字节流压缩并封装为携带精确原始长度头的 [code]SLKZ[/code] 压缩帧。[br]
-## [b]二进制布局：[/b][code][4B Magic "SLKZ"][1B Mode][8B UncompressedSize (int64 LE)][CompressedBytes][/code]。[br]
+## 将内存字节流压缩并封装为携带精确原始长度头的 [code]FWKZ[/code] 压缩帧。[br]
+## [b]二进制布局：[/b][code][4B Magic "FWKZ"][1B Mode][8B UncompressedSize (int64 LE)][CompressedBytes][/code]。[br]
 ## 成功时 [member Result.value] 为压缩后的 [PackedByteArray]。
 static func compress_bytes(
 	raw_bytes: PackedByteArray,
@@ -493,13 +493,13 @@ static func compress_bytes(
 	return Result.ok(header)
 
 
-## 从 [method compress_bytes] 生成的 [code]SLKZ[/code] 压缩帧中 $O(1)$ 精确解压还原原始字节流。[br]
+## 从 [method compress_bytes] 生成的 [code]FWKZ[/code] 压缩帧中 $O(1)$ 精确解压还原原始字节流。[br]
 ## 成功时 [member Result.value] 为解压后的 [PackedByteArray]。
 static func decompress_bytes(framed_bytes: PackedByteArray) -> Result:
 	if not is_compressed_frame(framed_bytes):
 		return Result.err_ex(
 			ERR_DECOMPRESS_FAILED,
-			"Memory decompress failed: missing 'SLKZ' frame header.",
+			"Memory decompress failed: missing 'FWKZ' frame header.",
 			{"size": framed_bytes.size()},
 			false,
 			ERR_FILE_UNRECOGNIZED,
@@ -546,7 +546,7 @@ static func decompress_bytes(framed_bytes: PackedByteArray) -> Result:
 	return Result.ok(decompressed)
 
 
-## 判断字节流是否携带 [constant COMPRESS_MAGIC]（[code]"SLKZ"[/code]）内存压缩帧头。
+## 判断字节流是否携带 [constant COMPRESS_MAGIC]（[code]"FWKZ"[/code]）内存压缩帧头。
 static func is_compressed_frame(bytes: PackedByteArray) -> bool:
 	if bytes.size() < _COMPRESS_HEADER_SIZE:
 		return false
@@ -569,7 +569,7 @@ static func _to_bytes(data: Variant) -> PackedByteArray:
 
 static func _derive_subkey(passphrase: String, purpose: String) -> PackedByteArray:
 	return _compute_hmac_sha256_raw(
-		("slacker_subkey:" + purpose).to_utf8_buffer(),
+		("framework_subkey:" + purpose).to_utf8_buffer(),
 		passphrase.to_utf8_buffer()
 	)
 

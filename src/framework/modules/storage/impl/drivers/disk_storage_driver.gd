@@ -281,12 +281,12 @@ static func _write_encoded_bytes(
 	return FileUtils.write_bytes(path, raw_bytes, atomic)
 
 
-## 正交组合解码读取管线：支持「先 AES-256 解密 ➔ 再识别 SLKZ 帧解压」，并向下兼容历史单步格式。
+## 正交组合解码读取管线：支持「先 AES-256 解密 ➔ 再识别 FWKZ 帧解压」，并向下兼容历史单步格式。
 static func _read_decoded_bytes(path: String, enc_key: String, compressed: bool) -> Result:
 	if not enc_key.is_empty():
 		var dec_res := FileUtils.read_encrypted(path, enc_key)
 		if dec_res.is_err():
-			# 兼容直接使用 CryptoUtils.encrypt_bytes (SLKE 信封) 落盘的文件
+			# 兼容直接使用 CryptoUtils.encrypt_bytes (FWKE 信封) 落盘的文件
 			var raw_file_res := FileUtils.read_bytes(path)
 			if raw_file_res.is_ok() and CryptoUtils.is_encrypted_envelope(raw_file_res.value as PackedByteArray):
 				dec_res = CryptoUtils.decrypt_bytes(raw_file_res.value as PackedByteArray, enc_key)

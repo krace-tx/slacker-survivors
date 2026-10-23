@@ -217,7 +217,8 @@ func read_async(target: Variant, policy: int = StorageReadMode.CACHE_FIRST) -> R
 
 	if hit_tier == -1 or result_data == null:
 		if last_err_res != null and last_err_res.error_code() != StorageError.NOT_FOUND:
-			return last_err_res
+			if policy == StorageReadMode.REMOTE_ONLY or policy == StorageReadMode.REMOTE_FIRST or last_err_res.error_code() != StorageError.REMOTE_UNAVAILABLE:
+				return last_err_res
 		var msg := last_err_res.error_message() if last_err_res != null else "No data found across configured tiers."
 		return Result.err_ex(
 			StorageError.NOT_FOUND,
@@ -380,14 +381,15 @@ func _read_tier(tier: Tier, item: StorageItem) -> Result:
 			return _disk.read(StringName(item.disk_path), _build_disk_kwargs(item))
 
 		Tier.REMOTE:
-			if item.remote_url.is_empty():
-				return Result.err_code(StorageError.NOT_FOUND, "Remote read skipped: empty remote_url.")
+			if item.remote_url.is_empty() and item.steam_cloud_file.is_empty():
+				return Result.err_code(StorageError.NOT_FOUND, "Remote read skipped: empty remote_url and steam_cloud_file.")
 			var remote_kwargs := {
 				"payload_type": item.payload_type,
 				"method": item.method,
 				"save_path": item.disk_path,
 				"use_backup": item.use_backup,
 				"expected_md5": item.expected_md5,
+				"steam_cloud_file": item.steam_cloud_file,
 			}
 			return await _remote.read_async(StringName(item.remote_url), remote_kwargs)
 
@@ -407,14 +409,17 @@ func _write_tier(tier: Tier, item: StorageItem, data: Variant, policy: int) -> R
 			return _disk.write(StringName(item.disk_path), data, _build_disk_kwargs(item))
 
 		Tier.REMOTE:
-			if item.remote_url.is_empty():
+			if item.remote_url.is_empty() and item.steam_cloud_file.is_empty():
 				return Result.ok()
 			var remote_kwargs := {
 				"payload_type": item.payload_type,
 				"method": item.method if item.method != "GET" else "POST",
+				"steam_cloud_file": item.steam_cloud_file,
 			}
 			# 针对 LOCAL_FIRST 策略，启动受 _inflight_writes 追踪的后台远端同步
 			if policy == StorageWriteMode.LOCAL_FIRST:
+				if item.remote_url.begins_with(RemoteStorageDriver.STEAM_SCHEME_PREFIX) and not _remote.is_steam_cloud_available():
+					return Result.ok()
 				_spawn_background_remote_write(item, data, remote_kwargs)
 				return Result.ok()
 			else:

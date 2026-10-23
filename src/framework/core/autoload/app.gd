@@ -7,7 +7,8 @@ extends Node
 var env:		BaseRuntimeEnvironment	## 基础：运行环境 (Local/Emulator/Dev/Test/Prod)
 var logger:		BaseFrameworkLogger		## 基础：日志与诊断
 var net:		BaseNetworkClient		## 通讯：HTTP连接池、断线重连、Token鉴权
-var storage:	BaseStorageSystem		## 存储：内存/磁盘/远端三级读写
+var auth:		BaseAuthSystem			## 鉴权：跨平台身份认证 (Steam/Apple/Google/Guest) 与网关换票
+var storage:	BaseStorageSystem		## 存储：内存/磁盘/远端三级读写 (含 Steam Cloud & HTTP 云存档)
 var clock:		BaseClockSystem			## 时钟：防作弊单调时钟与服务器权威时间校准
 var locale:		BaseLocalizationSystem	## 表现：多语言与区域格式化
 var asset:		BaseAssetSystem			## 资源：资产加载池、内存/磁盘缓存管理
@@ -40,7 +41,7 @@ func get_runtime_diagnostics() -> Dictionary:
 func bootstrap(on_progress: Callable = Callable()) -> Result:
 	if _boot_done:
 		if on_progress.is_valid():
-			on_progress.call(13, 13, "ready")
+			on_progress.call(14, 14, "ready")
 		return _boot_result
 	if _booting:
 		while _booting:

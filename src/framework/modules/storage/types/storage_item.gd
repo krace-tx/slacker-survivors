@@ -18,7 +18,8 @@ extends Resource
 @export var expected_md5: String = ""     ## FILE 载荷模式下可选的 32 位十六进制 MD5 完整性校验码
 
 @export_group("Remote Settings")
-@export var remote_url: String = ""       ## 远端拉取或推送接口的 URL（支持相对路径或完整 http(s):// 地址）
+@export var remote_url: String = ""       ## 远端拉取或推送接口的 URL（支持相对路径、完整 http(s):// 地址，或 steam://<cloud_file> 协议）
+@export var steam_cloud_file: String = "" ## Steam Cloud (ISteamRemoteStorage) 远端文件名（如 "shared/player_profile.json"）
 @export_enum("GET", "POST", "PUT") var method: String = "GET" ## 远端默认请求方法
 @export_enum("JSON", "FILE") var payload_type: String = "JSON" ## 数据载荷格式（JSON 字典/数组 或 FILE 二进制字节流）
 
@@ -100,11 +101,31 @@ func with_disk(p_disk_path: String, p_use_backup: bool = true) -> StorageItem:
 	return self
 
 
-## 链式配置远端 URL、请求方法与载荷类型。
+## 链式配置远端 HTTP(S) URL、请求方法与载荷类型。
 func with_remote(p_remote_url: String, p_method: String = "GET", p_payload_type: String = "JSON") -> StorageItem:
 	remote_url = p_remote_url.strip_edges()
 	method = p_method.strip_edges().to_upper()
 	payload_type = p_payload_type.strip_edges().to_upper()
+	return self
+
+
+## 链式开启 Steam Cloud (`ISteamRemoteStorage`) 云存档同步支持。[br]
+## - 可单独调用（自动将 [member remote_url] 设为 [code]steam://<cloud_file>[/code]）；[br]
+## - 也可与 [method with_remote] 组合调用（实现「自建 HTTP 后端云存档 + Steam Cloud 双通道镜像备份与降级回退」）。[br]
+## [param p_cloud_filename] Steam Cloud 远端相对文件名（为空时自动截取 [member disk_path] 在 [code]user://saves/[/code] 下的相对路径）。
+func with_steam_cloud(p_cloud_filename: String = "") -> StorageItem:
+	var resolved_name := p_cloud_filename.strip_edges().trim_prefix("/")
+	if resolved_name.is_empty():
+		var saves_prefix := FileUtils.USER_SAVES_DIR + "/"
+		if disk_path.begins_with(saves_prefix):
+			resolved_name = disk_path.trim_prefix(saves_prefix)
+		elif disk_path.begins_with("user://"):
+			resolved_name = disk_path.trim_prefix("user://")
+		else:
+			resolved_name = String(key_id).replace(":", "/") + ".json"
+	steam_cloud_file = resolved_name
+	if remote_url.is_empty():
+		remote_url = "steam://%s" % resolved_name
 	return self
 
 

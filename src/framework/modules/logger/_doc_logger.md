@@ -1,6 +1,6 @@
 # Framework · Logger (分级日志、富文本染色与环形诊断缓冲系统)
 
-> 全项目统一的结构化分级日志与崩溃现场回溯基础设施（`App.logger` / [`BaseFrameworkLogger`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/logger/base_framework_logger.gd)）。
+> 全项目统一的结构化分级日志与崩溃现场回溯基础设施（`App.logger` / [`BaseFrameworkLogger`](base_framework_logger.gd)）。
 > 支持环境感知级别过滤、模块 Tag 分类追踪、控制台 BBCode 安全染色、调试器面板联动（`push_warning` / `push_error`）、1000 条环形内存缓冲导出（`dump()`）以及启动早期的静态无实例保底打印。
 
 ```text
@@ -28,7 +28,7 @@ src/framework/modules/logger/
    - `LogLevel.WARN (2)`：橙黄 `#F59E0B`，可恢复异常（如网络重试、回退 `.bak`），同时调用 `push_warning(line)` 同步进入 Godot 调试器面板；
    - `LogLevel.ERROR (3)`：亮红 `#EF4444`，阻断性故障，同时调用 `push_error(line)` 同步进入 Godot 调试器面板并触发栈追踪。
 3. **BBCode 防注入转义与统一时间戳格式**：
-   - 输出格式统一为 `[YYYY-MM-DD HH:MM:SS] [LEVEL] [Tag] Message`（时间戳由无状态 [`TimeUtils.now_string()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/util/time/time_utils.gd) 提供）。
+   - 输出格式统一为 `[YYYY-MM-DD HH:MM:SS] [LEVEL] [Tag] Message`（时间戳由无状态 [`TimeUtils.now_string()`](../../util/time/time_utils.gd) 提供）。
    - 调用 `print_rich` 前自动将正文中的 `[` 转义为 `[lb]`，防止日志内容中包含数组文本（如 `[Shift + Q]`）或方括号时被误解析为非法 BBCode 标签导致文字吞没。
 4. **1000 条固定容量环形内存缓冲 (`dump()` / `clear()`)**：
    - 内部通过 `_entries: PackedStringArray` 维护最近 `1000` 条通过级别过滤的纯文本日志（超出上限时 FIFO 淘汰最旧条目）。

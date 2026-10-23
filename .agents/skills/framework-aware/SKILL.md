@@ -47,9 +47,9 @@ description: >-
 ├── examples/                         # [Few-Shot 范例库]
 │   └── code_patterns.md              # 场景、UI、弹窗、按钮、网络服务的正反范式对比
 └── scripts/                          # [自动化工具]
-    ├── check_compliance.ps1          # 一键扫描全项目架构合规性与 GDScript 语法编译 (PowerShell)
-    ├── check_compliance.sh           # 一键扫描全项目架构合规性与 GDScript 语法编译 (Bash)
-    └── check_syntax.gd               # Godot Headless 全量 GDScript 语法与静态类型编译扫描器
+    ├── check_compliance.py           # 极简 CLI 入口：一键扫描架构合规性与 GDScript 语法编译
+    ├── check_syntax.gd               # Godot Headless 全量 GDScript 语法与静态类型编译扫描器
+    └── compliance/                   # 模块化合规规则引擎包 (models / context / reporter / rules/*)
 ```
 
 ### 快速直达
@@ -95,10 +95,9 @@ flowchart LR
 
 编码完成后，必须通过自动化扫描与 Godot 静态检查：
 
-```pwsh
-# 一键执行架构合规性扫描 + 全项目 GDScript 语法与静态类型编译检查 (PowerShell 或 Bash 二选一)
-pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
-# 或: bash .agents/skills/framework-aware/scripts/check_compliance.sh
+```bash
+# 一键执行架构合规性扫描 + 全项目 GDScript 语法与静态类型编译检查 (跨平台 Python)
+python .agents/skills/framework-aware/scripts/check_compliance.py
 ```
 
 ---

@@ -31,10 +31,10 @@ flowchart TD
 
 | 基类类型 | 选型准则与内存/调度特征 | 工程典型代表 |
 | :--- | :--- | :--- |
-| **`RefCounted`**<br>*(默认首选)* | **纯逻辑、状态容器、协调器、服务、契约**。<br>不进场景树、零引擎节点遍历开销、离开作用域引用归零即自动释放。 | • 核心契约：[`Result`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/contracts/result.gd)、[`FrameworkError`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/contracts/framework_error.gd)、[`BaseParams`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)<br>• 基础基建：[`TaskScope`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/async/task_scope.gd)、[`BudgetCache`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/cache/budget_cache.gd)、[`CooldownScheduler`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/scheduler/cooldown_scheduler.gd)、[`SpineController`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_controller.gd)<br>• 逻辑系统：`RuntimeEnvironment`、`FrameworkLogger`、`ClockSystem`、`AssetSystem`、`StorageSystem`、`HapticFeedback`<br>• 业务分层：所有 MSVP 的 `Presenter`、`Service`、`*State`、`*Context` 与 MES 的 `Engine` |
-| **`Node` / `Control` / `Node2D`** | **必须挂载场景树（SceneTree）的对象**。<br>需要驱动帧循环（`_process` / `_physics_process`）、拦截硬件输入（`_input`）、挂载可视子树（`CanvasLayer` / `Control`）或持有引擎功能节点（`HTTPRequest` / `AudioStreamPlayer` / `VideoStreamPlayer`）。 | • 场景与视图基类：[`BaseScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene.gd)、[`BaseView`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/base_view.gd)、[`BaseDialog`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/component/dialog/base_dialog.gd)、[`BaseTextureButton`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/component/button/base_texture_button.gd)<br>• 节点型系统：`InputSystem`、`NetworkClient`、`SceneRouter`、`DisplaySystem`、`AudioSystem`、`VideoPlayer` |
-| **`Resource`** | **编辑器可视化检视与 `.tres` 磁盘序列化资产**。<br>用于静态策划配置表或跨环境只读资源配置。 | • [`LocaleConfig`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/locale/types/locale_config.gd) 及业务静态配表 `*Config` |
-| **纯静态工具类**<br>*(Static Utils)* | **无状态纯函数集合**。<br>全部方法声明为 `static func`，严禁持有可变静态状态或业务引用。 | • [`src/framework/util/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/util/_doc_util.md) 下的 `NodeUtils`、`FileUtils`、`CoordUtils`、`MemoryUtils`、`TimeUtils`、`FileCodecUtils`、`ResourceCodecUtils` |
+| **`RefCounted`**<br>*(默认首选)* | **纯逻辑、状态容器、协调器、服务、契约**。<br>不进场景树、零引擎节点遍历开销、离开作用域引用归零即自动释放。 | • 核心契约：[`Result`](../src/framework/core/contracts/result.gd)、[`FrameworkError`](../src/framework/core/contracts/framework_error.gd)、[`BaseParams`](../src/framework/infra/param/base_params.gd)<br>• 基础基建：[`TaskScope`](../src/framework/infra/async/task_scope.gd)、[`BudgetCache`](../src/framework/infra/cache/budget_cache.gd)、[`CooldownScheduler`](../src/framework/infra/scheduler/cooldown_scheduler.gd)、[`SpineController`](../src/framework/infra/spine/spine_controller.gd)<br>• 逻辑系统：`RuntimeEnvironment`、`FrameworkLogger`、`ClockSystem`、`AssetSystem`、`StorageSystem`、`HapticFeedback`<br>• 业务分层：所有 MSVP 的 `Presenter`、`Service`、`*State`、`*Context` 与 MES 的 `Engine` |
+| **`Node` / `Control` / `Node2D`** | **必须挂载场景树（SceneTree）的对象**。<br>需要驱动帧循环（`_process` / `_physics_process`）、拦截硬件输入（`_input`）、挂载可视子树（`CanvasLayer` / `Control`）或持有引擎功能节点（`HTTPRequest` / `AudioStreamPlayer` / `VideoStreamPlayer`）。 | • 场景与视图基类：[`BaseScene`](../src/framework/modules/scene/base_scene.gd)、[`BaseView`](../src/framework/modules/display/base_view.gd)、[`BaseDialog`](../src/game/shared/component/dialog/base_dialog.gd)、[`BaseTextureButton`](../src/game/shared/component/button/base_texture_button.gd)<br>• 节点型系统：`InputSystem`、`NetworkClient`、`SceneRouter`、`DisplaySystem`、`AudioSystem`、`VideoPlayer` |
+| **`Resource`** | **编辑器可视化检视与 `.tres` 磁盘序列化资产**。<br>用于静态策划配置表或跨环境只读资源配置。 | • [`LocaleConfig`](../src/framework/modules/locale/types/locale_config.gd) 及业务静态配表 `*Config` |
+| **纯静态工具类**<br>*(Static Utils)* | **无状态纯函数集合**。<br>全部方法声明为 `static func`，严禁持有可变静态状态或业务引用。 | • [`src/framework/util/`](../src/framework/util/_doc_util.md) 下的 `NodeUtils`、`FileUtils`、`CoordUtils`、`MemoryUtils`、`TimeUtils`、`FileCodecUtils`、`ResourceCodecUtils` |
 
 ---
 
@@ -76,16 +76,16 @@ flowchart TD
 在 `src/game/shared/model/` 与 `src/game/features/*/model/` 下，严禁将所有数据类笼统命名为 `XxxModel` 或将多个领域数据类堆叠在单一文件中，必须遵循**“一类一文件（`1 class_name = 1 .gd`）”**并按数据生命周期使用 7 大标准后缀：
 
 - **`*Config`**：静态只读策划配表（`HeroConfig`、`WeaponConfig`）；
-- **`*Req` / `*Resp`**：与服务端通信的网络协议契约（上行请求 `*Req`，下行响应 `*Resp`，继承 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)）；
-- **`*Model`**：跨周期持久化存档聚合根，继承 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)（[`PlayerProfileModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/player_profile_model.gd)、[`GameSettingsModel`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/game_settings_model.gd)）；
-- **`*State`**：单局战斗或当前界面的高频易变运行时状态（[`SplashBootState`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_state.gd)）；
-- **`*Data`**：内嵌于父容器的子数据块、背包/排行榜列表子项（[`DisplaySettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/display_settings_data.gd)、`RewardItemData`）；
-- **`*Params`**：跨场景路由（`App.scene`）或开弹窗（`DialogManager`）的瞬态强类型入参/出参包，继承 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)（[`SplashEnterParams`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_enter_params.gd)）；
-- **`*Context`**：MES 引擎推演或多步管线的共享上下文（[`SplashBootContext`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_context.gd)）。
+- **`*Req` / `*Resp`**：与服务端通信的网络协议契约（上行请求 `*Req`，下行响应 `*Resp`，继承 [`BaseParams`](../src/framework/infra/param/base_params.gd)）；
+- **`*Model`**：跨周期持久化存档聚合根，继承 [`BaseParams`](../src/framework/infra/param/base_params.gd)（[`PlayerProfileModel`](../src/game/shared/model/save/player_profile_model.gd)、[`GameSettingsModel`](../src/game/shared/model/save/game_settings_model.gd)）；
+- **`*State`**：单局战斗或当前界面的高频易变运行时状态（[`SplashBootState`](../src/game/features/splash/model/splash_boot_state.gd)）；
+- **`*Data`**：内嵌于父容器的子数据块、背包/排行榜列表子项（[`DisplaySettingsData`](../src/game/shared/model/data/display_settings_data.gd)、`RewardItemData`）；
+- **`*Params`**：跨场景路由（`App.scene`）或开弹窗（`DialogManager`）的瞬态强类型入参/出参包，继承 [`BaseParams`](../src/framework/infra/param/base_params.gd)（[`SplashEnterParams`](../src/game/features/splash/model/splash_enter_params.gd)）；
+- **`*Context`**：MES 引擎推演或多步管线的共享上下文（[`SplashBootContext`](../src/game/features/splash/model/splash_boot_context.gd)）。
 
 ### 4. 美术与媒体资产 (`src/assets/`) 命名与拓扑
 
-资产按 **「媒介容器 × 架构域 × 语义角色」三轴正交**治理，完整规范见 [`src/assets/_doc_assets.md`](file:///d:/code/GodotProject/slacker-survivors/src/assets/_doc_assets.md)：
+资产按 **「媒介容器 × 架构域 × 语义角色」三轴正交**治理，完整规范见 [`src/assets/_doc_assets.md`](../src/assets/_doc_assets.md)：
 
 - **目录**：`<媒介容器(复数)>/<架构域(单数)>/[<主体分组>/]`，架构域只能是 `shared`（Rule of 2+）或与 `src/game/features/<feature>/` 逐字同名；`audio/` 额外按总线分 `bgm/ sfx/ vox/ amb/` 子容器；
 - **文件名**：`<type_prefix>_<domain>_<subject>[_<variant>][_<state|channel|direction>][_<locale>][_<index>].<ext>`，全小写 `snake_case`，第 2 段必须等于架构域目录名（如 `textures/splash/btn_splash_retry_normal.svg`、`audio/sfx/battle/sfx_battle_hit_01.wav`）；
@@ -93,7 +93,7 @@ flowchart TD
 
 ### 5. 本地沙盒持久化与缓存 (`user://`) 拓扑与二级架构域规范
 
-本地可读写沙盒卷（`user://`）按 **「一级生命周期分区 × 二级架构归属域」** 双层结构治理（封顶 2 层目录，严禁在 `user://` 或一级分区根部散落业务文件），完整规范见 [`src/framework/modules/storage/_doc_storage.md`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/_doc_storage.md)：
+本地可读写沙盒卷（`user://`）按 **「一级生命周期分区 × 二级架构归属域」** 双层结构治理（封顶 2 层目录，严禁在 `user://` 或一级分区根部散落业务文件），完整规范见 [`src/framework/modules/storage/_doc_storage.md`](../src/framework/modules/storage/_doc_storage.md)：
 
 - **一级分区（5 大职能区）**：
   - `user://config/<domain>/`：设备级本地配置（如显示/分辨率/画质/键位，明文 `.json`，不随云存档跨设备覆盖）；
@@ -102,7 +102,7 @@ flowchart TD
   - `user://tmp/<module>/`：瞬态事务与流式下载中转区（`tmp/storage/`）；
   - `user://logs/`：引擎日志与 `logs/crash/` 崩溃诊断快照。
 - **二级架构域与代码归属约束（由 `check_compliance` 门禁强制校验）**：
-  - `src/game/` 下**严禁裸写 `"user://..."` 字符串字面量**，且仅允许 `model/` 下的 `*Model` 持久化类通过 [`StorageItem.for_config(domain, subject, version)`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd#L52) 或 [`StorageItem.for_save(domain, subject, version, ext)`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd#L71) 声明存储项；
+  - `src/game/` 下**严禁裸写 `"user://..."` 字符串字面量**，且仅允许 `model/` 下的 `*Model` 持久化类通过 [`StorageItem.for_config(domain, subject, version)`](../src/framework/modules/storage/types/storage_item.gd#L52) 或 [`StorageItem.for_save(domain, subject, version, ext)`](../src/framework/modules/storage/types/storage_item.gd#L71) 声明存储项；
   - `src/game/shared/model/save/` 下的模型，`STORAGE_DOMAIN` 必须为 `&"shared"`；`src/game/features/<feature>/model/` 下的模型，`STORAGE_DOMAIN` 必须与 `<feature>` 目录名逐字一致。
 
 ---
@@ -211,7 +211,7 @@ func _log_info(msg: String) -> void:
 
 ### 1. 100% 静态类型注解铁律
 
-全项目启用 Godot Headless 全量脚本静态编译校验（[check_syntax.gd](file:///Users/krace/Code/GodotProject/slacker-survivors/.agents/skills/framework-aware/scripts/check_syntax.gd)），任何类型推断歧义或未声明类型的签名均被视为不合规：
+全项目启用 Godot Headless 全量脚本静态编译校验（[check_syntax.gd](../.agents/skills/framework-aware/scripts/check_syntax.gd)），任何类型推断歧义或未声明类型的签名均被视为不合规：
 
 1. **函数签名全显式**：所有函数的每个参数及返回值必须显式标注类型（无返回值必须写 `-> void`，返回动态值必须写 `-> Variant`）。
 2. **安全处理 `Variant` 解包**：
@@ -247,7 +247,7 @@ func _log_info(msg: String) -> void:
 
 - 凡已声明 `class_name` 的脚本（如 `FileUtils`、`CryptoUtils`、`Result`、`BaseParams`），**一律直接使用全局类名**引用其静态方法、常量与类型：`CryptoUtils.decrypt_bytes(...)`。
 - **严禁**再写 `const _CryptoUtils = preload("res://src/framework/util/crypto/crypto_utils.gd")` 这类路径别名：它与全局名指向同一个 `GDScript` 类对象（并非实例化），却会造成同一文件两种引用风格混用、路径硬编码导致移动文件即断链。
-- 若新建 `class_name` 后 Headless 校验报 `Identifier "Xxx" not declared`，原因是全局类缓存未刷新：运行 `check_compliance.ps1`（内置缓存同步）或执行一次 `godot --headless --editor --quit`，**而不是**用 `preload` 绕过。
+- 若新建 `class_name` 后 Headless 校验报 `Identifier "Xxx" not declared`，原因是全局类缓存未刷新：运行 `check_compliance.py`（内置缓存同步）或执行一次 `godot --headless --editor --quit`，**而不是**用 `preload` 绕过。
 - `preload` 脚本别名仅允许用于**未声明 `class_name`** 的脚本（如 `addons/` 插件内部类，刻意不污染全局命名空间）。
 
 ---
@@ -268,13 +268,13 @@ func _log_info(msg: String) -> void:
   - 允许且应当通过全局门面 `App.<service>` 调用 13 大系统能力（`App.env`、`App.logger`、`App.clock`、`App.asset`、`App.input`、`App.haptic`、`App.net`、`App.storage`、`App.locale`、`App.scene`、`App.display`、`App.audio`、`App.video`）。
 - **框架层内部 (`src/framework/modules/`、`infra/`、`util/`)**：
   - **绝对禁止**在代码中出现 `App.xxx` 调用！
-  - 模块间依赖必须在主实现类中显式声明 `MODULE_ID`、`REQUIRED_MODULES` 与 `OPTIONAL_MODULES`，并由唯一组合根 [`FrameworkRuntime`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/runtime/framework_runtime.gd) 通过 `_init(...)` 或 `set_xxx(...)` 注入抽象门面类型（`Base*`）。
+  - 模块间依赖必须在主实现类中显式声明 `MODULE_ID`、`REQUIRED_MODULES` 与 `OPTIONAL_MODULES`，并由唯一组合根 [`FrameworkRuntime`](../src/framework/core/runtime/framework_runtime.gd) 通过 `_init(...)` 或 `set_xxx(...)` 注入抽象门面类型（`Base*`）。
 
 ---
 
 ## 六、 业务层垂直切片规范：MSVP 与 MES (Gameplay Slice Standards)
 
-在 `src/game/features/<feature>/` 下开发业务模块时，根据是否包含 UI 交互界面，严格采用 **MSVP** 或 **MES** 子目录分层（详参 [_doc_game.md](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/_doc_game.md)）：
+在 `src/game/features/<feature>/` 下开发业务模块时，根据是否包含 UI 交互界面，严格采用 **MSVP** 或 **MES** 子目录分层（详参 [_doc_game.md](../src/game/_doc_game.md)）：
 
 | 分层目录 | 所属架构 | 继承基类 | 允许做的事 | 绝对禁止的事 (Anti-Patterns) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -288,12 +288,12 @@ func _log_info(msg: String) -> void:
 
 1. **`view/` 内部二级分类与领域单元包规范 (`scene/<domain>/` + `component/<domain>/`)**：
    - 严禁在 `features/<feature>/view/` 根目录下直接平铺 `.tscn` 与 `.gd` 文件；
-   - **`view/scene/<domain>/`**（主场景单元，文件夹按精简领域单数名词命名，如 `view/scene/splash/`）：存放由 `App.scene` 路由切换的顶层舞台，内部包裹 **`1 个 .tscn + 多个职责分离的 .gd`**（如 [`splash_scene.tscn`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/scene/splash/splash_scene.tscn) + [`splash_scene.gd`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/scene/splash/splash_scene.gd) + [`splash_view.gd`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/scene/splash/splash_view.gd)）；
-   - **`view/component/<domain>/`**（局部预制体/弹窗单元，对齐 `shared/component/button/` 风格，文件夹按精简领域单数名词命名，如 `view/component/progress/`）：内部文件与类名**严禁使用赘述的 `_component` / `Component` 后缀**，统一按具体 UI 语义角色命名（`*Panel`、`*Bar`、`*Card`、`*Slot`、`*Item`、`*Button`、`*Dialog`），如 [`boot_progress_panel.tscn`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/component/progress/boot_progress_panel.tscn) + [`boot_progress_panel.gd`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/component/progress/boot_progress_panel.gd) + [`boot_progress_bar.gd`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/features/splash/view/component/progress/boot_progress_bar.gd)。
-2. **顶层场景根节点**：必须继承 [`BaseScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene.gd)，重写 `_on_enter(params: BaseParams = null)`、`_on_exit()`、`_on_pause()`、`_on_resume(params: BaseParams = null)` 钩子；严禁直接调用 `get_tree().change_scene_to_file()`，切场景统一走 `await App.scene.replace(...)` / `push(...)` / `pop(...)`。
-3. **场景内 UI 根节点**：名称固定为 `UI`，脚本继承 [`BaseView`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/base_view.gd)（自动获享异形屏安全区逆矩阵适配与 `task_scope` 生命周期守卫）。
-4. **模态弹窗**：必须继承 [`BaseDialog`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/component/dialog/base_dialog.gd)（基类位于 `src/game/shared/component/dialog/`），具体业务弹窗放置在对应模块的 `features/<feature>/view/component/<domain>/` 下，统一通过 [`DialogManager.open(...)`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/component/dialog/dialog_manager.gd) 打开（自动压入 `InputContextType.Context.UI` 屏蔽局内战斗按键并在关闭时启用 Wait-For-Release 防穿透）。
-5. **交互按钮**：统一使用 [`BaseTextureButton`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/component/button/base_texture_button.gd)，基类已内置按压缩放 Tween、点击音效与 `App.haptic.light()` 震动反馈，业务侧仅连接 `pressed` 信号，严禁重复手写缩放补间与音效代码。
+   - **`view/scene/<domain>/`**（主场景单元，文件夹按精简领域单数名词命名，如 `view/scene/splash/`）：存放由 `App.scene` 路由切换的顶层舞台，内部包裹 **`1 个 .tscn + 多个职责分离的 .gd`**（如 [`splash_scene.tscn`](../src/game/features/splash/view/scene/splash/splash_scene.tscn) + [`splash_scene.gd`](../src/game/features/splash/view/scene/splash/splash_scene.gd) + [`splash_view.gd`](../src/game/features/splash/view/scene/splash/splash_view.gd)）；
+   - **`view/component/<domain>/`**（局部预制体/弹窗单元，对齐 `shared/component/button/` 风格，文件夹按精简领域单数名词命名，如 `view/component/progress/`）：内部文件与类名**严禁使用赘述的 `_component` / `Component` 后缀**，统一按具体 UI 语义角色命名（`*Panel`、`*Bar`、`*Card`、`*Slot`、`*Item`、`*Button`、`*Dialog`），如 [`boot_progress_panel.tscn`](../src/game/features/splash/view/component/progress/boot_progress_panel.tscn) + [`boot_progress_panel.gd`](../src/game/features/splash/view/component/progress/boot_progress_panel.gd) + [`boot_progress_bar.gd`](../src/game/features/splash/view/component/progress/boot_progress_bar.gd)。
+2. **顶层场景根节点**：必须继承 [`BaseScene`](../src/framework/modules/scene/base_scene.gd)，重写 `_on_enter(params: BaseParams = null)`、`_on_exit()`、`_on_pause()`、`_on_resume(params: BaseParams = null)` 钩子；严禁直接调用 `get_tree().change_scene_to_file()`，切场景统一走 `await App.scene.replace(...)` / `push(...)` / `pop(...)`。
+3. **场景内 UI 根节点**：名称固定为 `UI`，脚本继承 [`BaseView`](../src/framework/modules/display/base_view.gd)（自动获享异形屏安全区逆矩阵适配与 `task_scope` 生命周期守卫）。
+4. **模态弹窗**：必须继承 [`BaseDialog`](../src/game/shared/component/dialog/base_dialog.gd)（基类位于 `src/game/shared/component/dialog/`），具体业务弹窗放置在对应模块的 `features/<feature>/view/component/<domain>/` 下，统一通过 [`DialogManager.open(...)`](../src/game/shared/component/dialog/dialog_manager.gd) 打开（自动压入 `InputContextType.Context.UI` 屏蔽局内战斗按键并在关闭时启用 Wait-For-Release 防穿透）。
+5. **交互按钮**：统一使用 [`BaseTextureButton`](../src/game/shared/component/button/base_texture_button.gd)，基类已内置按压缩放 Tween、点击音效与 `App.haptic.light()` 震动反馈，业务侧仅连接 `pressed` 信号，严禁重复手写缩放补间与音效代码。
 
 ---
 
@@ -301,7 +301,7 @@ func _log_info(msg: String) -> void:
 
 ### 1. 可失败操作统一返回 `Result`
 
-凡涉及磁盘读写、网络请求、资源加载、键位录制、存档迁移等可能失败的操作，**必须返回 [`Result`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/contracts/result.gd)**，错误码遵循 `"{Module}.{Reason}"` 标准格式：
+凡涉及磁盘读写、网络请求、资源加载、键位录制、存档迁移等可能失败的操作，**必须返回 [`Result`](../src/framework/core/contracts/result.gd)**，错误码遵循 `"{Module}.{Reason}"` 标准格式：
 
 ```gdscript
 # 构造标准错误或携带上下文的可重试错误
@@ -320,8 +320,8 @@ if res.is_err():
 Godot 4 的 `await` 协程在等待期间若宿主节点被销毁（如玩家快速切走场景或关闭弹窗），协程恢复后继续访问节点成员会直接引发 **Use-After-Free (`previously freed instance`) 崩溃**。全工程强制执行以下防护准则：
 
 1. **在 `BaseScene` / `BaseView` / `BaseDialog` 内部**：
-   - 执行受保护的异步任务、并发收集（`gather`）、竞态抢占（`race`）或延时等待（`sleep`）时，统一使用宿主自带的 `task_scope`（[`TaskScope`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/async/task_scope.gd)）；
-   - 发起网络请求时传入 `task_scope.get_token()`（[`CancellationToken`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/async/cancellation_token.gd)），界面关闭或场景退栈时自动中止传输并拦截过期回调。
+   - 执行受保护的异步任务、并发收集（`gather`）、竞态抢占（`race`）或延时等待（`sleep`）时，统一使用宿主自带的 `task_scope`（[`TaskScope`](../src/framework/infra/async/task_scope.gd)）；
+   - 发起网络请求时传入 `task_scope.get_token()`（[`CancellationToken`](../src/framework/infra/async/cancellation_token.gd)），界面关闭或场景退栈时自动中止传输并拦截过期回调。
 2. **在普通 `Node` 内部延时等待**：
    - 统一使用静态守卫方法 `if (await TaskScope.wait(self, 0.5)).is_err(): return`，**严禁**裸写 `await get_tree().create_timer(0.5).timeout` 后不检查实例有效性直接操作节点。
 
@@ -355,8 +355,8 @@ func _on_enter(_params: BaseParams = null) -> void:
 1. **热路径同步直通（Zero-Coroutine Fast Path）**：
    - 高频触发的音效播放（`App.audio.play_sfx()`）与已预热贴图读取（`App.asset.get_cached()`）必须走同步内存缓存直通，**零 `await` 协程状态机分配、零帧延迟**。
 2. **帧循环内零开方与零堆分配（Zero-Sqrt & Zero-Alloc in `_process`）**：
-   - 在 `_process` / `_physics_process` 索敌、拾取范围、圆环与扇形判定中，统一调用 [`CoordUtils`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/util/coord/coord_utils.gd)（`is_within_radius`、`is_within_annulus`、`is_within_cone`），内部全链路采用平方距离与点积平方比较，杜绝高频 `sqrt` 与 `atan2` 开销。
-3. **Spine 骨骼动画池化、视口内真预热与分频错峰（[`SpinePool`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/spine/spine_pool.gd)）**：
+   - 在 `_process` / `_physics_process` 索敌、拾取范围、圆环与扇形判定中，统一调用 [`CoordUtils`](../src/framework/util/coord/coord_utils.gd)（`is_within_radius`、`is_within_annulus`、`is_within_cone`），内部全链路采用平方距离与点积平方比较，杜绝高频 `sqrt` 与 `atan2` 开销。
+3. **Spine 骨骼动画池化、视口内真预热与分频错峰（[`SpinePool`](../src/framework/infra/spine/spine_pool.gd)）**：
    - **严禁**在战斗帧内直接对复杂 `SpineSprite` 执行新建实例化（会引发 C++ `spine::Skeleton` 深拷贝与网格缓冲分配卡顿）；
    - 必须在加载期调用 `await _spine_pool.warmup_batch(...)` 在视口安全角完成 GPU 混合管线真预热，战斗期通过 `_spine_pool.acquire(...)` / `play_oneshot(...)` 0ms 借出，并对同屏怪群调用 `_spine_pool.register_staggered(ctrl, 30.0)` 开启 30FPS 奇偶帧错峰步进。
 4. **高频音效与震动防爆节流**：
@@ -385,19 +385,16 @@ func _on_enter(_params: BaseParams = null) -> void:
 每次完成功能开发或架构重构后，必须执行工程内置的自动化合规与 Godot Headless 全量语法编译检查脚本，确保 **0 Errors, 0 Warnings**：
 
 ```bash
-# macOS / Linux (Bash)
-bash .agents/skills/framework-aware/scripts/check_compliance.sh
-
-# Windows / Cross-Platform (PowerShell)
-pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
+# Windows / macOS / Linux (Python 3)
+python .agents/skills/framework-aware/scripts/check_compliance.py
 ```
 
-门禁脚本将自动核验以下 14 项工程铁律：
+门禁脚本将自动核验以下 15 项工程铁律：
 1. 网络门面统一使用 `App.net`（禁用 `App.network`）；
 2. 参数契约单数路径 `infra/param/`；
 3. 视频资产复数容器路径 `assets/videos/`；
 4. 日志模块路径 `modules/logger/`；
-5. 显示层解耦（业务弹窗/飘字隔离于 `src/game/shared/component/`）；
+5. 显示与视频层解耦（业务弹窗/飘字隔离于 `src/game/shared/component/`）；
 6. `src/game/shared/` 三支柱架构（`model/service/component`）与零向上依赖；
 7. `src/framework/` 零反向依赖 `src/game/` 或 `src/test/`；
 8. `framework/modules|infra|util` 内部零隐式 `App.xxx` 调用（强制构造 DI）；
@@ -406,4 +403,5 @@ pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
 11. 废弃工具类清零（统一收敛至 `FileCodecUtils`、`ResourceCodecUtils`、`TaskScope`、`SpinePool`）；
 12. Godot Headless 全项目 `.gd` 脚本静态类型与语法编译 100% 通过，且无裸 `print()` 残留；
 13. `src/assets/` 资产拓扑、命名与归属合规（容器/扩展名/前缀白名单、文件名域段 == 目录域、零跨 Feature 资产引用、框架零资产引用）；
-14. `src/` 内零冗余脚本别名（已声明 `class_name` 的脚本禁止 `preload` / `load` 起别名，统一直呼全局类名）。
+14. `src/` 内零冗余脚本别名（已声明 `class_name` 的脚本禁止 `preload` / `load` 起别名，统一直呼全局类名）；
+15. `user://` 本地沙盒持久化拓扑与二级架构域 `STORAGE_DOMAIN` 归属合规（`src/game/` 禁止裸写 `"user://"`、禁止非 `*_model.gd` 构造 `StorageItem`）。

@@ -1,6 +1,6 @@
 # 卷五：局内机器演进、减负改造与 AI 角色接入规范 (Machine Evolution & AI Galgame Hooks)
 
-> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/_doc_design.md)）
+> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](_doc_design.md)）
 > **文档职责**：定义每波结束后的“机器重构与减负升级”体系（拒绝纯数值膨胀，专注减少未来重复劳动），并确立第二阶段（Phase 2）将 **AI Galgame 角色作为「有性格的拟人模块」** 无损接入处理队列的架构协议。
 
 ---

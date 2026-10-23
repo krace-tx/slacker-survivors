@@ -3,7 +3,7 @@ extends RefCounted
 
 ## Framework 核心模块拓扑清单与依赖有向无环图（DAG）校验器。
 ##
-## 集中维护 13 个核心模块的启动顺序、强依赖（required）与可选依赖（optional），
+## 集中维护 14 个核心模块的启动顺序、强依赖（required）与可选依赖（optional），
 ## 并提供静态 DAG 拓扑合法性校验与模块自身声明一致性核对。
 
 #region Dependency Graph Table
@@ -16,6 +16,7 @@ const MODULES: Array[Dictionary] = [
 	{"id": &"input",   "required": [],          "optional": [&"logger"]},
 	{"id": &"haptic",  "required": [],          "optional": [&"input"]},
 	{"id": &"net",     "required": [],          "optional": [&"logger", &"env"]},
+	{"id": &"auth",    "required": [],          "optional": [&"env", &"logger", &"clock", &"net"]},
 	{"id": &"storage", "required": [],          "optional": [&"logger", &"net"]},
 	{"id": &"locale",  "required": [],          "optional": []},
 	{"id": &"scene",   "required": [&"asset"],  "optional": [&"logger"]},

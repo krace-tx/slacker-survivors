@@ -45,10 +45,8 @@
 ## 阶段三：编码后自查 (Post-Coding Check)
 
 - [ ] **自动化合规与全量语法核验**：运行合规与语法扫描脚本（已内置 Godot Headless 全量 `.gd` 编译校验）：
-  ```pwsh
-  pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
-  # 或 Shell 版本:
-  bash .agents/skills/framework-aware/scripts/check_compliance.sh
+  ```bash
+  python .agents/skills/framework-aware/scripts/check_compliance.py
   ```
 - [ ] **全局类名刷新（仅当新增 `class_name` 时）**：
   ```pwsh

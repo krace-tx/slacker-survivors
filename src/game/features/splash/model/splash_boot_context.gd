@@ -12,6 +12,8 @@ extends BaseParams
 #region Core Domain Models
 ## 已加载并应用的全局偏好设置模型
 var game_settings: GameSettingsModel = null
+## 当前已建立的跨平台身份认证会话快照
+var auth_session: AuthSession = null
 ## 已加载或新建的玩家持久化基础档案模型
 var player_profile: PlayerProfileModel = null
 #endregion

@@ -6,7 +6,7 @@ extends BaseParams
 ## [b]核心职责（遵循 `*Model` 领域后缀规范）：[/b][br]
 ## 1. 作为跨模块共享的玩家通用账号元数据载体（与具体玩法数值解耦）；[br]
 ## 2. 继承 [BaseParams]，自动具备 [method BaseParams.to_dict] 与 [method BaseParams.from_dict] 反射序列化能力；[br]
-## 3. 与 [code]App.storage[/code] 中的 [constant STORAGE_KEY] 持久层直接映射。
+## 3. 与 [code]App.storage[/code] 中的 [constant STORAGE_KEY] 持久层直接映射，默认启用 Steam Cloud (`with_steam_cloud`) 跨设备云存档同步。
 
 signal data_changed()
 
@@ -19,8 +19,12 @@ const _DEFAULT_NICKNAME: String = "Player"
 #endregion
 
 #region Profile Fields
-## 玩家本地档案唯一标识
+## 玩家档案唯一标识（关联 AuthSession.account_id，如 "steam:76561198..." 或 "guest:..."）
 var profile_id: String = ""
+## 认证身份提供商标识（如 "steam"、"apple"、"google"、"guest"）
+var auth_provider: String = ""
+## 平台原生用户唯一标识（如 SteamID64、Apple sub、GPGS playerId）
+var platform_user_id: String = ""
 ## 玩家展示昵称
 var nickname: String = _DEFAULT_NICKNAME
 ## 档案首次创建时间戳（Unix 毫秒）
@@ -35,7 +39,7 @@ var custom_data: Dictionary = {}
 
 
 #region Public API
-## 创建玩家档案标准存储配置项（落盘至玩家核心存档区 user://saves/shared/player_profile.json）
+## 创建玩家档案标准存储配置项（落盘至玩家核心存档区 user://saves/shared/player_profile.json，并启用 Steam Cloud 同步）
 static func storage_item() -> StorageItem:
 	return StorageItem.for_save(
 		STORAGE_DOMAIN,
@@ -43,19 +47,46 @@ static func storage_item() -> StorageItem:
 		_STORAGE_SCHEMA_VERSION,
 		"json",
 		-1.0
-	)
+	).with_steam_cloud()
 
 
 ## 创建新玩家默认初始档案
 static func create_default(timestamp_ms: int = 0) -> PlayerProfileModel:
 	var model := PlayerProfileModel.new()
 	model.profile_id = "local_%d" % maxi(0, timestamp_ms)
+	model.auth_provider = String(AuthProviderType.GUEST)
+	model.platform_user_id = ""
 	model.nickname = _DEFAULT_NICKNAME
 	model.created_at_ms = maxi(0, timestamp_ms)
 	model.last_login_at_ms = maxi(0, timestamp_ms)
 	model.login_count = 1
 	model.custom_data = {}
 	return model
+
+
+## 将当前已认证的 [AuthSession] 身份信息绑定合并至玩家档案
+func apply_auth_session(session: AuthSession) -> bool:
+	if session == null or not session.is_valid():
+		return false
+	var changed := false
+	if not session.account_id.is_empty() and (profile_id.is_empty() or profile_id.begins_with("local_") or profile_id.begins_with("guest_")):
+		if profile_id != session.account_id:
+			profile_id = session.account_id
+			changed = true
+	var provider_str := String(session.provider)
+	if not provider_str.is_empty() and auth_provider != provider_str:
+		auth_provider = provider_str
+		changed = true
+	if not session.platform_user_id.is_empty() and platform_user_id != session.platform_user_id:
+		platform_user_id = session.platform_user_id
+		changed = true
+	if not session.display_name.is_empty() and (nickname.is_empty() or nickname == _DEFAULT_NICKNAME or nickname.begins_with("Player_")):
+		if nickname != session.display_name:
+			nickname = session.display_name
+			changed = true
+	if changed:
+		data_changed.emit()
+	return changed
 
 
 ## 对档案字段执行合法范围自愈校验，返回自身以支持链式调用。

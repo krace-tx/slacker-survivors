@@ -1,6 +1,6 @@
 # 卷三：玩家操控、双核资源与关键干预机制 (Player Control, Core Resources & Intervention)
 
-> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/_doc_design.md)）
+> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](_doc_design.md)）
 > **文档职责**：明确界定玩家在战局中的操作边界（“不做什么”与“只做什么”）、通过走位制造触发条件的空间博弈，以及由 **「干预额度（`InterventionQuota`）」** 与 **「未处理麻烦（`TroubleBacklog`）」** 驱动的贪婪与救火经济系统。
 
 ---

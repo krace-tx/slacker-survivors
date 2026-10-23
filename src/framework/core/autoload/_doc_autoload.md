@@ -1,7 +1,7 @@
 # Framework · Core · Autoload (全局服务聚合根与领域事件总线)
 
-> `autoload/` 仅保存 Godot 工程在 `project.godot` 中注册的两个全局入口（[`App`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/autoload/app.gd) 与 [`EventBus` / `Bus`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/autoload/event_bus.gd)）。
-> 严格遵循**「门面与装配分离」**原则：Autoload 脚本自身绝不直接实例化任何具体子系统实现，全部依赖注入与生命周期编排均委托给唯一组合根 [`FrameworkRuntime`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/runtime/framework_runtime.gd)。
+> `autoload/` 仅保存 Godot 工程在 `project.godot` 中注册的两个全局入口（[`App`](app.gd) 与 [`EventBus` / `Bus`](event_bus.gd)）。
+> 严格遵循**「门面与装配分离」**原则：Autoload 脚本自身绝不直接实例化任何具体子系统实现，全部依赖注入与生命周期编排均委托给唯一组合根 [`FrameworkRuntime`](../runtime/framework_runtime.gd)。
 
 ```text
 src/framework/core/autoload/
@@ -14,25 +14,26 @@ src/framework/core/autoload/
 
 ## 一、 `App` 全局服务聚合根 (`app.gd`)
 
-### 1. 13 大核心子系统强类型门面
+### 1. 14 大核心子系统强类型门面
 
 业务层（`src/game/`）统一通过 `App.<service>` 面向抽象基类（`Base*`）编程；框架实现层（`src/framework/modules/`、`infra/`、`util/`）**严禁**调用 `App.xxx`，必须通过构造函数显式依赖注入。
 
 | 访问属性 | 强类型抽象门面 | 所属领域与核心职责 |
 | :--- | :--- | :--- |
-| `App.env` | [`BaseRuntimeEnvironment`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/base_runtime_environment.gd) | 运行环境（Local/Emulator/Dev/Test/Staging/Prod）只读快照与多环境 `BaseEnvProfile` 策略 |
-| `App.logger` | [`BaseFrameworkLogger`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/logger/base_framework_logger.gd) | 分级日志过滤、Tag 染色输出与 1000 条环形内存缓冲（`dump()`） |
-| `App.clock` | [`BaseClockSystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/clock/base_clock_system.gd) | 防作弊本地单调时钟与服务器 Unix 时间戳对齐校准 |
-| `App.asset` | [`BaseAssetSystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/asset/base_asset_system.gd) | 同步缓存直通（`get_cached`）、信号驱动并发加载合并、双阶段预加载与 LRU 预算缓存 |
-| `App.input` | [`BaseInputSystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/input/base_input_system.gd) | 键鼠/手柄双轨双槽隔离映射、`InputChord` 组合键优先消费、上下文栈与二段式免勾选录制 |
-| `App.haptic` | [`BaseHapticFeedback`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/haptic/base_haptic_feedback.gd) | 手机/手柄/PC 三端差异化触觉反馈翻译、高优防打断、怪潮节流与镜头震屏脉冲信号 |
-| `App.net` | [`BaseNetworkClient`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/network/base_network_client.gd) | 有界并发 HTTP 队列、抖动指数退避重试、401 单飞刷新与 `.tmp` 原子文件下载 |
-| `App.storage` | [`BaseStorageSystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/base_storage_system.gd) | L1 内存 + L2 磁盘（`.tmp/.bak` 原子自愈 + ZSTD + AES-256）+ L3 远端三级存储与 Schema 迁移 |
-| `App.locale` | [`BaseLocalizationSystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/locale/base_localization_system.gd) | 多语言区域切换、`TranslationServer` 适配与缺省回退保底 |
-| `App.scene` | [`BaseSceneRouter`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene_router.gd) | 顶层场景栈路由（`bind` / `replace` / `push` / `pop`）与流式视觉转场 |
-| `App.display` | [`BaseDisplaySystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/base_display_system.gd) | 窗口/全屏状态机、分辨率钳制、异形屏安全区逆矩阵投影、渲染抗锯齿与五大 `CanvasLayer` |
-| `App.audio` | [`BaseAudioSystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/audio/base_audio_system.gd) | 零协程缓存热路径、BGM 双轨交叉淡入淡出、正交音画避让（`duck_bgm`）与 16 通道 SFX 池 |
-| `App.video` | [`BaseVideoPlayer`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/video/base_video_player.gd) | 跨平台视频播放控制（桌面 FFmpeg / 移动原生 ExoPlayer & AVPlayer / 引擎 Theora 保底） |
+| `App.env` | [`BaseRuntimeEnvironment`](../../modules/env/base_runtime_environment.gd) | 运行环境（Local/Emulator/Dev/Test/Staging/Prod）只读快照与多环境 `BaseEnvProfile` 策略 |
+| `App.logger` | [`BaseFrameworkLogger`](../../modules/logger/base_framework_logger.gd) | 分级日志过滤、Tag 染色输出与 1000 条环形内存缓冲（`dump()`） |
+| `App.clock` | [`BaseClockSystem`](../../modules/clock/base_clock_system.gd) | 防作弊本地单调时钟与服务器 Unix 时间戳对齐校准 |
+| `App.asset` | [`BaseAssetSystem`](../../modules/asset/base_asset_system.gd) | 同步缓存直通（`get_cached`）、信号驱动并发加载合并、双阶段预加载与 LRU 预算缓存 |
+| `App.input` | [`BaseInputSystem`](../../modules/input/base_input_system.gd) | 键鼠/手柄双轨双槽隔离映射、`InputChord` 组合键优先消费、上下文栈与二段式免勾选录制 |
+| `App.haptic` | [`BaseHapticFeedback`](../../modules/haptic/base_haptic_feedback.gd) | 手机/手柄/PC 三端差异化触觉反馈翻译、高优防打断、怪潮节流与镜头震屏脉冲信号 |
+| `App.net` | [`BaseNetworkClient`](../../modules/network/base_network_client.gd) | 有界并发 HTTP 队列、抖动指数退避重试、401 单飞刷新与 `.tmp` 原子文件下载 |
+| `App.auth` | [`BaseAuthSystem`](../../modules/auth/base_auth_system.gd) | 跨平台身份取证（Steam/Apple/Google/Guest）、单机/网关双模会话签发与 401 令牌续期 |
+| `App.storage` | [`BaseStorageSystem`](../../modules/storage/base_storage_system.gd) | L1 内存 + L2 磁盘（`.tmp/.bak` 原子自愈 + ZSTD + AES-256）+ L3 远端（HTTP & Steam Cloud）三级存储 |
+| `App.locale` | [`BaseLocalizationSystem`](../../modules/locale/base_localization_system.gd) | 多语言区域切换、`TranslationServer` 适配与缺省回退保底 |
+| `App.scene` | [`BaseSceneRouter`](../../modules/scene/base_scene_router.gd) | 顶层场景栈路由（`bind` / `replace` / `push` / `pop`）与流式视觉转场 |
+| `App.display` | [`BaseDisplaySystem`](../../modules/display/base_display_system.gd) | 窗口/全屏状态机、分辨率钳制、异形屏安全区逆矩阵投影、渲染抗锯齿与五大 `CanvasLayer` |
+| `App.audio` | [`BaseAudioSystem`](../../modules/audio/base_audio_system.gd) | 零协程缓存热路径、BGM 双轨交叉淡入淡出、正交音画避让（`duck_bgm`）与 16 通道 SFX 池 |
+| `App.video` | [`BaseVideoPlayer`](../../modules/video/base_video_player.gd) | 跨平台视频播放控制（桌面 FFmpeg / 移动原生 ExoPlayer & AVPlayer / 引擎 Theora 保底） |
 
 ### 2. 内核启动守卫与 OS 生命周期接管
 

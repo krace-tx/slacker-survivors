@@ -1,6 +1,6 @@
 # 卷四：反工作流敌人生态与波次压力系统 (Anti-Workflow Enemies & Pressure Events)
 
-> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/_doc_design.md)）
+> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](_doc_design.md)）
 > **文档职责**：确立“敌人专门破坏自动化工作流而非单纯堆砌数值”的生态准则，定义八大反工作流敌人原型、第一版最小原型的三种核心敌群状态机，以及每 30 秒一次的可预测压力事件（`PressureEvent`）调度机制。
 
 ---
@@ -35,7 +35,7 @@
 
 ## 三、 第一版 60 秒原型的三种核心敌群规范 (MVP 3 Enemy Specs)
 
-在第一阶段（[`06_mvp_60s_prototype_spec.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/06_mvp_60s_prototype_spec.md)）中，我们精选以下 **3 种机制互补的敌人**，构成完整的“建立习惯 ➔ 打破时间习惯 ➔ 打破空间习惯”验证闭环：
+在第一阶段（[`06_mvp_60s_prototype_spec.md`](06_mvp_60s_prototype_spec.md)）中，我们精选以下 **3 种机制互补的敌人**，构成完整的“建立习惯 ➔ 打破时间习惯 ➔ 打破空间习惯”验证闭环：
 
 ```mermaid
 flowchart TD

@@ -1,6 +1,6 @@
 # Framework · Core · Contracts (结果封装与标准化错误契约)
 
-> `contracts/` 存放跨全框架与业务层共享的可失败结果容器 [`Result`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/contracts/result.gd) 与不可变结构化错误对象 [`FrameworkError`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/contracts/framework_error.gd)。
+> `contracts/` 存放跨全框架与业务层共享的可失败结果容器 [`Result`](result.gd) 与不可变结构化错误对象 [`FrameworkError`](framework_error.gd)。
 > 强制所有涉及 I/O、资源加载、网络通信、存档迁移与跨端适配的可失败操作**显式表达成功与失败分支**，彻底杜绝静默返回 `null` 或吞没异常。
 
 ```text

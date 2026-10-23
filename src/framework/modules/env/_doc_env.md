@@ -1,6 +1,6 @@
 # Framework · Env
 
-> 运行环境只读边界快照与多环境配置策略调度服务。在进程启动瞬间采集并固化**部署目标域、宿主构建形态、物理操作系统平台**三大正交维度的客观事实，并提供基于**多态策略模式 + 模板方法模式**的 [`BaseEnvProfile`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/base_env_profile.gd) 注册与调度机制。
+> 运行环境只读边界快照与多环境配置策略调度服务。在进程启动瞬间采集并固化**部署目标域、宿主构建形态、物理操作系统平台**三大正交维度的客观事实，并提供基于**多态策略模式 + 模板方法模式**的 [`BaseEnvProfile`](base_env_profile.gd) 注册与调度机制。
 
 ```text
 src/framework/modules/env/
@@ -21,7 +21,7 @@ src/framework/modules/env/
 
 | 正交维度 | 核心方法 | 解决的问题与典型消费场景 |
 | :--- | :--- | :--- |
-| **1. 部署目标域**<br>(Deployment Tier) | `get_env_type()` / `is_local()` / `is_emulator()` / `is_dev()` / `is_test()` / `is_staging()` / `is_prod()` / `get_name()` | **连向哪个外部环境**：对应 [`EnvType`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/types/env_type.gd) 6 档枚举，决定当前激活哪份 [`BaseEnvProfile`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/base_env_profile.gd) 策略、日志默认过滤级别及调试门禁。 |
+| **1. 部署目标域**<br>(Deployment Tier) | `get_env_type()` / `is_local()` / `is_emulator()` / `is_dev()` / `is_test()` / `is_staging()` / `is_prod()` / `get_name()` | **连向哪个外部环境**：对应 [`EnvType`](types/env_type.gd) 6 档枚举，决定当前激活哪份 [`BaseEnvProfile`](base_env_profile.gd) 策略、日志默认过滤级别及调试门禁。 |
 | **2. 宿主与构建形态**<br>(Host & Build) | `is_editor()` / `is_debug_build()` / `has_feature(tag)` | **以什么容器/编译模式运行**：区分 Godot 编辑器内运行与独立导出包、Debug/Release 构建，以及透传查询 `"demo"`、`"steam"` 等发行 Feature Tag。 |
 | **3. 操作系统与平台**<br>(OS Platform) | `is_desktop()` / `is_mobile()` / `is_android()` / `is_ios()` / `is_web()` / `is_windows()` / `is_macos()` / `is_linux()` / `get_platform_name()` | **跑在什么物理硬件载体上**：决定默认交互形态（移动端触屏虚拟摇杆 vs 桌面端键鼠/全屏设置）、iOS 审核规范适配等。 |
 
@@ -29,7 +29,7 @@ src/framework/modules/env/
 
 ## 二、 部署环境（EnvType）探测优先级链
 
-为解决编辑器按 F5/F6 运行时无导出 Feature Tag 导致无法切换环境调试的痛点，[`RuntimeEnvironment`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/impl/runtime_environment.gd) 启动时按以下优先级从高到低判定部署档位：
+为解决编辑器按 F5/F6 运行时无导出 Feature Tag 导致无法切换环境调试的痛点，[`RuntimeEnvironment`](impl/runtime_environment.gd) 启动时按以下优先级从高到低判定部署档位：
 
 1. **构造函数显式注入**（单元测试优先）：`RuntimeEnvironment.new(EnvType.PROD, "iOS")`
 2. **启动命令行参数**：支持 `--env=dev` / `--env=test` / `--env=staging` / `--env=prod` / `--env=emulator` / `--env=local`
@@ -43,7 +43,7 @@ src/framework/modules/env/
 
 通过**多态策略模式（Strategy）+ 模板方法模式（Template Method）**，彻底消除散落在各模块中的多分支 `if/elif` 与魔法字符串字典：
 
-1. **定义基底 Profile（继承 [`BaseEnvProfile`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/env/base_env_profile.gd)）**：承载默认强类型属性与通用 `_on_configure(env)` 模板钩子。
+1. **定义基底 Profile（继承 [`BaseEnvProfile`](base_env_profile.gd)）**：承载默认强类型属性与通用 `_on_configure(env)` 模板钩子。
 2. **派生特定环境子类**：仅重写当前环境差异化的字段与专属配置逻辑（符合开闭原则 OCP）。
 3. **链式注册与按需激活**：传入脚本类（`Script`）注册时，**仅命中当前运行环境的那一个子类会被懒加载实例化**并执行 `configure(env)`。
 
@@ -65,7 +65,7 @@ extends LocalEnvProfile
 
 func _init() -> void:
 	super._init()
-	api_base_url = "https://api.slacker.com"
+	api_base_url = "https://api.example.com"
 	enable_gm_console = false
 
 func _on_configure(env: BaseRuntimeEnvironment) -> void:

@@ -161,34 +161,38 @@ func _assemble_modules_async(total: int, on_step: Callable) -> Result:
 	res = await _host.install_ref("haptic", haptic, 6, total, on_step)
 	if res.is_err(): return res
 
-	# 7. Network -> 8. Storage -> 9. Locale
+	# 7. Network -> 8. Auth -> 9. Storage -> 10. Locale
 	var net := NetworkClient.new(logger, env)
 	res = await _host.install_node("net", net, "NetworkClient", 7, total, on_step)
 	if res.is_err(): return res
 
+	var auth := AuthSystem.new(env, logger, clock, net)
+	res = await _host.install_ref("auth", auth, 8, total, on_step)
+	if res.is_err(): return res
+
 	var storage := StorageSystem.new(logger, net)
-	res = await _host.install_ref("storage", storage, 8, total, on_step)
+	res = await _host.install_ref("storage", storage, 9, total, on_step)
 	if res.is_err(): return res
 
 	var locale := LocalizationSystem.new()
-	res = await _host.install_ref("locale", locale, 9, total, on_step)
+	res = await _host.install_ref("locale", locale, 10, total, on_step)
 	if res.is_err(): return res
 
-	# 10. Scene -> 11. Display -> 12. Audio -> 13. Video
+	# 11. Scene -> 12. Display -> 13. Audio -> 14. Video
 	var scene := SceneRouter.new(asset, logger)
-	res = await _host.install_node("scene", scene, "SceneRouter", 10, total, on_step)
+	res = await _host.install_node("scene", scene, "SceneRouter", 11, total, on_step)
 	if res.is_err(): return res
 
 	var display := DisplaySystem.new(logger)
-	res = await _host.install_node("display", display, "DisplaySystem", 11, total, on_step)
+	res = await _host.install_node("display", display, "DisplaySystem", 12, total, on_step)
 	if res.is_err(): return res
 
 	var audio := AudioSystem.new(asset, logger)
-	res = await _host.install_node("audio", audio, "AudioSystem", 12, total, on_step)
+	res = await _host.install_node("audio", audio, "AudioSystem", 13, total, on_step)
 	if res.is_err(): return res
 
 	var video := VideoPlayer.new(audio, logger)
-	res = await _host.install_node("video", video, "VideoPlayer", 13, total, on_step)
+	res = await _host.install_node("video", video, "VideoPlayer", 14, total, on_step)
 	if res.is_err(): return res
 
 	return Result.ok()

@@ -1,6 +1,6 @@
 # 卷六：第一阶段 60 秒最小战斗原型规格书 (MVP 60s Prototype Specification)
 
-> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/_doc_design.md)）
+> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](_doc_design.md)）
 > **文档职责**：提供可直接交付程序编码的 **第一版 60 秒无 AI、无剧情最小战斗原型（Vertical Slice）** 完整落地规格书，包含精确数值表、三波次剧本、视觉可读性规范、Godot 4.7 目录映射与三大核心验证门禁。
 
 ---
@@ -174,7 +174,7 @@ flowchart LR
 
 ## 五、 Godot 4.7 业务层代码落地映射 (Engineering Architecture Blueprint)
 
-严格对齐 [`docs/godot_coding_standards.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/godot_coding_standards.md) 与 [`src/game/_doc_game.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/_doc_game.md)，60 秒原型在 `src/game/` 下的标准目录拆解如下：
+严格对齐 [`docs/godot_coding_standards.md`](../godot_coding_standards.md) 与 [`src/game/_doc_game.md`](../../src/game/_doc_game.md)，60 秒原型在 `src/game/` 下的标准目录拆解如下：
 
 ```text
 src/game/

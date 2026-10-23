@@ -1,7 +1,7 @@
 # Framework · Infra · Cache (字节预算、水位线与 TTL/LRU 惰性缓存基建)
 
-> 按 `StringName` 键占槽的纯内存字节预算缓存基础设施（[`BudgetCache`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/cache/budget_cache.gd)）。
-> 为 [`AssetCache`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/asset/impl/asset_cache.gd) 与 [`StorageCache`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/impl/storage_cache.gd) 提供底层统一的**字节上限管控 + 水位线触发 + TTL 惰性过期 + LRU/大体积优先淘汰 + 钉住防挤出（Pin）**能力，零 `SceneTree` 依赖、零后台轮询定时器开销。
+> 按 `StringName` 键占槽的纯内存字节预算缓存基础设施（[`BudgetCache`](budget_cache.gd)）。
+> 为 [`AssetCache`](../../modules/asset/impl/asset_cache.gd) 与 [`StorageCache`](../../modules/storage/impl/storage_cache.gd) 提供底层统一的**字节上限管控 + 水位线触发 + TTL 惰性过期 + LRU/大体积优先淘汰 + 钉住防挤出（Pin）**能力，零 `SceneTree` 依赖、零后台轮询定时器开销。
 
 ```text
 src/framework/infra/cache/

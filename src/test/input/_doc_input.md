@@ -1,6 +1,6 @@
 # Test · Input (输入与键位映射系统验证)
 
-> 验证 `App.input`（[`src/framework/modules/input/`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/input/_doc_input.md)）的自动化契约自检与交互式可视化沙盒面板（[`input_test.gd`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/test/input/input_test.gd)）。支持在编辑器中直接按 `F6` 独立运行。
+> 验证 `App.input`（[`src/framework/modules/input/`](../../framework/modules/input/_doc_input.md)）的自动化契约自检与交互式可视化沙盒面板（[`input_test.gd`](input_test.gd)）。支持在编辑器中直接按 `F6` 独立运行。
 
 ```text
 src/test/input/

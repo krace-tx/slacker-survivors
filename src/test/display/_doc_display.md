@@ -1,6 +1,6 @@
 # Display & Graphics Test Module (显示与画质工业化控制测试模块)
 
-> 本模块用于验证工业级游戏屏幕控制与画质档位联动体系，严格遵循 [`_doc_test.md`](file:///d:/code/GodotProject/slacker-survivors/src/test/_doc_test.md) 的 **MSVP 交互模块模式** 与 [`_doc_game.md`](file:///d:/code/GodotProject/slacker-survivors/src/game/_doc_game.md) 的 **`view/scene/<domain>/` + `view/component/<domain>/`** 单元目录规范。
+> 本模块用于验证工业级游戏屏幕控制与画质档位联动体系，严格遵循 [`_doc_test.md`](../_doc_test.md) 的 **MSVP 交互模块模式** 与 [`_doc_game.md`](../../game/_doc_game.md) 的 **`view/scene/<domain>/` + `view/component/<domain>/`** 单元目录规范。
 
 ---
 
@@ -55,4 +55,4 @@ src/test/display/
 
 ## 三、 运行方式
 
-在 Godot 编辑器中打开 [`display_lobby_scene.tscn`](file:///d:/code/GodotProject/slacker-survivors/src/test/display/view/scene/lobby/display_lobby_scene.tscn) 并按 `F6` 即可直接运行测试。
+在 Godot 编辑器中打开 [`display_lobby_scene.tscn`](view/scene/lobby/display_lobby_scene.tscn) 并按 `F6` 即可直接运行测试。

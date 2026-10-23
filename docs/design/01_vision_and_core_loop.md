@@ -1,6 +1,6 @@
 # 卷一：核心愿景、设计支柱与四维心流循环 (Vision, Design Pillars & Core Loop)
 
-> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/_doc_design.md)）
+> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](_doc_design.md)）
 > **文档职责**：确立 `Slacker Survivors` 的核心乐趣定义、单轮情绪过山车节拍、四个时间尺度的心流闭环，以及第一阶段必须严格执行的“减法边界”。
 
 ---
@@ -139,7 +139,7 @@ stateDiagram-v2
 
 ### 1. 暂时冻结 AI Galgame 系统（移交 Phase 2）
 * **原因**：AI 角色、好感度、对话与傲娇罢工极具差异化潜力，但**叙事包装绝不能替代底层玩法循环本身的自洽性**。
-* **验证前提**：必须先证明**“即便画面里只有几何图形和工单槽，玩家也愿意反复排队列、看流水线运转、贪压单复利、在临界点救火”**。待此循环跑通后，再按 [`05_progression_and_ai_hooks.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/05_progression_and_ai_hooks.md) 将 AI 角色作为“有脾气的模块”接入。
+* **验证前提**：必须先证明**“即便画面里只有几何图形和工单槽，玩家也愿意反复排队列、看流水线运转、贪压单复利、在临界点救火”**。待此循环跑通后，再按 [`05_progression_and_ai_hooks.md`](05_progression_and_ai_hooks.md) 将 AI 角色作为“有脾气的模块”接入。
 
 ### 2. 砍掉「多把独立武器同时开火」
 * **原因**：如果玩家身上同时挂着飞刀、圣水、大蒜、闪电链等十几把独立武器，单条处理队列的因果关系会被彻底淹没，游戏瞬间退回普通 Survivors 的特效堆叠。

@@ -19,8 +19,7 @@
     │   ├── examples/                          # Few-Shot 范例库
     │   │   └── code_patterns.md               # 场景/UI/按钮/服务正反范式对比
     │   └── scripts/                           # 确定性自动化扫描与语法编译门禁
-    │       ├── check_compliance.ps1           # 架构合规性 + 全量 GDScript 编译检查 (PowerShell)
-    │       ├── check_compliance.sh            # 架构合规性 + 全量 GDScript 编译检查 (Bash)
+    │       ├── check_compliance.py            # 架构合规性 + 全量 GDScript 编译检查 (跨平台 Python)
     │       └── check_syntax.gd                # Godot Headless 全量 GDScript 语法与静态类型扫描器
     │
     └── blender-pipeline/                      # [技能 2] 工业级 Blender 3D 资产自动化生产与验证管线
@@ -65,9 +64,6 @@
 在日常编码或重构后，可通过执行以下跨平台指令进行一键合规性与全项目 GDScript 语法编译验证：
 
 ```bash
-# macOS / Linux (Bash)
-bash .agents/skills/framework-aware/scripts/check_compliance.sh
-
-# Windows / Cross-Platform (PowerShell)
-pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
+# Windows / macOS / Linux (Python 3)
+python .agents/skills/framework-aware/scripts/check_compliance.py
 ```

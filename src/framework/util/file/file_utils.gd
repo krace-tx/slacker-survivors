@@ -293,7 +293,7 @@ static func write_compressed(
 	return Result.ok()
 
 
-## 从压缩文件中读取并解压还原二进制数据（支持 Godot [code]GCPF[/code] 容器与 [CryptoUtils] [code]SLKZ[/code] 内存帧，前置魔数嗅探避免 C++ 报错刷屏）。
+## 从压缩文件中读取并解压还原二进制数据（支持 Godot [code]GCPF[/code] 容器与 [CryptoUtils] [code]FWKZ[/code] 内存帧，前置魔数嗅探避免 C++ 报错刷屏）。
 static func read_compressed(
 	filepath: String,
 	compression_mode: FileAccess.CompressionMode = FileAccess.COMPRESSION_ZSTD
@@ -349,7 +349,7 @@ static func write_encrypted(filepath: String, bytes: PackedByteArray, password: 
 	return write_bytes(filepath, enc_res.value as PackedByteArray, atomic)
 
 
-## 使用口令（AES-256）读取并解密还原二进制数据（支持 [CryptoUtils] [code]SLKE[/code] 认证加密信封与 Godot 原生 [code]GDEC[/code] 容器，前置魔数嗅探零 C++ 报错刷屏）。
+## 使用口令（AES-256）读取并解密还原二进制数据（支持 [CryptoUtils] [code]FWKE[/code] 认证加密信封与 Godot 原生 [code]GDEC[/code] 容器，前置魔数嗅探零 C++ 报错刷屏）。
 static func read_encrypted(filepath: String, password: String) -> Result:
 	var guard := _validate_read_path(filepath)
 	if guard.is_err():
@@ -433,7 +433,7 @@ static func write_encrypted_json(
 	return write_encrypted(filepath, payload_bytes, password, atomic)
 
 
-## 从加密文件中解密（若含 [code]SLKZ[/code] 压缩帧头则自动解压）并反序列化为 [Dictionary] 或 [Array]。
+## 从加密文件中解密（若含 [code]FWKZ[/code] 压缩帧头则自动解压）并反序列化为 [Dictionary] 或 [Array]。
 static func read_encrypted_json(filepath: String, password: String) -> Result:
 	var dec_res := read_encrypted(filepath, password)
 	if dec_res.is_err():

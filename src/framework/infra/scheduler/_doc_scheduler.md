@@ -1,6 +1,6 @@
 # Framework · Infra · Scheduler (异步冷却防抖与串行互斥调度基建)
 
-> 基于**显式有限状态机 (FSM)** 与**单定时器模型 (Single-Timer Invariant)** 的异步冷却防抖调度基础设施（[`CooldownScheduler`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/infra/scheduler/cooldown_scheduler.gd)）。
+> 基于**显式有限状态机 (FSM)** 与**单定时器模型 (Single-Timer Invariant)** 的异步冷却防抖调度基础设施（[`CooldownScheduler`](cooldown_scheduler.gd)）。
 > 统一协调速率限制 (Rate Limiting)、尾部延迟合并 (Trailing Debounce) 与并发串行互斥 (Execution Mutex)。
 > - **负责**：保证两次执行间隔 $\ge$ 冷却时长、执行中或冷却期内的多次高频触发自动合并为单次尾部补发、支持同步函数与异步协程执行体。
 > - **不负责**：不持久化调用参数、不提供多优先级任务队列或帧内时间切片调度。

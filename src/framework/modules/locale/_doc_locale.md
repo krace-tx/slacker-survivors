@@ -1,7 +1,7 @@
 # Framework · Locale (多语言本地化与区域匹配系统)
 
-> 统一管理游戏运行时语言环境切换、BCP-47 标准语言标签映射与启动期智能语言匹配（`App.locale` / [`BaseLocalizationSystem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/locale/base_localization_system.gd)）。
-> 遵循**「切换归服务，查词归引擎」**原则：多语言 CSV 由 Godot 引擎导入为 `.translation` 并注册至 `Project Settings > Localization`；本模块仅负责通过 [`TranslationServerAdapter`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/locale/impl/translation_server_adapter.gd) 探测已加载语言包、切换活跃 Locale 并广播 [`Bus.locale_changed`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/autoload/event_bus.gd)。
+> 统一管理游戏运行时语言环境切换、BCP-47 标准语言标签映射与启动期智能语言匹配（`App.locale` / [`BaseLocalizationSystem`](base_localization_system.gd)）。
+> 遵循**「切换归服务，查词归引擎」**原则：多语言 CSV 由 Godot 引擎导入为 `.translation` 并注册至 `Project Settings > Localization`；本模块仅负责通过 [`TranslationServerAdapter`](impl/translation_server_adapter.gd) 探测已加载语言包、切换活跃 Locale 并广播 [`Bus.locale_changed`](../../core/autoload/event_bus.gd)。
 
 ```text
 src/framework/modules/locale/
@@ -25,7 +25,7 @@ src/framework/modules/locale/
    - 静态 UI 控件直接将文案 Key 填入 `text` 属性并开启引擎 `Auto Translate`；带动态占位符（`%s` / `%d`）的文案直接调用 `tr("key")` / `tr_n(...)`，切语言时监听 `Bus.locale_changed` 重新格式化即可。
 2. **17 种主流发行语言枚举与 BCP-47 标签双向映射 (`LocaleConfig`)**：
    - 内置 `LocaleConfig.Language` 枚举（`ZH_CN`, `ZH_TW`, `EN_US`, `JA`, `KO`, `ES`, `PT_BR`, `FR`, `DE`, `IT`, `RU`, `PL`, `TR`, `AR`, `TH`, `VI`, `ID`）。
-   - 提供静态 `LocaleConfig.locale_tag(lang) -> String`（如 `Language.ZH_CN -> "zh-CN"`）与 `LocaleConfig.language_from_tag(tag) -> int`（供 [`GameSettingsService.apply_locale()`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/shared/service/settings/game_settings_service.gd) 从持久化设置还原语言枚举）。
+   - 提供静态 `LocaleConfig.locale_tag(lang) -> String`（如 `Language.ZH_CN -> "zh-CN"`）与 `LocaleConfig.language_from_tag(tag) -> int`（供 [`GameSettingsService.apply_locale()`](../../../game/shared/service/settings/game_settings_service.gd) 从持久化设置还原语言枚举）。
 3. **三级启动语言决策链与无表安全降级 (`initialize`)**：
    - 启动时扫描 `TranslationServer.get_loaded_locales()`，通过 `compare_locales`（阈值 `10` 精确匹配）构建当前已挂载的可用语言列表 `App.locale.languages`。
    - **无配置安全保底（Fallback Mode）**：若工程尚未在项目设置中挂载任何 `.translation` 文件，自动记录警告并将 `default_language`（默认 `EN_US`）加入 `languages` 保底返回 `Result.ok()`，绝不阻断开发期启动。

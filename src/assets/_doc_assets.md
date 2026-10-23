@@ -2,7 +2,7 @@
 
 > **适用范围**：`res://src/assets/` 下全部运行时美术、音频、视频、字体、着色器与材质资产；`src/test/<feature>/assets/` 测试素材同样遵循本规范的命名与容器规则。
 > **核心目标**：以**「媒介容器 × 架构域 × 语义角色」三轴正交**治理资产，使任意一个资产文件做到——**看路径知归属、看文件名知用途、看依赖知边界**，并由 `check_compliance` 门禁自动拦截违规。
-> **上位规范**：[`docs/godot_coding_standards.md`](file:///d:/code/GodotProject/slacker-survivors/docs/godot_coding_standards.md)（单复数黄金法则）、[`src/game/_doc_game.md`](file:///d:/code/GodotProject/slacker-survivors/src/game/_doc_game.md)（垂直业务模块）、[`src/game/shared/_doc_shared.md`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/_doc_shared.md)（Rule of 2+）。
+> **上位规范**：[`docs/godot_coding_standards.md`](../../docs/godot_coding_standards.md)（单复数黄金法则）、[`src/game/_doc_game.md`](../game/_doc_game.md)（垂直业务模块）、[`src/game/shared/_doc_shared.md`](../game/shared/_doc_shared.md)（Rule of 2+）。
 
 ---
 
@@ -242,8 +242,8 @@ flowchart LR
    ├── spines/enemy/spn_enemy_rusher.spine
    └── models/office/mdl_office_desk.blend + build_mdl_office_desk.py
    ```
-   `src/test/<feature>/blender/` 测试原型沿用 [`godot_export_contract.md`](file:///d:/code/GodotProject/slacker-survivors/.agents/skills/blender-pipeline/references/godot_export_contract.md) 的就近源产分离约定。
-3. **Git LFS**：音视频、模型、字体、DCC 源文件已在 [`.gitattributes`](file:///d:/code/GodotProject/slacker-survivors/.gitattributes) 纳入 LFS；新增二进制类型时必须先补 LFS 规则再提交。
+   `src/test/<feature>/blender/` 测试原型沿用 [`godot_export_contract.md`](../../.agents/skills/blender-pipeline/references/godot_export_contract.md) 的就近源产分离约定。
+3. **Git LFS**：音视频、模型、字体、DCC 源文件已在 [`.gitattributes`](../../.gitattributes) 纳入 LFS；新增二进制类型时必须先补 LFS 规则再提交。
 4. **`.import` 必须随资产一起提交、一起移动**：它持有资源 `uid` 与导入参数。移动资产请在 Godot 编辑器 FileSystem 中拖拽，或使用 `git mv` 同时移动 `xxx.png` 与 `xxx.png.import`。
 
 ---
@@ -277,7 +277,7 @@ flowchart LR
 
 ## 八、 自动化门禁 (Quality Gate #13)
 
-[`check_compliance.ps1`](file:///d:/code/GodotProject/slacker-survivors/.agents/skills/framework-aware/scripts/check_compliance.ps1) / [`check_compliance.sh`](file:///d:/code/GodotProject/slacker-survivors/.agents/skills/framework-aware/scripts/check_compliance.sh) 第 13 项「Asset topology & naming」自动核验：
+[`check_compliance.py`](../../.agents/skills/framework-aware/scripts/check_compliance.py) 第 13 项「Asset topology & naming」自动核验：
 
 | 校验项 | 级别 |
 | :--- | :--- |

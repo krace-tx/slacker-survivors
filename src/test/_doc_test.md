@@ -1,7 +1,7 @@
 # Test Layer Architecture (功能测试层架构规范)
 
 > `src/test/` 是与 `src/framework/`、`src/game/` 平级的功能测试与玩法原型验证层。
-> 本层不引入额外的单元测试框架或复杂的测试基类，直接复用工程现有的 [`App`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/autoload/app.gd) 独立启动机制、[`BaseScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene.gd) 场景基类以及 [`_doc_game.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/_doc_game.md) 定义的垂直业务模块架构。
+> 本层不引入额外的单元测试框架或复杂的测试基类，直接复用工程现有的 [`App`](../framework/core/autoload/app.gd) 独立启动机制、[`BaseScene`](../framework/modules/scene/base_scene.gd) 场景基类以及 [`_doc_game.md`](../game/_doc_game.md) 定义的垂直业务模块架构。
 
 ---
 
@@ -62,7 +62,7 @@ src/test/<feature_name>/
 
 ### 4. 测试素材规范 (`assets/`)
 
-测试素材沿用 [`src/assets/_doc_assets.md`](file:///d:/code/GodotProject/slacker-survivors/src/assets/_doc_assets.md) 的媒介容器与文件命名规则，但**省略架构域层级**（测试目录本身即架构域），文件名第 2 段使用测试模块名：
+测试素材沿用 [`src/assets/_doc_assets.md`](../assets/_doc_assets.md) 的媒介容器与文件命名规则，但**省略架构域层级**（测试目录本身即架构域），文件名第 2 段使用测试模块名：
 
 ```text
 src/test/office_3d/assets/
@@ -77,7 +77,7 @@ src/test/office_3d/assets/
 ## 三、 独立运行与调试机制
 
 1. **编辑器一键运行（`F6`）**：
-   - [`App`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/core/autoload/app.gd#L60-L65) 内置 `_ensure_standalone_bootstrap()` 保底机制：当直接运行任何非 `BootstrapScene` 的测试场景时，会自动完成 `await App.bootstrap()` 装配全部 13 个框架底层服务并绑定当前场景路由。
+   - [`App`](../framework/core/autoload/app.gd#L60-L65) 内置 `_ensure_standalone_bootstrap()` 保底机制：当直接运行任何非 `BootstrapScene` 的测试场景时，会自动完成 `await App.bootstrap()` 装配全部 13 个框架底层服务并绑定当前场景路由。
    - 在 Godot 编辑器中打开任意 `src/test/<feature_name>/` 下的 `.tscn` 场景并按下 `F6`（运行当前场景），即可直接测试该功能。
 2. **命令行运行**：
    ```bash
@@ -93,4 +93,4 @@ src/test/office_3d/assets/
 
 1. **单向依赖铁律**：仅允许 `src/test/` 单向引用 `src/framework/` 与 `src/game/`；`src/framework/` 与 `src/game/` 的正式代码**严禁**引用 `src/test/` 下的任何脚本、场景或 `assets/` 测试素材。
 2. **模块互不耦合**：`src/test/` 下的各个 `<feature_name>/` 测试目录彼此完全独立，**严禁**跨测试目录互相引用。
-3. **基类与规范对齐**：测试场景根节点统一继承 [`BaseScene`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/scene/base_scene.gd)，顶层 UI 节点统一继承 [`BaseView`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/display/base_view.gd)，日志输出统一使用 `App.logger`，数据结构命名严格遵循 [`_doc_game.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/game/_doc_game.md) 的领域后缀规范。
+3. **基类与规范对齐**：测试场景根节点统一继承 [`BaseScene`](../framework/modules/scene/base_scene.gd)，顶层 UI 节点统一继承 [`BaseView`](../framework/modules/display/base_view.gd)，日志输出统一使用 `App.logger`，数据结构命名严格遵循 [`_doc_game.md`](../game/_doc_game.md) 的领域后缀规范。

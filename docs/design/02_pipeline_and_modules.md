@@ -1,6 +1,6 @@
 # 卷二：工单流水线架构与模块工序契约 (Pipeline Architecture & Module Contracts)
 
-> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/_doc_design.md)）
+> **所属域**：`docs/design/`（参见总纲 [`_doc_design.md`](_doc_design.md)）
 > **文档职责**：形式化定义“处理队列（Pipeline）”的底层运行状态机、“工单包（`WorkPacket`）”的空间焦点传递模型、六大核心模块的严格输入/输出契约，以及任意两个模块换位后的几何与结算差异矩阵。
 
 ---
@@ -157,4 +157,4 @@ sequenceDiagram
    - 每波开始前有 **威胁预告面板**，此时玩家可 **零代价、无限次** 拖拽调整 5 个槽位中的模块顺序。
 2. **战斗运行期（Combat Active Phase）**：
    - 队列槽位默认**锁定（Locked）**，按既定顺序自动循环派发工单。
-   - 玩家在战斗中若想临时改变工序，**唯一途径**是使用宝贵的 **【手动干预（Manual Intervention）】**（见卷三 [`03_control_resources_and_intervention.md`](file:///Users/krace/Code/GodotProject/slacker-survivors/docs/design/03_control_resources_and_intervention.md)）。
+   - 玩家在战斗中若想临时改变工序，**唯一途径**是使用宝贵的 **【手动干预（Manual Intervention）】**（见卷三 [`03_control_resources_and_intervention.md`](03_control_resources_and_intervention.md)）。
