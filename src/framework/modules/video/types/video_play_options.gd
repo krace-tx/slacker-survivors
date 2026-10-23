@@ -58,6 +58,16 @@ var min_watch_seconds: float = 0.0
 ## 原生全屏播放器等待完成的最长超时秒数（防原生异常回调丢失导致协程永久阻塞）。默认为 300.0 秒。
 var timeout_seconds: float = 300.0
 
+## 首帧防黑屏门控：过场或起播时是否等待解码器输出第一帧有效画面后再揭幕显示，彻底消除起播闪黑与旧帧残留。默认为 true。
+var wait_first_frame: bool = true
+
+## 首帧防黑屏门控的最大等待兜底秒数（超时后自动揭幕，防止纯音频流或特殊编码阻塞流程）。默认为 0.5 秒。
+var first_frame_timeout_seconds: float = 0.5
+
+## 沙盒缓存“播完即焚”安全策略：在移动端或需要将封包内视频实体化至 [code]user://cache/video[/code] 的场景下，
+## 是否在本次播放结束或停止后立即清理该视频的明文缓存文件。默认为 false。
+var ephemeral_cache: bool = false
+
 
 ## 构造函数：支持直接传入 Dictionary 快速实例化并自动反射填充字段
 func _init(dict: Dictionary = {}) -> void:
@@ -118,5 +128,18 @@ func with_start_position(p_seconds: float) -> VideoPlayOptions:
 ## 链式配置：最大等待超时秒数
 func with_timeout(p_timeout: float) -> VideoPlayOptions:
 	timeout_seconds = maxf(0.0, p_timeout)
+	return self
+
+
+## 链式配置：首帧防黑屏门控与兜底等待超时秒数
+func with_first_frame_gate(p_wait: bool = true, p_timeout_seconds: float = 0.5) -> VideoPlayOptions:
+	wait_first_frame = p_wait
+	first_frame_timeout_seconds = maxf(0.0, p_timeout_seconds)
+	return self
+
+
+## 链式配置：沙盒实体化缓存“播完即焚”安全策略
+func with_ephemeral_cache(p_ephemeral: bool = true) -> VideoPlayOptions:
+	ephemeral_cache = p_ephemeral
 	return self
 #endregion

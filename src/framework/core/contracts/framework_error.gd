@@ -74,14 +74,14 @@ func _init(
 
 
 static func make(
-	code: String,
-	message: String = "",
-	category: StringName = CATEGORY_GENERAL,
-	retryable: bool = false,
-	cause: Variant = null,
-	context: Dictionary = {}
+	p_code: String,
+	p_message: String = "",
+	p_category: StringName = CATEGORY_GENERAL,
+	p_retryable: bool = false,
+	p_cause: Variant = null,
+	p_context: Dictionary = {}
 ) -> FrameworkError:
-	return FrameworkError.new(code, message, category, retryable, cause, context)
+	return FrameworkError.new(p_code, p_message, p_category, p_retryable, p_cause, p_context)
 
 
 ## 返回附带额外诊断上下文的新错误副本（保持不可变语义）。

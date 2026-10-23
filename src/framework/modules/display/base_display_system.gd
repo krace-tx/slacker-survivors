@@ -151,6 +151,7 @@ func get_window_aspect() -> float
 
 #region 5. Display Safe Area & Aspect-Ratio Guard
 ## 全局安全区默认配置（比例或宽高比锁定）发生变更时发射
+@warning_ignore("unused_signal")
 signal safe_area_changed()
 
 ## 设置全局默认安全区缩放比例（[code]0.80 ~ 1.00[/code]，默认 [code]1.0[/code] 表示 100% 贴合安全区，[code]0.90[/code] 表示四周向内留白 10%）。

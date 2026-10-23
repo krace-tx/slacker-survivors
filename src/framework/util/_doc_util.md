@@ -15,8 +15,8 @@
   - **纯函数与零状态**：工具类不得持有成员变量，调用方随用随调，不产生外部不可预期的副作用。
   - **错误显式化**：凡涉及 I/O、节点挂载、资源实例化的可失败操作，强制返回 `Result.ok(val)` 或 `Result.err(msg)`，严禁静默吞错；仅基础设施底层确认必成功的操作提供 `_required` 后缀方法（失败直接 `assert`）。
 - **职责划分**：
-  - `NodeUtils`：节点挂载（`mount`）、预制体实例化（`spawn`）、深度复制（`clone`）、安全销毁（`safe_free`）与 `wait_ready` 等待。
-  - `FileUtils`：工业级安全文件 I/O、`.tmp` 事务级原子落盘、ZSTD 压缩 / AES-256 加密读写（含 `write_encrypted_json` / `read_encrypted_json` 组合管线）、MD5 / SHA-256 完整性校验、64KB 分块流式复制、目录树生命周期管理与 `res://` 导出包资源实体化（`materialize_res_file`）。
+  - `NodeUtils`：节点场景树生命周期（`@abstract` 纯静态）——入树挂载（`mount` / `mount_required`）、预制体实例化（`spawn`）、子树复制（`clone`）、安全销毁（`safe_free` / `clear_children`）与信号驱动的 `wait_ready` 等待；失败返回 `Node.{Reason}` 错误码。节点查找直接用引擎内置 `find_child` / `get_node_or_null`，不在此封装。
+  - `FileUtils`：工业级安全文件 I/O、`.tmp` 事务级原子落盘、ZSTD 压缩 / AES-256 加密读写（含 `write_encrypted_json` / `read_encrypted_json` 组合管线）、MD5 / SHA-256 完整性校验、64KB 分块流式复制、文件头 OS PageCache 预热（`warm_file_head`）、目录树生命周期管理与 `res://` 导出包资源实体化（`materialize_res_file` / `get_materialized_cache_path`）。
   - `CryptoUtils`：纯内存无状态密码学与二进制压缩原语，包含 Encrypt-then-MAC 认证加密信封（`AES-256-CBC + PKCS#7 + 随机 IV + HMAC-SHA256`，魔数 `SLKE`）、精确长度头 ZSTD 内存压缩帧（魔数 `SLKZ`）、HMAC-SHA256 请求签名、恒定时间防时序比对与硬件设备指纹密钥派生（`derive_passphrase`）。
   - `TimeUtils`：系统墙钟（`now_string`）与格式化时间（`format_mm_ss` / `format_hh_mm_ss`）。
   - `CoordUtils`：零开方空间距离/圆环/扇形锥（`is_within_cone`）判定、双向网格坐标换算（`world_to_grid` / `grid_to_world` / `snap_to_grid`）、Control 全局变换包围盒（`get_global_rect`）、等比内接矩形（`fit_rect_aspect`）与跨 CanvasLayer / 3D 视口投影桥接（`map_canvas_position` / `world3d_to_screen`）。
@@ -40,7 +40,7 @@ src/framework/util/
 ├── memory/                       # 内存与显存字节估算
 │   └── memory_utils.gd           # (MemoryUtils) estimate_bytes / estimate_resource_bytes
 ├── node/                         # 场景树操作与预制体挂载
-│   └── node_utils.gd             # (NodeUtils) mount / spawn / clone / safe_free
+│   └── node_utils.gd             # (NodeUtils) mount / spawn / clone / safe_free / clear_children / wait_ready
 ├── time/                         # 时间格式化
 │   └── time_utils.gd             # (TimeUtils) now_string / format_mm_ss / format_hh_mm_ss
 ├── uuid/                         # UUID v4 生成与短码互转
@@ -59,10 +59,11 @@ var spawn_res := NodeUtils.spawn(card_prefab, $CardContainer)
 if spawn_res.is_ok():
 	var card_node := spawn_res.value
 
-# 2. 文件安全写入与读取
-var write_res := FileUtils.write_text("user://save.json", json_str)
+# 2. 文件安全写入与读取（沙盒一级/二级标准目录常量统一定义在 FileUtils）
+var save_path := "%s/shared/demo_save.json" % FileUtils.USER_SAVES_DIR
+var write_res := FileUtils.write_text(save_path, json_str, true)
 if write_res.is_ok():
-	var read_res := FileUtils.read_text("user://save.json")
+	var read_res := FileUtils.read_text(save_path)
 
 # 3. 内存态 AES-256-CBC + HMAC-SHA256 认证加解密与请求签名
 var enc_res := CryptoUtils.encrypt_text("secret_payload", "master_passphrase")

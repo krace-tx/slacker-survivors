@@ -33,13 +33,13 @@ func _process(delta: float) -> void:
 
 #region Public API
 ## 设置目标归一化进度 `[0.0, 1.0]`，由 `_process` 平滑追赶
-func set_target_ratio(ratio: float) -> void:
-	_target_ratio = clampf(ratio, 0.0, 1.0)
+func set_target_ratio(target_ratio: float) -> void:
+	_target_ratio = clampf(target_ratio, 0.0, 1.0)
 
 
 ## 立即瞬移至指定归一化进度 `[0.0, 1.0]`（无过渡延迟，用于初始化归零或 100% 完成态）
-func snap_to_ratio(ratio: float) -> void:
-	var clamped: float = clampf(ratio, 0.0, 1.0)
+func snap_to_ratio(target_ratio: float) -> void:
+	var clamped: float = clampf(target_ratio, 0.0, 1.0)
 	_target_ratio = clamped
 	_visual_ratio = clamped
 	value = clamped * _PERCENT_SCALE

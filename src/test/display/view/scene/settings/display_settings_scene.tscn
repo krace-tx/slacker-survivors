@@ -1,10 +1,14 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bn55i8phlifxf"]
 
-[ext_resource type="Script" path="res://src/test/display/view/scene/settings/display_settings_scene.gd" id="1_scene"]
-[ext_resource type="Script" path="res://src/test/display/view/scene/settings/display_settings_view.gd" id="2_view"]
-[ext_resource type="Texture2D" uid="uid://bnn7jikgn2u1b" path="res://src/assets/textures/ui/splash_cg.png" id="3_bg"]
+[ext_resource type="Script" uid="uid://dtvibauwenn7t" path="res://src/test/display/view/scene/settings/display_settings_scene.gd" id="1_scene"]
+[ext_resource type="Script" uid="uid://brvvtveevghga" path="res://src/test/display/view/scene/settings/display_settings_view.gd" id="2_view"]
+[ext_resource type="Texture2D" uid="uid://bnn7jikgn2u1b" path="res://src/assets/textures/splash/tex_splash_opening_cg.png" id="3_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 36.0
+content_margin_top = 28.0
+content_margin_right = 36.0
+content_margin_bottom = 28.0
 bg_color = Color(0.08, 0.1, 0.14, 0.94)
 border_width_left = 1
 border_width_top = 1
@@ -15,18 +19,14 @@ corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-content_margin_left = 36.0
-content_margin_top = 28.0
-content_margin_right = 36.0
-content_margin_bottom = 28.0
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_sep"]
 color = Color(1, 1, 1, 0.08)
 
-[node name="DisplaySettingsScene" type="Node"]
+[node name="DisplaySettingsScene" type="Node" unique_id=1867444975]
 script = ExtResource("1_scene")
 
-[node name="Background" type="Control" parent="."]
+[node name="Background" type="Control" parent="." unique_id=1804065580]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,7 +35,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="BgColor" type="ColorRect" parent="Background"]
+[node name="BgColor" type="ColorRect" parent="Background" unique_id=1585093308]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,7 +45,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.04, 0.05, 0.08, 1)
 
-[node name="SplashArt" type="TextureRect" parent="Background"]
+[node name="SplashArt" type="TextureRect" parent="Background" unique_id=329592439]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -57,7 +57,7 @@ texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="DarkOverlay" type="ColorRect" parent="Background"]
+[node name="DarkOverlay" type="ColorRect" parent="Background" unique_id=1823870064]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -67,7 +67,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.04, 0.06, 0.1, 0.84)
 
-[node name="SettingsView" type="Control" parent="."]
+[node name="SettingsView" type="Control" parent="." unique_id=1874016330]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
@@ -77,7 +77,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_view")
 
-[node name="CenterContainer" type="CenterContainer" parent="SettingsView"]
+[node name="CenterContainer" type="CenterContainer" parent="SettingsView" unique_id=1890791247]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -85,37 +85,37 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SettingsCard" type="PanelContainer" parent="SettingsView/CenterContainer"]
+[node name="SettingsCard" type="PanelContainer" parent="SettingsView/CenterContainer" unique_id=1818638559]
 custom_minimum_size = Vector2(620, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="CardVBox" type="VBoxContainer" parent="SettingsView/CenterContainer/SettingsCard"]
+[node name="CardVBox" type="VBoxContainer" parent="SettingsView/CenterContainer/SettingsCard" unique_id=924287906]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="HeaderRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="HeaderRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=168468250]
 layout_mode = 2
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/HeaderRow"]
+[node name="TitleLabel" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/HeaderRow" unique_id=1430545630]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 20
 text = "显示与画质设置"
 
-[node name="HeaderSpacer" type="Control" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/HeaderRow"]
+[node name="HeaderSpacer" type="Control" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/HeaderRow" unique_id=483666649]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LiveBadgeLabel" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/HeaderRow"]
+[node name="LiveBadgeLabel" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/HeaderRow" unique_id=1514285489]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.56, 0.66, 0.78, 1)
 theme_override_font_sizes/font_size = 13
 text = "窗口模式  ·  1920 × 1080"
 
-[node name="EmbedNoticeLabel" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="EmbedNoticeLabel" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=7702110]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -124,191 +124,191 @@ theme_override_font_sizes/font_size = 12
 text = "提示：当前处于编辑器内嵌游戏窗口模式，若需测试真实全屏切换，请在编辑器 Game 视图取消勾选 Embed Game on Play。"
 autowrap_mode = 2
 
-[node name="HeaderSep" type="HSeparator" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="HeaderSep" type="HSeparator" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=681214138]
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxLine_sep")
 
-[node name="DisplayForm" type="VBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="DisplayForm" type="VBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=408106844]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="WindowModeRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm"]
+[node name="WindowModeRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm" unique_id=1743777226]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/WindowModeRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/WindowModeRow" unique_id=760072710]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
 theme_override_font_sizes/font_size = 14
 text = "窗口模式"
 
-[node name="WindowModeOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/WindowModeRow"]
+[node name="WindowModeOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/WindowModeRow" unique_id=1472488365]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="ResolutionRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm"]
+[node name="ResolutionRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm" unique_id=1954681381]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/ResolutionRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/ResolutionRow" unique_id=735200587]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
 theme_override_font_sizes/font_size = 14
 text = "分辨率"
 
-[node name="ResolutionOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/ResolutionRow"]
+[node name="ResolutionOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/ResolutionRow" unique_id=1069106464]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="VSyncRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm"]
+[node name="VSyncRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm" unique_id=398980975]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/VSyncRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/VSyncRow" unique_id=1411186244]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
 theme_override_font_sizes/font_size = 14
 text = "垂直同步"
 
-[node name="VSyncOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/VSyncRow"]
+[node name="VSyncOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/VSyncRow" unique_id=1930486859]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="FpsRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm"]
+[node name="FpsRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm" unique_id=1302441449]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/FpsRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/FpsRow" unique_id=860600959]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
 theme_override_font_sizes/font_size = 14
 text = "帧率上限"
 
-[node name="FpsOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/FpsRow"]
+[node name="FpsOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/FpsRow" unique_id=1577357029]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="SafeAreaScaleRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm"]
+[node name="SafeAreaScaleRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm" unique_id=1545289603]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/SafeAreaScaleRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/SafeAreaScaleRow" unique_id=2033966312]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
 theme_override_font_sizes/font_size = 14
 text = "HUD 安全区比例"
 
-[node name="SafeAreaScaleOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/SafeAreaScaleRow"]
+[node name="SafeAreaScaleOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/SafeAreaScaleRow" unique_id=2097652878]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="LockAspectRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm"]
+[node name="LockAspectRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm" unique_id=628537858]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/LockAspectRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/LockAspectRow" unique_id=2012495469]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
 theme_override_font_sizes/font_size = 14
 text = "安全区设计宽高比"
 
-[node name="LockAspectOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/LockAspectRow"]
+[node name="LockAspectOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/DisplayForm/LockAspectRow" unique_id=675598502]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="MidSep" type="HSeparator" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="MidSep" type="HSeparator" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=1992504984]
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxLine_sep")
 
-[node name="GraphicsForm" type="VBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="GraphicsForm" type="VBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=2099038900]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="PresetRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm"]
+[node name="PresetRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm" unique_id=289841003]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/PresetRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/PresetRow" unique_id=366488578]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.84, 0.88, 0.94, 1)
 theme_override_font_sizes/font_size = 14
 text = "画质档位"
 
-[node name="QualityPresetOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/PresetRow"]
+[node name="QualityPresetOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/PresetRow" unique_id=539920837]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="MsaaRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm"]
+[node name="MsaaRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm" unique_id=1714408680]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/MsaaRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/MsaaRow" unique_id=1002320503]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.72, 0.78, 0.86, 1)
 theme_override_font_sizes/font_size = 14
 text = "多重采样抗锯齿 (MSAA)"
 
-[node name="MsaaOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/MsaaRow"]
+[node name="MsaaOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/MsaaRow" unique_id=1299495215]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="SsaaRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm"]
+[node name="SsaaRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm" unique_id=1820477255]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/SsaaRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/SsaaRow" unique_id=1163140202]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.72, 0.78, 0.86, 1)
 theme_override_font_sizes/font_size = 14
 text = "后处理抗锯齿"
 
-[node name="SsaaOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/SsaaRow"]
+[node name="SsaaOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/SsaaRow" unique_id=791260444]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="Scale3DRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm"]
+[node name="Scale3DRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm" unique_id=1048807471]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/Scale3DRow"]
+[node name="Label" type="Label" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/Scale3DRow" unique_id=1706942550]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.72, 0.78, 0.86, 1)
 theme_override_font_sizes/font_size = 14
 text = "渲染分辨率倍率"
 
-[node name="Scale3DOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/Scale3DRow"]
+[node name="Scale3DOption" type="OptionButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/GraphicsForm/Scale3DRow" unique_id=182082307]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(230, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 
-[node name="FooterSep" type="HSeparator" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="FooterSep" type="HSeparator" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=569371498]
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleBoxLine_sep")
 
-[node name="FooterRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox"]
+[node name="FooterRow" type="HBoxContainer" parent="SettingsView/CenterContainer/SettingsCard/CardVBox" unique_id=1201811319]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="ConfirmGuardCheck" type="CheckButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow"]
+[node name="ConfirmGuardCheck" type="CheckButton" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow" unique_id=484159024]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.74, 0.84, 1)
@@ -316,18 +316,18 @@ theme_override_font_sizes/font_size = 13
 button_pressed = true
 text = "切屏 15 秒确认保护"
 
-[node name="FooterSpacer" type="Control" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow"]
+[node name="FooterSpacer" type="Control" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow" unique_id=2136000327]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ResetBtn" type="Button" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow"]
+[node name="ResetBtn" type="Button" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow" unique_id=2009574915]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(104, 36)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "恢复默认"
 
-[node name="BackBtn" type="Button" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow"]
+[node name="BackBtn" type="Button" parent="SettingsView/CenterContainer/SettingsCard/CardVBox/FooterRow" unique_id=2004463172]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(112, 36)
 layout_mode = 2

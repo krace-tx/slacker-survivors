@@ -17,6 +17,8 @@
   - `model/` 下的数据类是否严格遵循领域后缀（`*Config`、`*Model`、`*State`、`*Params`、`*Context`、`*VO`）？
 - [ ] **路径与命名**：
   - 引用视频资源是否使用 `src/assets/videos/`（复数）？
+  - 新增/引用的资产是否位于 `src/assets/<媒介容器>/<架构域>/`，文件名是否为 `<prefix>_<domain>_<subject>[_<state>][_<index>]` 全小写、域段与目录一致（见 `src/assets/_doc_assets.md`）？
+  - Feature 代码/场景是否只引用了自身域与 `shared/` 域资产（跨 Feature 复用需先晋升到 `shared/`）？
   - 引用参数基类是否使用 `src/framework/infra/param/`（单数）？
   - 引用业务共享内核是否使用 `src/game/shared/` 下的单数三支柱（`model/`、`service/`、`component/`）二级子域？
   - 引用日志服务是否使用 `App.logger`？
@@ -36,6 +38,7 @@
   - 业务层代码是否通过 Signal 向上抛出事件，而不是强行查找 UI 节点？
   - 跨系统解耦广播是否使用 `Bus.emit(...)` 与 `Bus.on(...)`？
   - 工具类调用是否使用了 `src/framework/util/` 提供的现成静态工具函数？
+  - 引用已声明 `class_name` 的类（如 `FileUtils`、`CryptoUtils`）时是否直接使用全局类名，而没有写 `const _Xxx = preload("res://...")` 冗余别名？
 
 ---
 

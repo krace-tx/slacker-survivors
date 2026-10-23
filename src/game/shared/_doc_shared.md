@@ -13,9 +13,9 @@ src/game/shared/
 ├── _doc_shared.md                            # 本架构规范文档
 │
 ├── model/                                    # [支柱 1 · M] 共享数据模型层（纯数据结构 + 内聚枚举/Key + 序列化/自愈校验）
-│   ├── save/                                 # 子域 A：持久化存档聚合根模型 (*Model，继承 BaseParams，内聚 STORAGE_KEY 对接 App.storage)
-│   │   ├── game_settings_model.gd            # 游戏全局偏好设置存档聚合根 (GameSettingsModel)
-│   │   └── player_profile_model.gd           # 玩家全局持久化基础档案模型 (PlayerProfileModel)
+│   ├── save/                                 # 子域 A：持久化存档聚合根模型 (*Model，继承 BaseParams，内聚 STORAGE_DOMAIN = &"shared" 与 storage_item() 对接 App.storage)
+│   │   ├── game_settings_model.gd            # 游戏全局偏好设置存档聚合根 (GameSettingsModel -> user://config/shared/game_settings.json)
+│   │   └── player_profile_model.gd           # 玩家全局持久化基础档案模型 (PlayerProfileModel -> user://saves/shared/player_profile.json)
 │   ├── data/                                 # 子域 B：内嵌子数据块与跨模块通用条目 (*Data / *Params / *Req / *Resp，内聚所属业务枚举)
 │   │   ├── display_settings_data.gd          # 显示与窗口设置子数据块 (DisplaySettingsData)
 │   │   ├── graphics_settings_data.gd         # 画质与视口渲染子数据块 (GraphicsSettingsData: 内聚 QualityPreset / ShadowQuality)

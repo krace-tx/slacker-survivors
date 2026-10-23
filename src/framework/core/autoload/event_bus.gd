@@ -61,15 +61,15 @@ func on(event_name: StringName, callback: Callable) -> void:
 		list.append(callback)
 
 
-## 绑定宿主节点生命周期的领域事件订阅：当 [param owner] 退出场景树（`tree_exiting`）时自动解绑。
-func on_scoped(event_name: StringName, owner: Node, callback: Callable) -> void:
-	if event_name.is_empty() or owner == null or not is_instance_valid(owner) or not callback.is_valid():
+## 绑定宿主节点生命周期的领域事件订阅：当 [param owner_node] 退出场景树（`tree_exiting`）时自动解绑。
+func on_scoped(event_name: StringName, owner_node: Node, callback: Callable) -> void:
+	if event_name.is_empty() or owner_node == null or not is_instance_valid(owner_node) or not callback.is_valid():
 		return
 	on(event_name, callback)
 	var unbind_fn := func() -> void:
 		off(event_name, callback)
-	if not owner.tree_exiting.is_connected(unbind_fn):
-		owner.tree_exiting.connect(unbind_fn, CONNECT_ONE_SHOT)
+	if not owner_node.tree_exiting.is_connected(unbind_fn):
+		owner_node.tree_exiting.connect(unbind_fn, CONNECT_ONE_SHOT)
 
 
 ## 取消订阅指定名称的领域事件。

@@ -20,6 +20,20 @@ const SWAP_SUFFIX: String = ".swap_bak" ## 覆盖重命名时的安全回滚备�
 const _GODOT_COMPRESSED_MAGIC: String = "GCPF" ## Godot FileAccess.open_compressed 4 字节魔数头。
 const _GODOT_ENCRYPTED_MAGIC: String = "GDEC" ## Godot FileAccess.open_encrypted 4 字节魔数头（0x43454447 LE）。
 
+## 一级沙盒标准分区根目录（严禁在 user:// 根目录直接散落业务或临时文件）
+const USER_CONFIG_DIR: String = "user://config" ## 一级：设备级本地配置区（不随云存档跨设备覆盖）
+const USER_SAVES_DIR: String = "user://saves"   ## 一级：玩家核心存档区（纳入 .tmp/.bak 自愈与云存档同步）
+const USER_CACHE_DIR: String = "user://cache"   ## 一级：可随时安全清空的衍生缓存区
+const USER_TMP_DIR: String = "user://tmp"       ## 一级：瞬态事务与下载中转区
+const USER_LOGS_DIR: String = "user://logs"     ## 一级：诊断与崩溃日志区
+
+## 二级框架基建模块域目录（与框架模块职责 1:1 绑定）
+const USER_RES_CACHE_DIR: String = "user://cache/res"     ## 二级：PCK/APK 封包资源按需实体化缓存目录
+const USER_VIDEO_CACHE_DIR: String = "user://cache/video" ## 二级：视频流式预热与实体化缓存目录
+const USER_NET_CACHE_DIR: String = "user://cache/net"     ## 二级：HTTP 静态资源本地缓存目录
+const USER_STORAGE_TMP_DIR: String = "user://tmp/storage" ## 二级：远端流式下载中转目录
+const USER_CRASH_LOGS_DIR: String = "user://logs/crash"   ## 二级：崩溃快照日志归档目录
+
 const ERR_EMPTY_PATH: String = "File.EmptyPath"
 const ERR_INVALID_PATH: String = "File.InvalidPath"
 const ERR_READ_ONLY: String = "File.ReadOnly"
@@ -679,12 +693,65 @@ static func globalize_path(filepath: String) -> String:
 	return filepath
 
 
+## 计算 [code]res://[/code] 封包内文件在指定缓存目录下的确定性虚拟路径（[code]user://...[/code]）。[br]
+## [param file_path] 原始资源路径（如 [code]res://src/assets/videos/splash/vid_splash_opening_cg.mp4[/code]）。[br]
+## [param cache_dir] 目标沙盒缓存目录（默认 [constant USER_RES_CACHE_DIR] 即 [code]user://cache/res[/code]）。
+static func get_materialized_cache_path(
+	file_path: String,
+	cache_dir: String = USER_RES_CACHE_DIR
+) -> String:
+	var clean_path := file_path.strip_edges().replace("\\", "/")
+	if clean_path.is_empty():
+		return ""
+	var ext := clean_path.get_extension()
+	var cache_name := clean_path.md5_text() + ("." + ext if not ext.is_empty() else "")
+	return cache_dir.path_join(cache_name)
+
+
+## 流式预读文件头部指定字节数（默认 512 KB）以预热操作系统文件页缓存（OS PageCache）。[br]
+## 采用固定 64 KB 分块读取，避免一次性分配大块连续内存，适用于 MP4 [code]moov[/code] 索引头及关键帧簇预热。[br]
+## [param filepath] 目标文件路径（支持 [code]res://[/code]、[code]user://[/code] 或 OS 绝对路径）。[br]
+## [param max_bytes] 最大预读字节数（默认 [code]524288[/code] 即 512 KB）。[br]
+## 返回 [Result]：成功时 [member Result.value] 为实际预读的字节数（[int]）。
+static func warm_file_head(filepath: String, max_bytes: int = 524288) -> Result:
+	var guard := _validate_read_path(filepath)
+	if guard.is_err():
+		return guard
+
+	var file := FileAccess.open(filepath, FileAccess.READ)
+	if file == null:
+		return _err_from_godot(ERR_OPEN_FAILED, "Warm file head failed: cannot open '%s'." % filepath, FileAccess.get_open_error(), {"path": filepath})
+
+	var total_len := int(file.get_length())
+	var target_bytes := mini(total_len, maxi(0, max_bytes))
+	var remaining := target_bytes
+	var read_total := 0
+
+	while remaining > 0:
+		var step := mini(remaining, CHUNK_SIZE)
+		var chunk := file.get_buffer(step)
+		if chunk.is_empty():
+			break
+		read_total += chunk.size()
+		remaining -= chunk.size()
+		if chunk.size() < step:
+			break
+
+	var io_err := file.get_error()
+	file.close()
+
+	if io_err != OK and io_err != ERR_FILE_EOF:
+		return _err_from_godot(ERR_IO_ERROR, "Warm file head failed: I/O error while reading '%s'." % filepath, io_err, {"path": filepath})
+
+	return Result.ok(read_total)
+
+
 ## 将 [code]res://[/code] 封包内文件实体化（Materialize）为操作系统可直接访问的真实物理文件路径。[br]
 ## - 若文件在 OS 文件系统中已直接存在（如编辑器环境或 [code]user://[/code]），直接返回其绝对路径；[br]
-## - 若文件位于导出后的只读 PCK / APK 封包内，自动按路径 MD5 指纹流式解包至 [param cache_dir] 并返回缓存绝对路径。
+## - 若文件位于导出后的只读 PCK / APK 封包内，自动按路径 MD5 指纹与源文件精确字节长度校验流式解包至 [param cache_dir] 并返回缓存绝对路径。
 static func materialize_res_file(
 	file_path: String,
-	cache_dir: String = "user://res_cache"
+	cache_dir: String = USER_RES_CACHE_DIR
 ) -> Result:
 	if file_path.is_empty():
 		return Result.err_ex(ERR_EMPTY_PATH, "Materialize failed: file_path is empty.", {}, false, null, FrameworkError.CATEGORY_PARAM)
@@ -699,13 +766,14 @@ static func materialize_res_file(
 	if not file_path.begins_with("res://"):
 		return Result.err_ex(ERR_NOT_FOUND, "Materialize failed: file not found at '%s'." % file_path, {"path": file_path}, false, ERR_FILE_NOT_FOUND, FrameworkError.CATEGORY_NOT_FOUND)
 
-	var ext := file_path.get_extension()
-	var cache_name := file_path.md5_text() + ("." + ext if not ext.is_empty() else "")
-	var cache_virtual := cache_dir.path_join(cache_name)
+	var cache_virtual := get_materialized_cache_path(file_path, cache_dir)
 	var cache_absolute := ProjectSettings.globalize_path(cache_virtual)
+	var expected_size := get_file_size(file_path)
 
-	if FileAccess.file_exists(cache_absolute) and get_file_size(cache_virtual) > 0:
-		return Result.ok(cache_absolute)
+	if FileAccess.file_exists(cache_absolute):
+		var cached_size := get_file_size(cache_virtual)
+		if cached_size > 0 and (expected_size <= 0 or cached_size == expected_size):
+			return Result.ok(cache_absolute)
 
 	var copy_res := _stream_copy_file(file_path, cache_virtual)
 	if copy_res.is_err():

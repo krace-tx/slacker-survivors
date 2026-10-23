@@ -18,7 +18,7 @@
 | **网络通讯** | 网络请求、HTTP、API、Token、鉴权、请求签名、防重放、后端通信 | `src/framework/modules/network/_doc_network.md` | 统一通过门面 `App.net` 调用；返回值使用标准 `Result` 包装；支持 `set_request_signing` HMAC-SHA256 签名与 401 单飞刷新。 |
 | **持久化存储** | 本地存储、存档、读写磁盘、序列化、加密存档、防拷档、偏好设置 | `src/framework/modules/storage/_doc_storage.md` | 统一通过门面 `App.storage` 访问；支持 `ZSTD 压缩 + AES-256 加密` 正交管线、`with_device_encryption` 设备绑定与 `.bak` 容错自愈；严禁直接使用底层 `FileAccess` 硬编码业务存档。 |
 | **音频与音效** | BGM、背景音乐、SFX、音效播放、音频淡入淡出 | `src/framework/modules/audio/_doc_audio.md` | 统一通过门面 `App.audio` 调度；支持音频总线分组与自动音量避让；严禁随意调用原生 `AudioServer` 破坏管理。 |
-| **视频播放** | 视频、CG、开场动画、Cutscene、MP4/OGV | `src/framework/modules/video/_doc_video.md` | 统一通过门面 `App.video` 调度；使用 `VideoPlayOptions` 链式配置；资源统一存放在 `src/assets/videos/`。 |
+| **视频播放** | 视频、CG、开场动画、Cutscene、MP4/OGV | `src/framework/modules/video/_doc_video.md` | 统一通过门面 `App.video` 调度；使用 `VideoPlayOptions` 链式配置；资源统一存放在 `src/assets/videos/<domain>/`（`vid_<domain>_<subject>.mp4` + 同名 `.ogv` 兜底）。 |
 | **日志与诊断** | 打印日志、错误追踪、诊断、Logger、调试信息 | `src/framework/modules/logger/_doc_logger.md` | 统一使用 `App.logger`（`debug/info/warn/error`）；必须带模块 Tag；严禁在业务和框架代码中残留原生 `print()`。 |
 | **多语言本地化** | 多语言、国际化、翻译、Locale、文案切换 | `src/framework/modules/locale/_doc_locale.md` | 统一通过 `App.locale` 管理；文本通过字典键映射，支持动态占位符格式化。 |
 | **输入与键位映射** | 输入、键盘映射、手柄、改键、组合键、按键提示、摇杆死区、Input、InputMap | `src/framework/modules/input/_doc_input.md` | 统一通过 `App.input` 访问；支持键鼠/手柄双轨双槽隔离、`InputChord` 组合键消费、二段式免勾选交互录制与增量序列化；严禁直接调用 `InputMap.action_erase_events()` 破坏双轨绑定。 |
@@ -33,6 +33,7 @@
 | **结果与错误处理** | Result、错误返回、FrameworkError、err_code、err_ex、is_ok/is_err | `src/framework/core/_doc_core.md`<br>`src/framework/core/contracts/_doc_contract.md` | 涉及失败可能性的核心操作统一返回 `Result`；错误包装为 `FrameworkError`，禁止通过静默返回 null 或裸异常阻断流程。 |
 | **功能测试与原型验证** | 功能测试、测试场景、原型验证、src/test | `src/test/_doc_test.md` | 按单数被测功能域建立 `src/test/<feature_name>/`；轻量测试直接放 `BaseScene` 测试场景，复杂测试对齐 **MSVP / MES** 子目录分层；支持按 `F6` 独立运行；正式代码严禁引用 `src/test/`。 |
 | **Godot 设计与编码规范** | 编码规范、代码风格、命名规范、静态类型、脚本结构、性能红线 | `docs/godot_coding_standards.md` | 遵循 `Node` / `RefCounted` / `Resource` 选型第一性原理、单复数黄金法则、100% 显式静态类型注解、`StringName` 拘留池、文件 `#region` 声明顺序与 5 大防卡顿性能红线。 |
+| **美术与媒体资产** | 资产、素材、贴图、图标、按钮图、精灵、序列帧、Spine 文件、模型、glb、音效文件、BGM 文件、字体、着色器、材质、资源命名、资产目录、导入设置 | `src/assets/_doc_assets.md` | 目录 `<媒介容器>/<架构域>/[<分组>/]`（架构域 = `shared` 或与 Feature 同名）；文件名 `<prefix>_<domain>_<subject>[_<state>][_<index>]` 全小写且域段 == 目录域；Feature 只能引用自身域与 `shared/` 资产；DCC 源文件进 `art/`，严禁进入 `src/assets/`。 |
 
 ---
 

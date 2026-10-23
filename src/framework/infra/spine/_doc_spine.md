@@ -35,8 +35,8 @@ func _on_enter(_params: Dictionary = {}) -> void:
 	_spine_pool = SpinePool.new(self)
 
 	# 2. 结合 App.asset 异步加载骨骼资源，并执行视口内真预热（预热完直接入池待命）
-	var boss_skel := (await App.asset.load("res://src/assets/spine/boss_01.tres")).value as Resource
-	var hit_vfx_skel := (await App.asset.load("res://src/assets/spine/vfx_hit.tres")).value as Resource
+	var boss_skel := (await App.asset.load("res://src/assets/spines/enemy/spn_enemy_boss_auditor_data.tres")).value as Resource
+	var hit_vfx_skel := (await App.asset.load("res://src/assets/spines/battle/spn_battle_hit_burst_data.tres")).value as Resource
 
 	await _spine_pool.warmup_batch({
 		boss_skel: 1,

@@ -28,19 +28,19 @@ src/framework/modules/asset/
 
 ```gdscript
 # 1. 同步快路径读取已缓存资源（零协程开销，未命中返回 null）
-var cached_tex := App.asset.get_cached("res://src/assets/textures/characters/player.png") as Texture2D
+var cached_tex := App.asset.get_cached("res://src/assets/textures/battle/spr_battle_player_idle_001.png") as Texture2D
 
 # 2. 异步加载单份资源
-var res := await App.asset.load("res://src/assets/textures/characters/player.png")
+var res := await App.asset.load("res://src/assets/textures/battle/spr_battle_player_idle_001.png")
 if res.is_ok():
 	var texture: Texture2D = res.value
 
 # 3. 钉住常驻核心资产（避免被 LRU / TTL 挤出）
-App.asset.pin("res://src/assets/textures/ui/common_atlas.png")
+App.asset.pin("res://src/assets/textures/shared/atl_shared_ui_common.png")
 
 # 4. 双阶段真并发批量预加载
 var batch_res := await App.asset.preload_batch([
-	"res://src/assets/audio/sfx_hit.wav",
-	"res://src/assets/audio/sfx_coin.wav",
+	"res://src/assets/audio/sfx/battle/sfx_battle_hit_01.wav",
+	"res://src/assets/audio/sfx/battle/sfx_battle_coin_pickup_01.wav",
 ])
 ```

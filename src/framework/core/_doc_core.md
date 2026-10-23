@@ -60,7 +60,7 @@ else:
 
 ```gdscript
 App.logger.info("Boot", "Engine started.")
-App.audio.play_sfx_by_path("res://assets/audio/click.wav")
+App.audio.play_sfx_by_path("res://src/assets/audio/sfx/shared/sfx_shared_ui_click_01.wav")
 ```
 
 ---

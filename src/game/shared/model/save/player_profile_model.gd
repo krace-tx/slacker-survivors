@@ -11,8 +11,9 @@ extends BaseParams
 signal data_changed()
 
 #region Constants
-const STORAGE_KEY: StringName = &"player_profile"
-const _STORAGE_DISK_PATH: String = "user://saves/player_profile.json"
+const STORAGE_DOMAIN: StringName = &"shared"
+const STORAGE_SUBJECT: String = "player_profile"
+const STORAGE_KEY: StringName = &"shared:player_profile"
 const _STORAGE_SCHEMA_VERSION: int = 1
 const _DEFAULT_NICKNAME: String = "Player"
 #endregion
@@ -34,12 +35,13 @@ var custom_data: Dictionary = {}
 
 
 #region Public API
-## 创建玩家档案标准存储配置项
+## 创建玩家档案标准存储配置项（落盘至玩家核心存档区 user://saves/shared/player_profile.json）
 static func storage_item() -> StorageItem:
-	return StorageItem.new(
-		STORAGE_KEY,
-		_STORAGE_DISK_PATH,
+	return StorageItem.for_save(
+		STORAGE_DOMAIN,
+		STORAGE_SUBJECT,
 		_STORAGE_SCHEMA_VERSION,
+		"json",
 		-1.0
 	)
 

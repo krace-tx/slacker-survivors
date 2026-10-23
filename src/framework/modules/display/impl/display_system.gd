@@ -207,6 +207,7 @@ func center_window(screen_index: int = -1) -> void:
 	var win_size := DisplayServer.window_get_size()
 	if usable.size.x <= 0 or usable.size.y <= 0:
 		return
+	@warning_ignore("integer_division")
 	var target_pos := usable.position + (usable.size - win_size) / 2
 	target_pos.x = maxi(usable.position.x, target_pos.x)
 	target_pos.y = maxi(usable.position.y, target_pos.y)

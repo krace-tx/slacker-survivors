@@ -20,19 +20,19 @@ src/test/display/
 │   ├── display_lobby_presenter.gd                   # 大厅页协调器 (extends RefCounted)
 │   └── display_settings_presenter.gd                # 设置页协调器 (extends RefCounted)
 └── view/
-    ├── scene/
-    │   ├── lobby/
-    │   │   ├── display_lobby_scene.tscn             # 大厅主场景 (声明式极简 UI)
-    │   │   ├── display_lobby_scene.gd               # 大厅场景生命周期 (extends BaseScene)
-    │   │   └── display_lobby_view.gd                # 大厅被动视图 (extends BaseView)
-    │   └── settings/
-    │       ├── display_settings_scene.tscn          # 设置子场景 (声明式简约单卡片表单)
-    │       ├── display_settings_scene.gd            # 设置场景生命周期 (extends BaseScene)
-    │       └── display_settings_view.gd             # 设置页被动视图 (extends BaseView)
-    └── component/
-        └── confirm/
-            ├── display_confirm_dialog.tscn          # 15秒切屏确认弹窗场景
-            └── display_confirm_dialog.gd            # 15秒倒计时确认弹窗 (extends BaseDialog)
+	├── scene/
+	│   ├── lobby/
+	│   │   ├── display_lobby_scene.tscn             # 大厅主场景 (声明式极简 UI)
+	│   │   ├── display_lobby_scene.gd               # 大厅场景生命周期 (extends BaseScene)
+	│   │   └── display_lobby_view.gd                # 大厅被动视图 (extends BaseView)
+	│   └── settings/
+	│       ├── display_settings_scene.tscn          # 设置子场景 (声明式简约单卡片表单)
+	│       ├── display_settings_scene.gd            # 设置场景生命周期 (extends BaseScene)
+	│       └── display_settings_view.gd             # 设置页被动视图 (extends BaseView)
+	└── component/
+		└── confirm/
+			├── display_confirm_dialog.tscn          # 15秒切屏确认弹窗场景
+			└── display_confirm_dialog.gd            # 15秒倒计时确认弹窗 (extends BaseDialog)
 ```
 
 ---

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://src/test/display/view/scene/lobby/display_lobby_scene.gd" id="1_scene"]
 [ext_resource type="Script" path="res://src/test/display/view/scene/lobby/display_lobby_view.gd" id="2_view"]
-[ext_resource type="Texture2D" uid="uid://bnn7jikgn2u1b" path="res://src/assets/textures/ui/splash_cg.png" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://bnn7jikgn2u1b" path="res://src/assets/textures/splash/tex_splash_opening_cg.png" id="3_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
 bg_color = Color(0.07, 0.09, 0.14, 0.82)

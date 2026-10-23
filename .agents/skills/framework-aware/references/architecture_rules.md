@@ -54,6 +54,7 @@
 ### 核心对比查照
 - **单数技术/共享域**：`src/framework/`、`src/framework/infra/param/`、`src/framework/modules/logger/`、`src/framework/util/file/`、`src/game/shared/model/`、`src/game/shared/service/`、`src/game/shared/component/`、业务切片内 `view/scene/<domain>/` 与 `view/component/<domain>/`（每个单元文件夹按纯领域命名、无后缀，包裹 `1 个 .tscn + 多个 .gd`）。
 - **复数容器域**：`src/assets/videos/`、`src/assets/textures/`、`src/game/features/`、`addons/`、`docs/`、各模块内的 `types/`、`adapters/`。
+- **资产三轴拓扑**：`src/assets/<媒介容器(复数)>/<架构域(单数: shared 或 Feature 同名)>/`，文件名 `<prefix>_<domain>_<subject>[_<state>][_<index>]`；资产引用方向与代码 DAG 一致（框架零资产引用、Feature 仅引用自身域与 `shared/`），详见 `src/assets/_doc_assets.md`。
 
 ---
 

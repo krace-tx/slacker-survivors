@@ -146,6 +146,10 @@ func find_child_recursive(parent: Node, name: String) -> Node:
 
 ### 黄金范式 (Golden Pattern)
 ```gdscript
-# 正确：直接使用框架二级工具类 NodeUtils（位于 src/framework/util/node/node_utils.gd）
-var target_node := NodeUtils.find_child_recursive(self, "HealthBar")
+# 正确：节点查找直接使用引擎内置 API（recursive=true, owned=false），无需任何工具类封装
+var target_node := find_child("HealthBar", true, false)
+
+# 节点生命周期操作（挂载 / 实例化 / 销毁 / 就绪等待）才使用 NodeUtils（位于 src/framework/util/node/node_utils.gd）
+var spawn_res := NodeUtils.spawn(card_prefab, $CardContainer, "Card")
+NodeUtils.safe_free(old_card)
 ```

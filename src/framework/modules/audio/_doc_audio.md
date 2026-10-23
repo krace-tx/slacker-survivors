@@ -35,10 +35,10 @@ src/framework/modules/audio/
 
 ```gdscript
 # 1. 播放 BGM（支持传入路径或 AudioStream，支持 fade 秒数与 loop 控制）
-App.audio.play_bgm("res://src/assets/audio/bgm_main.mp3", 0.0, 1.0, true)
+App.audio.play_bgm("res://src/assets/audio/bgm/lobby/bgm_lobby_main_loop.ogg", 0.0, 1.0, true)
 
 # 2. 播放 SFX（已缓存音效零协程当场瞬发，支持随机微调音高防听觉疲劳）
-App.audio.play_sfx("res://src/assets/audio/click.wav", 0.0, randf_range(0.95, 1.05))
+App.audio.play_sfx("res://src/assets/audio/sfx/shared/sfx_shared_ui_click_01.wav", 0.0, randf_range(0.95, 1.05))
 
 # 3. 过场视频或语音期间压低与恢复 BGM（正交避让，不污染用户音量设置）
 App.audio.duck_bgm(0.2, 0.4)

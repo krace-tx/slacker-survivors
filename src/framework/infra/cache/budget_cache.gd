@@ -34,12 +34,12 @@ var _pinned: Dictionary = {}
 
 #region Lifecycle
 func _init(
-	max_bytes: int = _DEFAULT_MAX_BYTES,
+	p_max_bytes: int = _DEFAULT_MAX_BYTES,
 	ttl_msec: int = _DEFAULT_TTL_MSEC,
 	watermark: float = _DEFAULT_WATERMARK
 ) -> void:
 	# 1. 非法参数回落到默认：上限/TTL 须为正，水位须在 (0, 1]。
-	_max_bytes = max_bytes if max_bytes > 0 else _DEFAULT_MAX_BYTES
+	_max_bytes = p_max_bytes if p_max_bytes > 0 else _DEFAULT_MAX_BYTES
 	_ttl_msec = ttl_msec if ttl_msec > 0 else _DEFAULT_TTL_MSEC
 	_watermark = watermark if watermark > 0.0 and watermark <= 1.0 else _DEFAULT_WATERMARK
 #endregion

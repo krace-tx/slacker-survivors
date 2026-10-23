@@ -33,7 +33,7 @@ func initialize(config: LocaleConfig = null) -> Result:
 		if language >= 0 and language not in languages:
 			languages.append(language as LocaleConfig.Language)
 	if languages.is_empty():
-		push_warning("LocalizationSystem: No translations in Project Settings > Localization. Running in fallback mode with default language.")
+		# 项目尚未挂载翻译表时，静默回退至默认语言运行，避免启动期产生 Debugger 告警噪音
 		current_language = _config.default_language
 		languages.append(_config.default_language)
 		return Result.ok()

@@ -30,7 +30,7 @@ src/test/<feature_name>/
 ├── _doc_<feature_name>.md       # [可选] 测试目的与验证项说明
 ├── <feature_name>_test.tscn     # 测试入口场景 (根节点继承 BaseScene，包含 $UI: BaseView)
 ├── <feature_name>_test.gd       # 测试场景脚本
-└── assets/                      # [可选] 仅该测试模块专用的临时测试素材 (复数容器)
+└── assets/                      # [可选] 仅该测试模块专用的临时测试素材 (复数容器，命名见下方「测试素材规范」)
 ```
 
 ### 2. MSVP 交互模块模式（适用于复杂 UI 交互或玩法原型测试）
@@ -59,6 +59,18 @@ src/test/<feature_name>/
 ├── service/                     # 测试用例编排与结果校验 (*Service)
 └── <feature_name>_test.tscn     # 极简触发入口场景 (继承 BaseScene)
 ```
+
+### 4. 测试素材规范 (`assets/`)
+
+测试素材沿用 [`src/assets/_doc_assets.md`](file:///d:/code/GodotProject/slacker-survivors/src/assets/_doc_assets.md) 的媒介容器与文件命名规则，但**省略架构域层级**（测试目录本身即架构域），文件名第 2 段使用测试模块名：
+
+```text
+src/test/office_3d/assets/
+├── models/skm_office_3d_worker.glb
+└── textures/tex_office_3d_floor_albedo.png
+```
+
+测试素材验证通过、需要转正时，迁入 `src/assets/<容器>/<feature>/` 并将域段改为正式 Feature 名。
 
 ---
 

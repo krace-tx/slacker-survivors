@@ -6,11 +6,16 @@ extends VideoPlayerAdapter
 ## 直接桥接工程内置打包的两大官方原生硬件插件：[br]
 ## - Android：基于 Media3 ExoPlayer 的 [code]GodotVideoPlayer[/code] 插件单例；[br]
 ## - iOS：基于 AVFoundation / AVKit 的 [code]AVPlayer[/code] 插件单例；[br]
-## - 特性：直接调用芯片 VPU 硬件解码通道，零发热省电，零兼容包袱。
+## - 沙盒缓存与实体化生命周期委托给 [VideoCacheManager] 统一治理。
 
 ## 工程标准化原生单例名称
 const SINGLETON_ANDROID: StringName = &"GodotVideoPlayer"
 const SINGLETON_IOS: StringName = &"AVPlayer"
+
+## 兼容常量转发：移动端封包视频实体化沙盒缓存目录与默认容量上限（128 MB）
+const VIDEO_CACHE_DIR: String = VideoCacheManager.VIDEO_CACHE_DIR
+const DEFAULT_MAX_CACHE_BYTES: int = VideoCacheManager.DEFAULT_MAX_CACHE_BYTES
+const DEFAULT_PREWARM_HEAD_BYTES: int = VideoCacheManager.DEFAULT_PREWARM_HEAD_BYTES
 
 ## 支持的移动端标准硬件解码视频格式
 const SUPPORTED_EXTENSIONS: Array[String] = [
@@ -23,7 +28,9 @@ signal native_playback_started()
 signal native_playback_paused()
 signal native_playback_resumed()
 
+var _cache_manager: VideoCacheManager
 var _current_file: String = ""
+var _ephemeral_current: bool = false
 var _volume: float = 1.0
 var _loop: bool = false
 var _speed_scale: float = 1.0
@@ -31,8 +38,25 @@ var _playing: bool = false
 var _paused: bool = false
 
 
+func _init(cache_manager: VideoCacheManager = null) -> void:
+	_cache_manager = cache_manager if cache_manager != null else VideoCacheManager.new()
+
+
+func setup() -> void:
+	_cache_manager.setup()
+
+
+func dispose() -> void:
+	stop()
+	_cache_manager.dispose()
+
+
 func is_mobile_native() -> bool:
 	return true
+
+
+func supports_texture_output() -> bool:
+	return false
 
 
 func is_available() -> bool:
@@ -104,30 +128,30 @@ func play_native_cutscene(file_path: String, options: VideoPlayOptions = null) -
 			VideoError.NATIVE_PLUGIN_UNAVAILABLE,
 			"Native mobile video plugin singleton is not loaded on %s." % OS.get_name()
 		)
-	
+
+	_cleanup_ephemeral_if_needed()
 	_current_file = file_path
+	_ephemeral_current = options.ephemeral_cache if options != null else false
 	_playing = false
 	_paused = false
-	var real_path := _resolve_path(file_path)
+	var real_path := _cache_manager.resolve_playable_path(file_path)
 	_apply_options(singleton, options)
-	
-	# 连接原生插件的生命周期信号
+
 	_connect_signal(singleton, "video_completed", _on_native_completed)
 	_connect_signal(singleton, "video_error", _on_native_error)
 	_connect_persistent_signal(singleton, "video_started", _on_native_started)
 	_connect_persistent_signal(singleton, "video_paused", _on_native_paused)
 	_connect_persistent_signal(singleton, "video_resumed", _on_native_resumed)
-	
+
 	var allow_skip := options.allow_skip if options != null else true
-	
 	if not singleton.has_method("playVideo"):
 		return Result.err_code(VideoError.METHOD_NOT_FOUND, "Native singleton missing 'playVideo' method.")
-	
+
 	singleton.call("playVideo", real_path, allow_skip)
 
 	if options != null and options.start_position > 0.0:
 		seek(options.start_position)
-	
+
 	_playing = true
 	return Result.ok()
 
@@ -201,6 +225,29 @@ func stop() -> void:
 		singleton.call("stopVideo")
 	_playing = false
 	_paused = false
+	_cleanup_ephemeral_if_needed()
+
+
+#region Cache Governance Forwarding
+func materialize_and_warm(file_path: String, head_bytes: int = DEFAULT_PREWARM_HEAD_BYTES) -> Result:
+	return _cache_manager.materialize_and_warm(file_path, head_bytes, true)
+
+
+func evict_cached_file(file_path: String) -> Result:
+	return _cache_manager.evict_cached_file(file_path, _playing)
+
+
+func prune_cache(max_bytes: int = DEFAULT_MAX_CACHE_BYTES) -> Result:
+	return _cache_manager.prune_cache(max_bytes, _playing)
+
+
+func clear_cache(preserve_active: bool = true) -> Result:
+	return _cache_manager.clear_cache(preserve_active and _playing)
+
+
+func get_cache_size_bytes() -> int:
+	return _cache_manager.get_cache_size_bytes()
+#endregion
 
 
 #region Internal Helpers
@@ -223,9 +270,14 @@ func _connect_persistent_signal(target: Object, sig_name: String, callable: Call
 		target.connect(sig_name, callable)
 
 
-func _resolve_path(file_path: String) -> String:
-	var mat_res := FileUtils.materialize_res_file(file_path, "user://video_cache")
-	return str(mat_res.value) if mat_res.is_ok() else file_path
+func _cleanup_ephemeral_if_needed() -> void:
+	if not _ephemeral_current:
+		_cache_manager.release_active_path()
+		return
+	_ephemeral_current = false
+	if not _current_file.is_empty():
+		_cache_manager.evict_cached_file(_current_file, false)
+	_cache_manager.release_active_path()
 
 
 func _apply_options(singleton: Object, options: VideoPlayOptions) -> void:
@@ -245,12 +297,14 @@ func _apply_options(singleton: Object, options: VideoPlayOptions) -> void:
 func _on_native_completed() -> void:
 	_playing = false
 	_paused = false
+	_cleanup_ephemeral_if_needed()
 	native_playback_completed.emit()
 
 
 func _on_native_error(error_msg: Variant) -> void:
 	_playing = false
 	_paused = false
+	_cleanup_ephemeral_if_needed()
 	native_playback_error.emit(str(error_msg))
 
 

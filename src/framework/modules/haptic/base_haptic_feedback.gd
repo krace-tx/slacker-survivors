@@ -21,6 +21,7 @@ extends RefCounted
 ## [param intensity] 触觉强度等级（参见 [HapticIntensity]）。[br]
 ## [param amplitude] 归一化强度振幅（[code]0.0 ~ 1.0[/code]）。[br]
 ## [param duration_ms] 当前脉冲步长毫秒数。
+@warning_ignore("unused_signal")
 signal haptic_pulsed(intensity: int, amplitude: float, duration_ms: int)
 
 

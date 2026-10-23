@@ -1,7 +1,7 @@
 class_name Result
 extends RefCounted
 
-## 可失败操作的统一返回类型（对标 Unity Framework 的 Result / Result<T>）。
+## 可失败操作的统一返回类型。
 ## 强制调用方显式处理成功与失败分支，避免错误被静默吞没。
 
 #region Exports & State

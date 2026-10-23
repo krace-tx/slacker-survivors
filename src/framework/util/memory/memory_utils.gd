@@ -150,6 +150,7 @@ static func _texture_bytes(tex: Texture2D) -> int:
 
 	# 若包含 Mipmaps 金字塔，显存产生约 1/3 几何级数增量 (1 + 1/4 + 1/16 + ... = 4/3)
 	if tex.has_mipmaps():
+		@warning_ignore("integer_division")
 		return base_bytes + (base_bytes / 3)
 	return base_bytes
 #endregion

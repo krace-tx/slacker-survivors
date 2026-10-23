@@ -4,14 +4,14 @@ extends Resource
 ## 存储条目（元数据与多级路由策略契约）。[br]
 ##
 ## 定义单个业务数据实体在全生命周期中的多级存储策略（L1 内存 TTL、L2 磁盘路径/容灾/压缩/加密、L3 云端接口及 Schema 版本号）。[br]
-## 支持在 Godot 编辑器中通过 [b]右键 -> 新建 Resource -> StorageItem[/b] 可视化配置，
-## 也支持在代码中通过 [code]StorageItem.new(&"player_data", "user://saves/player_data.json")[/code] 及链式方法快速构造。
+## 业务层统一通过语义工厂 [method for_config]（映射至 [code]user://config/<domain>/<subject>.json[/code]）或
+## [method for_save]（映射至 [code]user://saves/<domain>/<subject>.<ext>[/code]）构造，确保一级生命周期分区与二级架构域 1:1 镜像隔离。
 
 #region Settings
-@export var key_id: StringName = &""      ## 资源的全局唯一短名称标识（如 &"player_data"）
+@export var key_id: StringName = &""      ## 资源的全局唯一命名空间标识（标准格式：&"<domain>:<subject>"，如 &"shared:player_profile"）
 
 @export_group("Disk Settings")
-@export var disk_path: String = ""        ## 本地持久化路径（如 user://saves/player_data.json），为空则不落盘
+@export var disk_path: String = ""        ## 本地持久化路径（如 user://saves/shared/player_profile.json），为空则不落盘
 @export var use_backup: bool = true       ## 是否启用 .tmp 原子写 + .bak 容灾备份与损坏自愈（默认开启）
 @export var compressed: bool = false      ## 是否使用 ZSTD 算法压缩落盘（适用于体积较大的关卡快照或配置缓存）
 @export var encryption_key: String = ""   ## AES-256 加密口令（非空时自动加密落盘，防止明文篡改存档）
@@ -40,6 +40,56 @@ func _init(
 	disk_path = p_disk_path.strip_edges()
 	schema_version = maxi(0, p_schema_version)
 	memory_ttl = p_memory_ttl
+
+
+#region Semantic Domain Factories
+## 按「二级架构域 + 主体名」合成全局唯一的存储键标识（格式：[code]&"<domain>:<subject>"[/code]）。
+static func make_key(domain: StringName, subject: String) -> StringName:
+	var clean_domain := String(domain).strip_edges()
+	var clean_subject := subject.strip_edges().trim_prefix("/").trim_suffix("/")
+	return StringName("%s:%s" % [clean_domain, clean_subject])
+
+
+## 构造【设备级本地配置】存储项（一级分区：[constant FileUtils.USER_CONFIG_DIR]，二级架构域：[param domain]）。[br]
+## 物理路径固定映射为 [code]user://config/<domain>/<subject>.json[/code]，保持明文 JSON 且不随云存档跨设备覆盖。[br]
+## [param domain] 二级架构域（[code]&"shared"[/code] 或具体 Feature 目录名）。[br]
+## [param subject] 配置文件主体名（不含扩展名，如 [code]"game_settings"[/code]）。[br]
+## [param p_schema_version] 配置结构版本号（默认 [code]1[/code]）。[br]
+## [param p_memory_ttl] L1 内存缓存存活秒数（默认 [code]-1.0[/code] 常驻）。
+static func for_config(
+	domain: StringName,
+	subject: String,
+	p_schema_version: int = 1,
+	p_memory_ttl: float = -1.0
+) -> StorageItem:
+	var clean_domain := String(domain).strip_edges()
+	var clean_subject := subject.strip_edges().get_basename()
+	var full_path := "%s/%s/%s.json" % [FileUtils.USER_CONFIG_DIR, clean_domain, clean_subject]
+	return StorageItem.new(make_key(domain, clean_subject), full_path, p_schema_version, p_memory_ttl)
+
+
+## 构造【玩家核心存档】存储项（一级分区：[constant FileUtils.USER_SAVES_DIR]，二级架构域：[param domain]）。[br]
+## 物理路径固定映射为 [code]user://saves/<domain>/<subject>.<ext>[/code]，纳入 `.tmp/.bak` 容灾自愈与云存档同步范围。[br]
+## [param domain] 二级架构域（[code]&"shared"[/code] 或具体 Feature 目录名，如 [code]&"battle"[/code]）。[br]
+## [param subject] 存档文件主体名（不含扩展名，如 [code]"player_profile"[/code]）。[br]
+## [param p_schema_version] 存档结构版本号（默认 [code]1[/code]）。[br]
+## [param ext] 扩展名（明文 JSON 传 [code]"json"[/code]，压缩或加密二进制存档传 [code]"sav"[/code]）。[br]
+## [param p_memory_ttl] L1 内存缓存存活秒数（默认 [code]-1.0[/code] 常驻）。
+static func for_save(
+	domain: StringName,
+	subject: String,
+	p_schema_version: int = 1,
+	ext: String = "json",
+	p_memory_ttl: float = -1.0
+) -> StorageItem:
+	var clean_domain := String(domain).strip_edges()
+	var clean_subject := subject.strip_edges().get_basename()
+	var clean_ext := ext.strip_edges().trim_prefix(".")
+	if clean_ext.is_empty():
+		clean_ext = "json"
+	var full_path := "%s/%s/%s.%s" % [FileUtils.USER_SAVES_DIR, clean_domain, clean_subject, clean_ext]
+	return StorageItem.new(make_key(domain, clean_subject), full_path, p_schema_version, p_memory_ttl)
+#endregion
 
 
 #region Fluent Builders

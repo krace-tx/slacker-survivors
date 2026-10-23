@@ -90,7 +90,8 @@ func read_async(key: StringName, kwargs: Dictionary = {}) -> Result:
 		var is_temp_target := save_path.is_empty()
 		if is_temp_target:
 			_temp_seq += 1
-			save_path = "user://storage_remote_tmp_%d_%d.bin" % [Time.get_ticks_msec(), _temp_seq]
+			FileUtils.ensure_dir_exists(FileUtils.USER_STORAGE_TMP_DIR)
+			save_path = "%s/remote_dl_%d_%d.tmp" % [FileUtils.USER_STORAGE_TMP_DIR, Time.get_ticks_msec(), _temp_seq]
 		elif bool(kwargs.get("use_backup", true)) and FileUtils.file_exists(save_path) and FileUtils.get_file_size(save_path) > 0:
 			FileUtils.copy_file(save_path, save_path + DiskStorageDriver.EXT_BAK)
 

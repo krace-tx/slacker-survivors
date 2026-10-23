@@ -55,16 +55,16 @@ var cache := BudgetCache.new(16 * 1024 * 1024, 60 * 1000, 0.8)
 
 # 2. 结合 MemoryUtils 估算体积并写入（ttl_msec = 0 表示使用实例默认 60s TTL）
 var est_bytes := MemoryUtils.estimate_resource_bytes(texture)
-cache.put(&"res://src/assets/textures/ui/banner.png", texture, est_bytes, 0)
+cache.put(&"res://src/assets/textures/lobby/tex_lobby_banner.png", texture, est_bytes, 0)
 
 # 3. 写入常驻核心资源并钉住（ttl_msec = -1 常驻 + pin 防 LRU 挤出）
-cache.put(&"res://src/assets/textures/ui/common_atlas.png", atlas_tex, 2 * 1024 * 1024, -1)
-cache.pin(&"res://src/assets/textures/ui/common_atlas.png")
+cache.put(&"res://src/assets/textures/shared/atl_shared_ui_common.png", atlas_tex, 2 * 1024 * 1024, -1)
+cache.pin(&"res://src/assets/textures/shared/atl_shared_ui_common.png")
 
 # 4. 读取缓存（命中自动续期 at 时间戳；未命中或过期返回 null）
-var hit := cache.read(&"res://src/assets/textures/ui/banner.png") as Texture2D
+var hit := cache.read(&"res://src/assets/textures/lobby/tex_lobby_banner.png") as Texture2D
 
 # 5. 查询占用状态与显式丢弃
 var used_bytes := cache.total_bytes()
-cache.drop(&"res://src/assets/textures/ui/banner.png")
+cache.drop(&"res://src/assets/textures/lobby/tex_lobby_banner.png")
 ```

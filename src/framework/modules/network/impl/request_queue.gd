@@ -465,7 +465,9 @@ func _execute_single_attempt(
 
 	# 3. 2xx 响应体解析
 	if raw_body.is_empty() or status_code == 204 or request.method == "HEAD":
-		return Result.ok({} if request.expect_json else "")
+		if request.expect_json:
+			return Result.ok({})
+		return Result.ok("")
 
 	var text := raw_body.get_string_from_utf8()
 	if not request.expect_json:

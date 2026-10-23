@@ -25,9 +25,10 @@ description: >-
 ├── 3. 调用 App.xxx 全局门面服务 (App.net, App.storage, App.audio, App.video, App.logger, App.scene 等)
 ├── 4. 调用事件总线 (Bus) 或启动管线 (BootPipeline / BootStage / FrameworkRuntime)
 ├── 5. 使用框架工具类与基建原语 (NodeUtils, FileUtils, TimeUtils, CoordUtils, TaskScope, BaseParams 等)
+├── 6. 新增/重命名/移动/引用 src/assets/ 下的美术与媒体资产 (贴图、Spine、模型、音频、视频、字体)
        │
        ├── 【是】 ──► 触发本 Skill 流程（扫描关键词 ➔ 查阅注入文档 ➔ 声明 ➔ 编码）
-       └── 【否】 ──► 纯文档/配置调整/纯资产操作，无需阻塞，直接执行
+       └── 【否】 ──► 纯文档/配置调整，无需阻塞，直接执行
 ```
 
 ---

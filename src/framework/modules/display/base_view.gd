@@ -95,7 +95,7 @@ func get_params() -> BaseParams:
 
 #region Subclass Hooks
 ## 视图打开时回调（用于挂载数据、刷新界面）
-func _on_open(_params: BaseParams = null) -> void:
+func _on_open(_open_params: BaseParams = null) -> void:
 	pass
 
 

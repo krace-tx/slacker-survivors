@@ -193,11 +193,11 @@ func get_vector(
 		_compute_axis_action_strength(positive_x, dz) - _compute_axis_action_strength(negative_x, dz),
 		_compute_axis_action_strength(positive_y, dz) - _compute_axis_action_strength(negative_y, dz)
 	)
-	var len := raw_vec.length()
-	if len <= 0.001:
+	var vec_len := raw_vec.length()
+	if vec_len <= 0.001:
 		return Vector2.ZERO
-	if len > 1.0:
-		return raw_vec / len
+	if vec_len > 1.0:
+		return raw_vec / vec_len
 	return raw_vec
 
 

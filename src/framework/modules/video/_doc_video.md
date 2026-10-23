@@ -13,15 +13,16 @@ src/framework/modules/video/
 │   ├── video_play_options.gd              # 播放配置实体 (继承 BaseParams，支持流式 Builder 与字典序列化)
 │   └── video_backend_type.gd              # 驱动类型枚举 (AUTO, ADDON_FFMPEG, NATIVE_MOBILE, ENGINE_THEORA)
 │
-└── impl/                                  # [私有收敛] 内部实现与组件
-    ├── video_player.gd                    # 门面核心实现 (实现 BaseVideoPlayer，调度多端管线与音画避让)
-    ├── components/                        # 内部私有视觉组件
-    │   └── video_cutscene_overlay.gd      # 全屏剧情过场渲染遮罩层 (纯黑防穿透底衬、居中 TextureRect 与跳过交互)
-    └── adapters/                          # 跨平台桥接适配器层
-        ├── video_player_adapter.gd        # 适配器基类接口 (带生命周期与能力查询)
-        ├── addon_video_adapter.gd         # 桥接 PC 桌面端 (Win/Mac/Linux) FFmpeg GDExtension
-        ├── native_mobile_video_adapter.gd # 桥接 移动端 (Android ExoPlayer / iOS AVPlayer) 原生插件
-        └── engine_video_adapter.gd        # 兜底桥接 原生 VideoStreamPlayer (OGV Theora 免插件保底)
+└── impl/                                  # [私有收敛] 单一职责内部实现与组件（100% 零业务 UI 耦合）
+	├── video_player.gd                    # 门面协调器 (实现 BaseVideoPlayer，负责状态机流转、多端路由与音画避让)
+	├── video_stream_host.gd               # 桌面流离屏宿主与帧缓冲隔离器 (VideoStreamHost：透明离屏节点、首帧门控锁存、TextureRect 弱引用绑定、Standby 首帧挂起)
+	├── video_prewarmer.gd                 # 异步预热调度器 (VideoPrewarmer：WorkerThreadPool 512KB moov 预读与 VideoStream LRU 预热池)
+	├── video_cache_manager.gd             # 沙盒缓存治理器 (VideoCacheManager：user://video_cache 实体化、128MB LRU 裁剪、播完即焚)
+	└── adapters/                          # 跨平台桥接适配器层
+		├── video_player_adapter.gd        # 适配器基类接口 (带生命周期与能力查询)
+		├── addon_video_adapter.gd         # 桥接 PC 桌面端 (Win/Mac/Linux) FFmpeg GDExtension
+		├── native_mobile_video_adapter.gd # 桥接 移动端 (Android ExoPlayer / iOS AVPlayer) 原生插件
+		└── engine_video_adapter.gd        # 兜底桥接 原生 VideoStreamPlayer (OGV Theora 免插件保底)
 
 # 外部插件与跨平台预编译底座目录 (addons/):
 addons/
@@ -41,12 +42,12 @@ addons/
 │   ├── build_android.sh                   # 打包与 --check 校验脚本 (支持 Gradle 与 javac 自动回退)
 │   └── src/                               # 完整 Java 原生源码
 └── video_player_ios/                      # iOS 原生硬件加速底座 (AVPlayer)
-    ├── plugin.cfg                         # Godot 插件描述
-    ├── export_plugin.gd                   # Godot 导出插件 (自动注册 .gdip)
-    ├── godot_video_player.gdip            # iOS 依赖描述 (链接 AVFoundation/AVKit)
-    ├── godot_video_player.a               # 预编译就绪静态库 (arm64 真实设备支持，导出注册入口)
-    ├── build_ios.sh                       # 静态库一键构建与 --check 校验脚本
-    └── src/                               # 完整 Objective-C++ 原生源码
+	├── plugin.cfg                         # Godot 插件描述
+	├── export_plugin.gd                   # Godot 导出插件 (自动注册 .gdip)
+	├── godot_video_player.gdip            # iOS 依赖描述 (链接 AVFoundation/AVKit)
+	├── godot_video_player.a               # 预编译就绪静态库 (arm64 真实设备支持，导出注册入口)
+	├── build_ios.sh                       # 静态库一键构建与 --check 校验脚本
+	└── src/                               # 完整 Objective-C++ 原生源码
 ```
 
 ---
@@ -66,9 +67,17 @@ addons/
    - `VideoPlaybackState` 内置合法状态流转矩阵 `VALID_TRANSITIONS`，严禁非法跳跃；提供 `is_active()` 与 `is_terminal()` 状态语义快速判断。
 5. **参数契约实体化 (BaseParams Integration)**：
    - `VideoPlayOptions` 继承框架统一的 `BaseParams`，不仅支持流式链式配置（Fluent Builder），更原生具备 Dictionary 自动双向映射，场景间传参零样板代码。
-6. **视觉呈现与播放逻辑解耦**：
-   - 全屏过场视觉逻辑收敛于 `VideoCutsceneOverlay`，负责纯黑底衬、画面比例对齐与跳过按钮平滑淡入，`VideoPlayer` 专注音视频时序与生命周期。
-7. **显式依赖注入与正交音频避让 (Explicit DI & Orthogonal Audio Ducking)**：
+6. **100% 零业务 UI 耦合与首帧防黑屏门控 (`VideoStreamHost`)**：
+   - 框架层严禁内置创建任何业务 UI 按钮、圆角样式或独立 `CanvasLayer`，所有过场界面、跳过按钮、字幕与遮罩完全由业务层 `.tscn` 视图自主掌控；
+   - `VideoStreamHost` 将底层 `VideoStreamPlayer` 置于离屏透明隔离态（`self_modulate.a = 0.0`、`size = Vector2.ZERO`、`mouse_filter = MOUSE_FILTER_IGNORE`），既保证引擎渲染管线持续刷新视频帧纹理，又彻底杜绝根视口 `(0, 0)` 裸绘穿帮；
+   - `VideoStreamHost` 维护前后台帧缓冲锁存（`_latched_front_texture`）与弱引用画布绑定（`App.video.bind_display(texture_rect)`），仅当解码器输出有效宽高首帧（`width > 1 and height > 1`）时才锁存暴露、自动投射到业务 `TextureRect` 并触发 `first_frame_ready` 信号，停播（`stop()`）时立即清空缓冲，根除起播闪黑与旧视频尾帧残留。
+7. **512KB 文件头（`moov`）异步预热与首帧挂起 (`VideoPrewarmer` & Standby)**：
+   - `VideoPrewarmer` 通过 `WorkerThreadPool` 后台线程以 64KB 恒定分块流式预读视频前 512KB（覆盖 MP4 `ftyp` + `moov` 索引表 + 首个关键帧簇）打入操作系统文件页缓存（OS PageCache），并在移动端协同 `VideoCacheManager` 提前完成 `user://video_cache` 沙盒按需实体化；
+   - 桌面端维护固定容量 LRU 的 `VideoStream` 预实例化池，并在播放器空闲时由 `VideoStreamHost` 进入静音首帧解码挂起态（Standby），使随后的 `open()` 或 `play_cutscene()` 达到 0ms 瞬时响应。
+8. **沙盒视频缓存安全与生命周期治理 (`VideoCacheManager`)**：
+   - `VideoCacheManager` 专职负责 `user://video_cache` 的 MD5 确定性路径实体化、128MB LRU 容量预算裁剪（`prune_cache`）与启动期残余 `.tmp`/`.swap_bak` 自动清理，使 `NativeMobileVideoAdapter` 保持纯粹的原生插件桥接职责；
+   - `VideoPlayOptions.with_ephemeral_cache(true)` 支持敏感剧情视频“播完即焚”（播放完成、跳过或停止时自动抹除 `user://video_cache` 下的明文缓存文件），同时提供 `App.video.clear_cache()` 与 `App.video.get_cache_size_bytes()` 统一治理接口。
+9. **显式依赖注入与正交音频避让 (Explicit DI & Orthogonal Audio Ducking)**：
    - `VideoPlayer` 声明 `MODULE_ID = &"video"` 与 `OPTIONAL_MODULES = [&"audio", &"logger"]`，由 `FrameworkRuntime` 显式构造注入 `BaseAudioSystem` 与 `BaseFrameworkLogger`，零 `App.xxx` 隐式耦合。
    - 视频播放时调用 `_audio_system.duck_bgm(0.0, duck_fade_seconds)` 进行**正交音画避让**（不污染用户设定的 BGM 音量滑块值）；视频停止、自然结束或异常退出时自动调用 `unduck_bgm(duck_fade_seconds)` 平滑恢复，并通过递增 `_operation_token` 与 `300s` 超时守卫杜绝异步过场协程竞态悬挂。
 
@@ -78,27 +87,27 @@ addons/
 
 ```mermaid
 stateDiagram-v2
-    [*] --> IDLE
-    IDLE --> OPENING: open()
-    OPENING --> PLAYING: auto_play == true
-    OPENING --> STOPPED: auto_play == false
-    OPENING --> ERROR: file not found / codec unsupported
-    
-    PLAYING --> PAUSED: pause()
-    PAUSED --> PLAYING: resume()
-    
-    PLAYING --> FINISHED: natural end
-    PLAYING --> STOPPED: stop()
-    PAUSED --> STOPPED: stop()
-    
-    FINISHED --> PLAYING: replay / seek
-    FINISHED --> STOPPED: stop()
-    
-    STOPPED --> PLAYING: play()
-    STOPPED --> OPENING: open()
-    
-    ERROR --> OPENING: retry open()
-    ERROR --> IDLE: dispose()
+	[*] --> IDLE
+	IDLE --> OPENING: open()
+	OPENING --> PLAYING: auto_play == true
+	OPENING --> STOPPED: auto_play == false
+	OPENING --> ERROR: file not found / codec unsupported
+	
+	PLAYING --> PAUSED: pause()
+	PAUSED --> PLAYING: resume()
+	
+	PLAYING --> FINISHED: natural end
+	PLAYING --> STOPPED: stop()
+	PAUSED --> STOPPED: stop()
+	
+	FINISHED --> PLAYING: replay / seek
+	FINISHED --> STOPPED: stop()
+	
+	STOPPED --> PLAYING: play()
+	STOPPED --> OPENING: open()
+	
+	ERROR --> OPENING: retry open()
+	ERROR --> IDLE: dispose()
 ```
 
 ---
@@ -121,60 +130,78 @@ stateDiagram-v2
 ```gdscript
 # 使用 Fluent Builder 构建强类型播放配置
 var options := VideoPlayOptions.new() \
-    .with_loop(false) \
-    .with_auto_play(true) \
-    .with_duck_bgm(true, 0.5) \
-    .with_volume(0.9)
+	.with_loop(false) \
+	.with_auto_play(true) \
+	.with_duck_bgm(true, 0.5) \
+	.with_volume(0.9)
 
 # 打开并播放视频
-var result := App.video.open("res://src/assets/videos/intro.mp4", options)
+var result := App.video.open("res://src/assets/videos/splash/vid_splash_intro.mp4", options)
 if result.is_err():
-    App.logger.error("Video", "打开视频失败 [%s]: %s" % [result.error_code(), result.error_message()])
-    return
+	App.logger.error("Video", "打开视频失败 [%s]: %s" % [result.error_code(), result.error_message()])
+	return
 
 # 监听播放完成
 App.video.playback_finished.connect(func():
-    App.logger.info("Video", "剧情视频播放完毕，进入主界面")
-    App.scene.replace(GameScenes.Scene.SPLASH)
+	App.logger.info("Video", "剧情视频播放完毕，进入主界面")
+	App.scene.replace(GameScenes.Scene.SPLASH)
 , CONNECT_ONE_SHOT)
 ```
 
-### 2. 全屏剧情过场播放 (跨端自适应)
+### 2. 异步预热与剧情过场播放 (绑定业务层 `.tscn` 画布 + 零黑闪 + 播完即焚)
 ```gdscript
-# 配置前 3 秒禁止跳过，3 秒后平滑淡出跳过按钮
-var cutscene_opts := VideoPlayOptions.new() \
-    .with_skip(true, 3.0) \
-    .with_duck_bgm(true, 0.4)
+@onready var cutscene_screen: TextureRect = $CutsceneScreen
+@onready var skip_btn: BaseTextureButton = $SkipButton
 
-# 过场调用是异步的；完成或玩家跳过之后自动继续后续业务流程
-var result := await App.video.play_cutscene("res://src/assets/videos/cg_opening.mp4", cutscene_opts)
-if result.is_err():
-    App.logger.error("Video", "过场播放异常: %s" % result.error_message())
-    return
+func _ready() -> void:
+	# 业务层自己的跳过按钮：直接调用 App.video.stop() 即可中断过场等待协程
+	skip_btn.pressed.connect(func(): App.video.stop())
 
-App.scene.replace("res://src/game/features/splash/view/splash_scene.tscn")
+func play_opening_cg() -> void:
+	# 提前在场景加载或 Boss 战前异步预热 512KB moov 头并锁存首帧画面
+	App.video.prewarm("res://src/assets/videos/splash/vid_splash_opening.mp4", true)
+
+	var cutscene_opts := VideoPlayOptions.new() \
+		.with_duck_bgm(true, 0.4) \
+		.with_first_frame_gate(true, 0.5) \
+		.with_ephemeral_cache(true)
+
+	# 传入业务层自己的 TextureRect ($CutsceneScreen)，首帧就绪自动揭幕，结束或跳过后自动清空解绑
+	var result := await App.video.play_cutscene(
+		"res://src/assets/videos/splash/vid_splash_opening.mp4",
+		cutscene_opts,
+		cutscene_screen
+	)
+	if result.is_err():
+		App.logger.error("Video", "过场播放异常: %s" % result.error_message())
+		return
+
+	App.scene.replace(GameScenes.Scene.SPLASH)
 ```
 
-### 3. 将视频纹理绑定至 UI / 材质画面
+### 3. 将视频画面绑定至常驻 UI / 3D 材质表面
 ```gdscript
-@onready var screen: TextureRect = $VideoScreen
+@onready var preview_rect: TextureRect = $SkillPreviewRect
 
-func _process(_delta: float) -> void:
-    if App.video.is_playing() and screen.texture == null:
-        screen.texture = App.video.get_video_texture()
+func show_skill_preview(video_path: String) -> void:
+	# 方式 A：直接绑定业务 TextureRect（弱引用持有，首帧就绪自动赋纹理，stop() 自动清空）
+	App.video.bind_display(preview_rect)
+	App.video.open(video_path, VideoPlayOptions.new().with_loop(true).with_duck_bgm(false))
 
-# 原生移动端播放器使用系统 Overlay，通常不会提供 Texture2D；
-# 需要纹理合成时请使用可输出 VideoStream 的桌面/引擎后端。
+	# 方式 B：用于 3D 材质 Shader 时，监听 first_frame_ready 信号获取锁存纹理
+	App.video.first_frame_ready.connect(func():
+		tv_material.albedo_texture = App.video.get_video_texture()
+	, CONNECT_ONE_SHOT)
 ```
 
 ### 4. 播放控制 (暂停 / 恢复 / 跳转 / 状态监听)
 ```gdscript
 # 状态机监听
 App.video.state_changed.connect(func(new_state: int, old_state: int):
-    App.logger.debug("Video", "状态跃迁: %s -> %s" % [
-        VideoPlaybackState.to_string_name(old_state),
-        VideoPlaybackState.to_string_name(new_state)
-    ])
+	App.logger.debug("Video", "状态跃迁: %s -> %s" % [
+		VideoPlaybackState.to_string_name(old_state),
+		VideoPlaybackState.to_string_name(new_state)
+	])
 )
 
 # 暂停与恢复 (全端生效，无论是原生 ExoPlayer/AVPlayer 还是桌面端 FFmpeg)

@@ -46,42 +46,89 @@ src/framework/modules/storage/
    - 若存档版本高于当前客户端支持版本，返回 [`StorageError.VERSION_TOO_NEW`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_error.gd) 拒绝降级覆盖坏档。
 6. **显式绑定与纯异步契约 (Explicit Binding & Async Contract)**：
    - 所有读写统一通过 `await App.storage.read_async(target, policy)` / `await App.storage.write_async(target, data, policy)` 执行；
-   - 按 `key_id` 访问前必须先通过 `App.storage.bind(item)` 显式注册 [`StorageItem`](file:///Users/krace/Code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd)（或直接传入 `StorageItem` 实例），未绑定时严格返回 `StorageError.UNBOUND_ITEM`。
+   - 按 `key_id` 访问前必须先通过 `App.storage.bind(item)` 显式注册 [`StorageItem`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd)（或直接传入 `StorageItem` 实例），未绑定时严格返回 `StorageError.UNBOUND_ITEM`。
 
 ---
 
-## 二、 使用范式
+## 二、 本地沙盒持久化与缓存拓扑规范 (`user://` Sandbox Topology & Tier-2 Domain Contract)
+
+### 1. 一级按生命周期分 5 区 × 二级按架构域 1:1 镜像隔离
+
+**层级深度铁律**：`user://<一级分区>/<二级域>/<文件名>`（严格封顶 **2 层目录**，严禁在 `user://` 或一级分区根部直接平铺业务文件，严禁出现 3 层及以上深层嵌套）。
+
+```text
+user://
+├── config/                                   # [一级：设备本地配置区] 绑定当前硬件设备、不随云存档跨设备覆盖
+│   ├── shared/                               # [二级：业务架构域] 对应 src/game/shared/model/save/
+│   │   └── game_settings.json
+│   └── <feature>/                            # [二级：业务架构域] 对应 src/game/features/<feature>/model/
+│
+├── saves/                                    # [一级：玩家核心存档区] 核心资产，纳入 .tmp/.bak 自愈与云存档同步
+│   ├── shared/                               # [二级：业务架构域] 跨 2+ 模块共享存档 (Rule of 2+)
+│   │   └── player_profile.json
+│   └── <feature>/                            # [二级：业务架构域] 垂直模块私有存档 (与 Feature 目录名逐字一致)
+│       └── run_snapshot.sav                  #   如 user://saves/battle/run_snapshot.sav
+│
+├── cache/                                    # [一级：衍生缓存区] 100% 可随时安全清空（删空不影响任何存档与设置）
+│   ├── res/                                  # [二级：框架模块域] 归属 FileUtils (PCK 封包资源实体化)
+│   ├── video/                                # [二级：框架模块域] 归属 VideoPlayer (视频流预热与实体化)
+│   └── net/                                  # [二级：框架模块域] 归属 NetworkClient (HTTP 静态资源缓存)
+│
+├── tmp/                                      # [一级：瞬态事务中转区] 启动或恢复时可无条件清空
+│   └── storage/                              # [二级：框架模块域] 归属 StorageSystem (远端流式下载中转)
+│
+└── logs/                                     # [一级：诊断日志区]
+    ├── godot.log                             # (引擎底层固定输出豁免)
+    └── crash/                                # [二级：框架模块域] 归属 FrameworkLogger (崩溃快照归档)
+```
+
+### 2. 二级架构与代码归属四大红线
+
+1. **业务持久区（`config/` & `saves/`）与代码架构域 1:1 镜像**：
+   - `shared/` 仅限 [`src/game/shared/model/save/`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/save/) 下的跨模块共享模型使用；
+   - `<feature>/` 必须与 `src/game/features/<feature>/model/` 的模块文件夹名逐字一致，严禁跨模块越权读写。
+2. **二级域与 `STORAGE_KEY` 命名空间强绑定**：
+   - `key_id` 统一采用 `&"<domain>:<subject>"` 格式（如 `&"shared:game_settings"`、`&"shared:player_profile"`），彻底杜绝不同模块在 L1 内存池发生键名冲突。
+3. **业务层零裸写 `user://` 路径**：
+   - 业务层（`src/game/`）严禁手写 `"user://..."` 字符串或直接调用 `StorageItem.new()`，统一在 `*Model` 中通过 [`StorageItem.for_config(domain, subject, version)`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd#L52) 或 [`StorageItem.for_save(domain, subject, version, ext)`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd#L71) 构造。
+4. **基建衍生区（`cache/` & `tmp/`）常量统一**：
+   - 框架内部缓存与中转路径统一引用 [`FileUtils`](file:///d:/code/GodotProject/slacker-survivors/src/framework/util/file/file_utils.gd#L24-L35) 的 `USER_RES_CACHE_DIR`、`USER_VIDEO_CACHE_DIR`、`USER_STORAGE_TMP_DIR` 等标准常量。
+
+---
+
+## 三、 使用范式
 
 ### 1. 标准模型绑定、版本迁移与三级异步读写
 ```gdscript
-# 1. 定义并绑定 StorageItem（支持链式开启备份、版本号或加密）
-var item := StorageItem.new(&"player_data", "user://saves/player_data.json", 2) \
+# 1. 通过语义工厂构造并绑定 StorageItem（自动映射至 user://saves/shared/player_profile.json）
+var item := StorageItem.for_save(&"shared", "player_profile", 2) \
 	.with_remote("/v1/cloud_save/player", "POST")
 App.storage.bind(item)
 
 # 2. 注册 v1 -> v2 存档结构迁移
-App.storage.register_migration(&"player_data", 1, 2, func(old_dict: Dictionary) -> Dictionary:
+App.storage.register_migration(&"shared:player_profile", 1, 2, func(old_dict: Dictionary) -> Dictionary:
 	old_dict["talent_levels"] = old_dict.get("talents", {})
 	old_dict.erase("talents")
 	return old_dict
 )
 
 # 3. 异步写入与读取
-var write_res := await App.storage.write_async(&"player_data", profile.to_dict())
-var read_res := await App.storage.read_async(&"player_data", StorageReadMode.CACHE_FIRST)
+var write_res := await App.storage.write_async(&"shared:player_profile", profile.to_dict())
+var read_res := await App.storage.read_async(&"shared:player_profile", StorageReadMode.CACHE_FIRST)
 if read_res.is_ok():
 	var profile_dict: Dictionary = read_res.value
 ```
 
 ### 2. 纯本地偏好设置离线读写 (`LOCAL_ONLY`)
 ```gdscript
+# GameSettingsModel.storage_item() 内部通过 StorageItem.for_config(&"shared", "game_settings", 2) 构造
 var item := GameSettingsModel.storage_item()
 App.storage.bind(item)
 
 var read_res := await App.storage.read_async(item, StorageReadMode.LOCAL_ONLY)
 var settings := GameSettingsModel.new(read_res.value if read_res.is_ok() else {})
 
-# 修改后原子落盘
-settings.master_volume = 0.8
+# 修改后原子落盘至 user://config/shared/game_settings.json
+settings.audio.master_volume = 0.8
 await App.storage.write_async(item, settings.to_dict(), StorageWriteMode.LOCAL_ONLY)
 ```

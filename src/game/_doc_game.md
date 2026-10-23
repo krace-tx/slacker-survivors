@@ -12,11 +12,13 @@
 
 ```text
 src/
-├── assets/                      # [原始美术与音频素材]
-│   ├── audio/                   # 音效与音乐 (bgm/, sfx/)
-│   ├── textures/                # 纹理贴图 (ui/, characters/)
-│   ├── fonts/                   # 字体文件
-│   └── videos/                  # CG 与动画过场视频 (.mp4, .ogv)
+├── assets/                      # [运行时美术与媒体资产] 规范详见 src/assets/_doc_assets.md
+│   ├── textures/                # 一级：媒介容器 (复数) → textures/ spines/ models/ materials/ shaders/ themes/ fonts/ videos/
+│   │   ├── shared/              # 二级：架构域 (单数) → shared/ (Rule of 2+) 或与 features/<feature>/ 逐字同名
+│   │   └── splash/              #   └─ 文件名：<prefix>_<domain>_<subject>[_<state>][_<index>] (如 btn_splash_retry_normal.svg)
+│   ├── audio/                   # 音频媒介组：bgm/ sfx/ vox/ amb/ 子容器 → 再按架构域分包
+│   ├── fonts/                   # 字体文件与 FontVariation
+│   └── videos/                  # CG 与过场视频 (.mp4 + 同名 .ogv 兜底)
 │
 ├── resources/                   # [Godot 资源与静态配置表]
 │   ├── configs/                 # 游戏策划数值配置、关卡表、物品表

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/game/features/splash/view/component/progress/boot_progress_panel.gd" id="1_panel"]
 [ext_resource type="Script" path="res://src/game/features/splash/view/component/progress/boot_progress_bar.gd" id="2_bar"]
 [ext_resource type="Script" path="res://src/game/shared/component/button/base_texture_button.gd" id="3_base_tex_btn"]
-[ext_resource type="Texture2D" path="res://src/assets/textures/ui/btn_minimal_retry.svg" id="4_btn_tex"]
+[ext_resource type="Texture2D" path="res://src/assets/textures/splash/btn_splash_retry_normal.svg" id="4_btn_tex"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
 bg_color = Color(0.98, 0.96, 0.93, 0.22)

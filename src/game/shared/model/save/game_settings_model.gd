@@ -17,8 +17,9 @@ extends BaseParams
 
 signal data_changed()
 
-const STORAGE_KEY: StringName = &"game_settings"
-const _STORAGE_DISK_PATH: String = "user://saves/game_settings.json"
+const STORAGE_DOMAIN: StringName = &"shared"
+const STORAGE_SUBJECT: String = "game_settings"
+const STORAGE_KEY: StringName = &"shared:game_settings"
 const _STORAGE_SCHEMA_VERSION: int = 2
 const DEFAULT_LOCALE: String = GeneralSettingsData.DEFAULT_LOCALE
 
@@ -47,11 +48,11 @@ var general: GeneralSettingsData = GeneralSettingsData.new()
 
 #region 公开方法
 
-## 创建全局偏好设置标准存储配置项
+## 创建全局偏好设置标准存储配置项（落盘至设备本地配置区 user://config/shared/game_settings.json）
 static func storage_item() -> StorageItem:
-	return StorageItem.new(
-		STORAGE_KEY,
-		_STORAGE_DISK_PATH,
+	return StorageItem.for_config(
+		STORAGE_DOMAIN,
+		STORAGE_SUBJECT,
 		_STORAGE_SCHEMA_VERSION,
 		-1.0
 	)

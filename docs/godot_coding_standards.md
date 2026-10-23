@@ -13,12 +13,12 @@
 
 ```mermaid
 flowchart TD
-    Test["测试与原型验证层 (res://src/test/)"] --> Game["游戏业务层 (res://src/game/)"]
-    Game --> Facade["Framework 公开门面与契约 (App.xxx / Bus / Base* / types/)"]
-    Facade --> Impl["Framework 模块私有实现 (src/framework/modules/*/impl/)"]
-    Impl --> InfraUtil["通用基建与纯函数工具 (src/framework/infra/ & util/)"]
-    InfraUtil --> Core["核心契约 (Result / FrameworkError)"]
-    Core --> Engine["Godot 4.7 Engine / OS / RenderingServer"]
+	Test["测试与原型验证层 (res://src/test/)"] --> Game["游戏业务层 (res://src/game/)"]
+	Game --> Facade["Framework 公开门面与契约 (App.xxx / Bus / Base* / types/)"]
+	Facade --> Impl["Framework 模块私有实现 (src/framework/modules/*/impl/)"]
+	Impl --> InfraUtil["通用基建与纯函数工具 (src/framework/infra/ & util/)"]
+	InfraUtil --> Core["核心契约 (Result / FrameworkError)"]
+	Core --> Engine["Godot 4.7 Engine / OS / RenderingServer"]
 ```
 
 1. **框架层零业务耦合**：`src/framework/` 严禁引用任何 `src/game/` 或 `src/test/` 的脚本、场景或业务资产路径。
@@ -82,6 +82,28 @@ flowchart TD
 - **`*Data`**：内嵌于父容器的子数据块、背包/排行榜列表子项（[`DisplaySettingsData`](file:///d:/code/GodotProject/slacker-survivors/src/game/shared/model/data/display_settings_data.gd)、`RewardItemData`）；
 - **`*Params`**：跨场景路由（`App.scene`）或开弹窗（`DialogManager`）的瞬态强类型入参/出参包，继承 [`BaseParams`](file:///d:/code/GodotProject/slacker-survivors/src/framework/infra/param/base_params.gd)（[`SplashEnterParams`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_enter_params.gd)）；
 - **`*Context`**：MES 引擎推演或多步管线的共享上下文（[`SplashBootContext`](file:///d:/code/GodotProject/slacker-survivors/src/game/features/splash/model/splash_boot_context.gd)）。
+
+### 4. 美术与媒体资产 (`src/assets/`) 命名与拓扑
+
+资产按 **「媒介容器 × 架构域 × 语义角色」三轴正交**治理，完整规范见 [`src/assets/_doc_assets.md`](file:///d:/code/GodotProject/slacker-survivors/src/assets/_doc_assets.md)：
+
+- **目录**：`<媒介容器(复数)>/<架构域(单数)>/[<主体分组>/]`，架构域只能是 `shared`（Rule of 2+）或与 `src/game/features/<feature>/` 逐字同名；`audio/` 额外按总线分 `bgm/ sfx/ vox/ amb/` 子容器；
+- **文件名**：`<type_prefix>_<domain>_<subject>[_<variant>][_<state|channel|direction>][_<locale>][_<index>].<ext>`，全小写 `snake_case`，第 2 段必须等于架构域目录名（如 `textures/splash/btn_splash_retry_normal.svg`、`audio/sfx/battle/sfx_battle_hit_01.wav`）；
+- **依赖**：`src/framework/` 禁止引用任何资产；`features/<f>/` 只能引用 `<f>/` 与 `shared/` 域资产；DCC 源文件（`.psd` / `.blend` / `.spine` …）严禁进入 `src/assets/`。
+
+### 5. 本地沙盒持久化与缓存 (`user://`) 拓扑与二级架构域规范
+
+本地可读写沙盒卷（`user://`）按 **「一级生命周期分区 × 二级架构归属域」** 双层结构治理（封顶 2 层目录，严禁在 `user://` 或一级分区根部散落业务文件），完整规范见 [`src/framework/modules/storage/_doc_storage.md`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/_doc_storage.md)：
+
+- **一级分区（5 大职能区）**：
+  - `user://config/<domain>/`：设备级本地配置（如显示/分辨率/画质/键位，明文 `.json`，不随云存档跨设备覆盖）；
+  - `user://saves/<domain>/`：玩家核心进度存档（`.json` 或压缩/加密 `.sav`，纳入 `.tmp/.bak` 自愈与云存档同步）；
+  - `user://cache/<module>/`：可随时安全清空的衍生缓存（`cache/res/`、`cache/video/`、`cache/net/`）；
+  - `user://tmp/<module>/`：瞬态事务与流式下载中转区（`tmp/storage/`）；
+  - `user://logs/`：引擎日志与 `logs/crash/` 崩溃诊断快照。
+- **二级架构域与代码归属约束（由 `check_compliance` 门禁强制校验）**：
+  - `src/game/` 下**严禁裸写 `"user://..."` 字符串字面量**，且仅允许 `model/` 下的 `*Model` 持久化类通过 [`StorageItem.for_config(domain, subject, version)`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd#L52) 或 [`StorageItem.for_save(domain, subject, version, ext)`](file:///d:/code/GodotProject/slacker-survivors/src/framework/modules/storage/types/storage_item.gd#L71) 声明存储项；
+  - `src/game/shared/model/save/` 下的模型，`STORAGE_DOMAIN` 必须为 `&"shared"`；`src/game/features/<feature>/model/` 下的模型，`STORAGE_DOMAIN` 必须与 `<feature>` 目录名逐字一致。
 
 ---
 
@@ -195,15 +217,15 @@ func _log_info(msg: String) -> void:
 2. **安全处理 `Variant` 解包**：
    - 从 `Result.value`、`Dictionary.get()`、`Array` 索引、`PackedScene.instantiate()` 取值时，**严禁**直接使用 `:=` 触发 `Variant` 隐式推导告警；
    - 必须显式声明目标类型并配合 `as` 安全强转或值转换函数：
-     ```gdscript
-     # 错误：res.value 是 Variant，直接 := 会丢失静态类型保障或触发编译器警告
-     var tex := res.value
+	 ```gdscript
+	 # 错误：res.value 是 Variant，直接 := 会丢失静态类型保障或触发编译器警告
+	 var tex := res.value
 
-     # 正确：显式声明类型 + as 转换
-     var tex: Texture2D = res.value as Texture2D
-     var count: int = int(dict.get("count", 0))
-     var ratio: float = clampf(float(dict.get("ratio", 1.0)), 0.0, 1.0)
-     ```
+	 # 正确：显式声明类型 + as 转换
+	 var tex: Texture2D = res.value as Texture2D
+	 var count: int = int(dict.get("count", 0))
+	 var ratio: float = clampf(float(dict.get("ratio", 1.0)), 0.0, 1.0)
+	 ```
 3. **强类型集合优先**：凡元素类型同质的数组，必须声明为 `Array[T]`（如 `Array[StringName]`、`Array[InputChord]`、`Array[BootTask]`）或紧凑内存数组 `PackedStringArray` / `PackedByteArray` / `PackedInt32Array`。
 
 ### 2. 高频标识符强制使用 `StringName` (`&"..."`)
@@ -220,6 +242,13 @@ func _log_info(msg: String) -> void:
 
 - 框架公开门面基类（`Base*`）与抽象任务基类（`BootTask`、`StorageDriver`、`VideoPlayerAdapter`）统一使用 Godot 4.7 原生 `@abstract` 类注解与 `@abstract func` 抽象方法声明，由编译器强制保障派生类实现完整契约。
 - 严禁全局关闭 GDScript 警告；仅当框架事件总线等特殊设计存在“本文件声明信号、外部文件触发 `emit`”时，才允许精准添加 `@warning_ignore("unused_signal")`。
+
+### 4. 全局类引用：`class_name` 直呼，禁止冗余 `preload` 别名
+
+- 凡已声明 `class_name` 的脚本（如 `FileUtils`、`CryptoUtils`、`Result`、`BaseParams`），**一律直接使用全局类名**引用其静态方法、常量与类型：`CryptoUtils.decrypt_bytes(...)`。
+- **严禁**再写 `const _CryptoUtils = preload("res://src/framework/util/crypto/crypto_utils.gd")` 这类路径别名：它与全局名指向同一个 `GDScript` 类对象（并非实例化），却会造成同一文件两种引用风格混用、路径硬编码导致移动文件即断链。
+- 若新建 `class_name` 后 Headless 校验报 `Identifier "Xxx" not declared`，原因是全局类缓存未刷新：运行 `check_compliance.ps1`（内置缓存同步）或执行一次 `godot --headless --editor --quit`，**而不是**用 `preload` 绕过。
+- `preload` 脚本别名仅允许用于**未声明 `class_name`** 的脚本（如 `addons/` 插件内部类，刻意不污染全局命名空间）。
 
 ---
 
@@ -301,7 +330,7 @@ Godot 4 的 `await` 协程在等待期间若宿主节点被销毁（如玩家快
 func _on_enter(_params: BaseParams = null) -> void:
 	var batch_res := await task_scope.gather([
 		func(_token: CancellationToken) -> Result:
-			return await App.asset.load("res://src/assets/textures/ui/banner.png"),
+			return await App.asset.load("res://src/assets/textures/lobby/tex_lobby_banner.png"),
 		func(token: CancellationToken) -> Result:
 			return await App.net.get_request("/v1/season/info", {}, PackedStringArray(), token),
 	], 8.0)
@@ -363,7 +392,7 @@ bash .agents/skills/framework-aware/scripts/check_compliance.sh
 pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
 ```
 
-门禁脚本将自动核验以下 12 项工程铁律：
+门禁脚本将自动核验以下 14 项工程铁律：
 1. 网络门面统一使用 `App.net`（禁用 `App.network`）；
 2. 参数契约单数路径 `infra/param/`；
 3. 视频资产复数容器路径 `assets/videos/`；
@@ -375,4 +404,6 @@ pwsh .agents/skills/framework-aware/scripts/check_compliance.ps1
 9. 13 大核心模块完整声明 `MODULE_ID` / `REQUIRED_MODULES` / `OPTIONAL_MODULES`；
 10. `src/game/` 零跨界引用 `impl/` 内部私有实现类；
 11. 废弃工具类清零（统一收敛至 `FileCodecUtils`、`ResourceCodecUtils`、`TaskScope`、`SpinePool`）；
-12. Godot Headless 全项目 `.gd` 脚本静态类型与语法编译 100% 通过，且无裸 `print()` 残留。
+12. Godot Headless 全项目 `.gd` 脚本静态类型与语法编译 100% 通过，且无裸 `print()` 残留；
+13. `src/assets/` 资产拓扑、命名与归属合规（容器/扩展名/前缀白名单、文件名域段 == 目录域、零跨 Feature 资产引用、框架零资产引用）；
+14. `src/` 内零冗余脚本别名（已声明 `class_name` 的脚本禁止 `preload` / `load` 起别名，统一直呼全局类名）。

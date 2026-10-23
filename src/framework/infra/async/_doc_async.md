@@ -46,7 +46,7 @@ src/framework/infra/async/
 # 1. 在 BaseScene / BaseView 子类中执行单任务守卫 (run)
 func _on_enter(params: Dictionary = {}) -> void:
 	var res := await task_scope.run(func(token: CancellationToken) -> Result:
-		return await App.asset.load("res://assets/textures/bg.png")
+		return await App.asset.load("res://src/assets/textures/lobby/tex_lobby_bg.png")
 	, 5.0) # 5秒超时保护
 
 	if res.is_err():

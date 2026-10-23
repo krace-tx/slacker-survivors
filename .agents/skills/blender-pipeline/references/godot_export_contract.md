@@ -21,6 +21,13 @@ src/<feature_or_test>/
         └── <asset>.glb               # 纯净二进制 glTF 2.0 产物，Godot 免插件原生秒级导入
 ```
 
+### 资产命名与正式工程落点（对齐 [`src/assets/_doc_assets.md`](../../../../src/assets/_doc_assets.md)）
+
+- `<asset>` 主干名**必须**遵循 `<prefix>_<domain>_<subject>`：静态道具/建筑/环境用 `mdl_`（导出 `export_apply=True`），带骨骼/动画角色用 `skm_`（导出 `export_skins=True`）；`.blend`、`build_*.py` 与 `.glb` 主干名保持一致，如 `skm_office_3d_worker.blend` ➔ `skm_office_3d_worker.glb`。
+- **测试原型**：沿用上方就近结构，`<domain>` 取测试模块名（如 `src/test/office_3d/assets/models/skm_office_3d_worker.glb`）。
+- **正式业务资产**：`.glb` 导出至 `src/assets/models/<feature>/`（如 `src/assets/models/enemy/skm_enemy_rusher.glb`）；`.blend` / `build_*.py` / `renders/` 放入工程根 `art/models/<feature>/`（`art/` 必须含 `.gdignore`），严禁进入 `src/assets/`。
+- 外置 PBR 贴图（未内嵌进 `.glb` 时）放入 `src/assets/textures/<feature>/`，命名 `tex_<feature>_<subject>_albedo|normalmap|orm.png`。
+
 ---
 
 ## 2. 标准 glTF 2.0 / GLB 导出参数契约
@@ -62,7 +69,7 @@ bpy.ops.export_scene.gltf(
 在 Godot 4 场景脚本（继承 `BaseScene`）中，统一使用框架工具类 `NodeUtils.spawn` 挂载 `.glb` 预制体，并开启骨骼动画循环：
 
 ```gdscript
-const WORKER_SCENE: PackedScene = preload("res://src/test/office_3d/assets/models/office_worker.glb")
+const WORKER_SCENE: PackedScene = preload("res://src/test/office_3d/assets/models/skm_office_3d_worker.glb")
 
 func _spawn_worker(parent: Node3D) -> void:
 	var res := NodeUtils.spawn(WORKER_SCENE, parent, "OfficeWorker")

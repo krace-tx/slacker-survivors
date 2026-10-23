@@ -122,14 +122,14 @@ if ($loggerMatches) {
     Write-Host "[PASS] Logger module path (modules/logger/)" -ForegroundColor Green
 }
 
-# 5. Display layer decoupling & shared 3-pillar directory architecture
-$uiDialogMatches = Get-ChildItem -Path "$root\src\framework\modules\display" -Recurse -Include *dialog*.gd, *modal*.gd, *toast*.gd -ErrorAction SilentlyContinue
+# 5. Display & Video layer UI decoupling & shared 3-pillar directory architecture
+$uiDialogMatches = Get-ChildItem -Path "$root\src\framework\modules\display", "$root\src\framework\modules\video" -Recurse -Include *dialog*.gd, *modal*.gd, *toast*.gd, *overlay*.gd -ErrorAction SilentlyContinue
 if ($uiDialogMatches) {
-    Write-Host "[FAIL] Business dialog/toast scripts found in 'framework/modules/display' (move to 'src/game/shared/component/'):" -ForegroundColor Red
+    Write-Host "[FAIL] Business UI dialog/toast/overlay scripts found in 'framework/modules/display|video' (keep framework UI-agnostic):" -ForegroundColor Red
     $uiDialogMatches | ForEach-Object { Write-Host "       - $($_.FullName)" -ForegroundColor Red }
     $errorCount += $uiDialogMatches.Count
 } else {
-    Write-Host "[PASS] Display layer decoupling (dialogs isolated in shared/component/)" -ForegroundColor Green
+    Write-Host "[PASS] Display & Video layer decoupling (zero hardcoded UI overlays/dialogs in framework)" -ForegroundColor Green
 }
 
 $legacySharedMatches = Get-ChildItem -Path "$root\src", "$root\docs" -Recurse -Include *.gd, *.md, *.tscn -ErrorAction SilentlyContinue |
@@ -213,7 +213,7 @@ if ($missingManifestCount -gt 0) {
 }
 
 # 9. Facade boundary isolation: forbid referencing internal impl classes from src/game/
-$internalClassesPattern = '\b(RuntimeManifest|RuntimeServiceHost|RuntimeEnvironment|FrameworkLogger|ClockSystem|AssetSystem|AssetCache|ResourceLoaderAdapter|StorageSystem|StorageCache|StorageMigrator|MemoryStorageDriver|DiskStorageDriver|RemoteStorageDriver|NetworkClient|RequestQueue|SceneRouter|SceneStack|SceneTransition|DisplaySystem|AudioSystem|BgmPlayer|SfxPool|LocalizationSystem|TranslationServerAdapter|HapticFeedback|InputSystem|InputDeviceTracker|InputRebindCapturer|InputMapAdapter|VideoPlayer)\b'
+$internalClassesPattern = '\b(RuntimeManifest|RuntimeServiceHost|RuntimeEnvironment|FrameworkLogger|ClockSystem|AssetSystem|AssetCache|ResourceLoaderAdapter|StorageSystem|StorageCache|StorageMigrator|MemoryStorageDriver|DiskStorageDriver|RemoteStorageDriver|NetworkClient|RequestQueue|SceneRouter|SceneStack|SceneTransition|DisplaySystem|AudioSystem|BgmPlayer|SfxPool|LocalizationSystem|TranslationServerAdapter|HapticFeedback|InputSystem|InputDeviceTracker|InputRebindCapturer|InputMapAdapter|VideoPlayer|VideoStreamHost|VideoPrewarmer|VideoCacheManager)\b'
 $implLeakMatches = Get-ChildItem -Path "$root\src\game" -Recurse -Include *.gd |
     Select-String -Pattern $internalClassesPattern |
     Where-Object { -not $_.Line.Trim().StartsWith("#") }
@@ -314,6 +314,208 @@ if ($printMatches) {
     $warnCount += $printMatches.Count
 } else {
     Write-Host "[PASS] No raw print() statements found" -ForegroundColor Green
+}
+
+# 13. Asset topology, naming & dependency boundary (see src/assets/_doc_assets.md)
+$assetRoot = Join-Path $root "src\assets"
+$assetFails = [System.Collections.Generic.List[string]]::new()
+$assetWarns = [System.Collections.Generic.List[string]]::new()
+$assetFileCount = 0
+# container key -> allowed extensions / allowed prefixes
+$assetContainers = @{
+    "textures"  = @{ Ext = @("png", "svg", "webp", "jpg", "jpeg", "exr", "hdr", "tres"); Prefix = @("tex", "spr", "sht", "atl", "ui", "btn", "ico", "fx") }
+    "spines"    = @{ Ext = @("skel", "spine-json", "atlas", "png", "tres"); Prefix = @("spn") }
+    "models"    = @{ Ext = @("glb", "gltf", "bin"); Prefix = @("mdl", "skm") }
+    "materials" = @{ Ext = @("tres"); Prefix = @("mat", "ptc") }
+    "shaders"   = @{ Ext = @("gdshader", "gdshaderinc"); Prefix = @("shd") }
+    "themes"    = @{ Ext = @("tres"); Prefix = @("thm", "sbx") }
+    "fonts"     = @{ Ext = @("ttf", "otf", "woff", "woff2", "tres"); Prefix = @("fnt") }
+    "audio/bgm" = @{ Ext = @("ogg", "mp3"); Prefix = @("bgm") }
+    "audio/sfx" = @{ Ext = @("wav", "ogg"); Prefix = @("sfx") }
+    "audio/vox" = @{ Ext = @("ogg", "mp3"); Prefix = @("vox") }
+    "audio/amb" = @{ Ext = @("ogg"); Prefix = @("amb") }
+    "videos"    = @{ Ext = @("ogv", "mp4", "webm"); Prefix = @("vid") }
+}
+$assetForbiddenTokens = @("final", "new", "old", "copy", "tmp", "temp", "bak", "backup", "test")
+$featureRoot = Join-Path $root "src\game\features"
+$knownDomains = @{}
+
+if (Test-Path $assetRoot) {
+    foreach ($file in (Get-ChildItem -Path $assetRoot -Recurse -File -Force)) {
+        $name = $file.Name
+        if ($name -like "*.import" -or $name -like "*.uid" -or $name -eq ".gitkeep" -or $name -eq ".gdignore" -or $name -like "_doc_*.md") {
+            continue
+        }
+        $assetFileCount++
+        $rel = $file.FullName.Substring($assetRoot.Length + 1).Replace('\', '/')
+        $parts = $rel.Split('/')
+        $container = $parts[0]
+        $offset = 1
+        if ($container -eq "audio" -and $parts.Count -ge 2) {
+            $container = "audio/" + $parts[1]
+            $offset = 2
+        }
+        if (-not $assetContainers.ContainsKey($container)) {
+            $assetFails.Add("Unknown media container '$container' -> $rel")
+            continue
+        }
+        $depth = $parts.Count - $offset   # domain + [group] + file
+        if ($depth -lt 2 -or $depth -gt 3) {
+            $assetFails.Add("Invalid depth (expect <container>/<domain>/[<group>/]<file>) -> $rel")
+            continue
+        }
+        $domain = $parts[$offset]
+        $knownDomains[$domain] = $true
+        $dotIdx = $name.IndexOf('.')
+        if ($dotIdx -le 0) {
+            $assetFails.Add("Missing extension -> $rel")
+            continue
+        }
+        $stem = $name.Substring(0, $dotIdx)
+        $ext = $name.Substring($dotIdx + 1)
+        $spec = $assetContainers[$container]
+        if ($spec.Ext -notcontains $ext) {
+            $assetFails.Add("Extension '.$ext' not allowed in '$container/' (DCC sources belong in art/) -> $rel")
+            continue
+        }
+        if ($stem -cnotmatch '^[a-z][a-z0-9]*(_[a-z0-9]+)*$' -or $stem.Length -gt 64) {
+            $assetFails.Add("Stem must be lowercase snake_case <= 64 chars -> $rel")
+            continue
+        }
+        $tokens = $stem.Split('_')
+        $badToken = $tokens | Where-Object { ($assetForbiddenTokens -contains $_) -or ($_ -match '^v\d+$') -or ($_ -match '^\d$') } | Select-Object -First 1
+        if ($badToken) {
+            $assetFails.Add("Forbidden/invalid token '$badToken' (no version words, numbers need >= 2 digits) -> $rel")
+            continue
+        }
+        if ($spec.Prefix -notcontains $tokens[0]) {
+            $assetFails.Add("Prefix '$($tokens[0])_' not allowed in '$container/' (allowed: $($spec.Prefix -join ', ')) -> $rel")
+            continue
+        }
+        $expectedHead = "$($tokens[0])_$($domain)_"
+        if (-not $stem.StartsWith($expectedHead) -or $stem.Length -le $expectedHead.Length) {
+            $assetFails.Add("Name must be '<prefix>_$($domain)_<subject>...' (domain token == folder) -> $rel")
+            continue
+        }
+    }
+    foreach ($d in $knownDomains.Keys) {
+        if ($d -ne "shared" -and -not (Test-Path (Join-Path $featureRoot $d))) {
+            $assetWarns.Add("Asset domain '$d' has no matching src/game/features/$d/")
+        }
+    }
+}
+
+# 13b. Framework must never reference business assets
+$fwAssetRefs = Get-ChildItem -Path "$root\src\framework" -Recurse -Include *.gd, *.tscn, *.tres -ErrorAction SilentlyContinue |
+    Select-String -Pattern 'res://src/assets/' |
+    Where-Object { -not $_.Line.Trim().StartsWith("#") }
+foreach ($m in $fwAssetRefs) {
+    $assetFails.Add("Framework references business asset -> $($m.Path):$($m.LineNumber)")
+}
+
+# 13c. Game layer asset ownership: features/<f> -> {<f>, shared}; shared & bootstrap -> {shared}
+$gameRoot = Join-Path $root "src\game"
+$gameAssetRefs = Get-ChildItem -Path $gameRoot -Recurse -Include *.gd, *.tscn, *.tres -ErrorAction SilentlyContinue |
+    Select-String -Pattern 'res://src/assets/([A-Za-z0-9_\-./]+)' -AllMatches |
+    Where-Object { -not $_.Line.Trim().StartsWith("#") }
+foreach ($m in $gameAssetRefs) {
+    $relCode = $m.Path.Substring($gameRoot.Length + 1).Replace('\', '/')
+    $codeParts = $relCode.Split('/')
+    $allowed = @("shared")
+    if ($codeParts[0] -eq "features" -and $codeParts.Count -ge 2) {
+        $allowed += $codeParts[1]
+    }
+    foreach ($match in $m.Matches) {
+        $assetParts = $match.Groups[1].Value.Split('/')
+        $domIdx = if ($assetParts[0] -eq "audio") { 2 } else { 1 }
+        $dom = if ($assetParts.Count -gt $domIdx + 1) { $assetParts[$domIdx] } else { "<none>" }
+        if ($allowed -notcontains $dom) {
+            $assetFails.Add("Cross-domain asset reference (domain '$dom' not in [$($allowed -join ', ')]) -> $($m.Path):$($m.LineNumber)")
+        }
+    }
+}
+
+if ($assetFails.Count -gt 0) {
+    Write-Host "[FAIL] Asset topology / naming / ownership violations (see src/assets/_doc_assets.md):" -ForegroundColor Red
+    $assetFails | ForEach-Object { Write-Host "       - $_" -ForegroundColor Red }
+    $errorCount += $assetFails.Count
+} else {
+    Write-Host "[PASS] Asset topology, naming & ownership ($assetFileCount assets verified)" -ForegroundColor Green
+}
+if ($assetWarns.Count -gt 0) {
+    $assetWarns | ForEach-Object { Write-Host "[WARN] $_" -ForegroundColor Yellow }
+    $warnCount += $assetWarns.Count
+}
+
+# 14. Global class reference: forbid redundant preload/load aliases of scripts that already declare class_name
+$srcRoot = Join-Path $root "src"
+$globalClassPaths = @{}
+foreach ($gd in (Get-ChildItem -Path $srcRoot -Recurse -Filter *.gd -File -ErrorAction SilentlyContinue)) {
+    $cnLine = Select-String -Path $gd.FullName -Pattern '^class_name\s+(\w+)' | Select-Object -First 1
+    if ($cnLine) {
+        $resPath = "res://" + $gd.FullName.Substring($root.Length + 1).Replace('\', '/')
+        $globalClassPaths[$resPath] = $cnLine.Matches[0].Groups[1].Value
+    }
+}
+$aliasFails = [System.Collections.Generic.List[string]]::new()
+$scriptLoadRefs = Get-ChildItem -Path $srcRoot -Recurse -Include *.gd -ErrorAction SilentlyContinue |
+    Select-String -Pattern '\b(pre)?load\(\s*"(res://src/[^"]+\.gd)"\s*\)' -AllMatches |
+    Where-Object { -not $_.Line.Trim().StartsWith("#") }
+foreach ($m in $scriptLoadRefs) {
+    foreach ($match in $m.Matches) {
+        $target = $match.Groups[2].Value
+        if ($globalClassPaths.ContainsKey($target)) {
+            $aliasFails.Add("$($m.Path):$($m.LineNumber) -> use global '$($globalClassPaths[$target])' instead of loading '$target'")
+        }
+    }
+}
+if ($aliasFails.Count -gt 0) {
+    Write-Host "[FAIL] Redundant script preload/load alias of a global class_name (reference the class directly):" -ForegroundColor Red
+    $aliasFails | ForEach-Object { Write-Host "       - $_" -ForegroundColor Red }
+    $errorCount += $aliasFails.Count
+} else {
+    Write-Host "[PASS] Global class reference (zero redundant preload aliases of class_name scripts)" -ForegroundColor Green
+}
+
+# 15. Sandbox persistence topology & Tier-2 domain ownership (user:// & StorageItem)
+$sandboxFails = [System.Collections.Generic.List[string]]::new()
+# 15a. Forbid raw "user://" literals in src/game/
+$gameUserRefs = Get-ChildItem -Path $gameRoot -Recurse -Include *.gd, *.tscn, *.tres -ErrorAction SilentlyContinue |
+    Select-String -Pattern '"user://' |
+    Where-Object { -not $_.Line.Trim().StartsWith("#") }
+foreach ($m in $gameUserRefs) {
+    $sandboxFails.Add("Raw 'user://' literal in game layer (use StorageItem.for_config / for_save) -> $($m.Path):$($m.LineNumber)")
+}
+
+# 15b. Forbid StorageItem construction outside model/ (*_model.gd) & enforce STORAGE_DOMAIN 1:1 mirror in src/game/
+$gameGdFiles = Get-ChildItem -Path $gameRoot -Recurse -Filter *.gd -File -ErrorAction SilentlyContinue
+foreach ($gd in $gameGdFiles) {
+    $rel = $gd.FullName.Substring($gameRoot.Length + 1).Replace('\', '/')
+    $parts = $rel.Split('/')
+    $isModelFile = ($rel -match '(^|/)model/(.+/)?[a-z0-9_]+_model\.gd$')
+    $storageConstruct = Select-String -Path $gd.FullName -Pattern 'StorageItem\.(new|for_config|for_save)\s*\(' |
+        Where-Object { -not $_.Line.Trim().StartsWith("#") }
+    if ($storageConstruct -and -not $isModelFile) {
+        foreach ($sc in $storageConstruct) {
+            $sandboxFails.Add("StorageItem constructed outside *_model.gd -> $($gd.FullName):$($sc.LineNumber)")
+        }
+    }
+    $domainDecl = Select-String -Path $gd.FullName -Pattern 'const\s+STORAGE_DOMAIN\s*(:\s*StringName)?\s*=\s*&"([^"]+)"' |
+        Where-Object { -not $_.Line.Trim().StartsWith("#") } | Select-Object -First 1
+    if ($domainDecl) {
+        $declaredDomain = $domainDecl.Matches[0].Groups[2].Value
+        $expectedDomain = if ($parts[0] -eq "shared") { "shared" } elseif ($parts[0] -eq "features" -and $parts.Count -ge 2) { $parts[1] } else { "" }
+        if ($expectedDomain -ne "" -and $declaredDomain -ne $expectedDomain) {
+            $sandboxFails.Add("Tier-2 STORAGE_DOMAIN mismatch (expected '&`"$expectedDomain`"', got '&`"$declaredDomain`"') -> $($gd.FullName):$($domainDecl.LineNumber)")
+        }
+    }
+}
+if ($sandboxFails.Count -gt 0) {
+    Write-Host "[FAIL] Sandbox persistence topology & Tier-2 domain violations:" -ForegroundColor Red
+    $sandboxFails | ForEach-Object { Write-Host "       - $_" -ForegroundColor Red }
+    $errorCount += $sandboxFails.Count
+} else {
+    Write-Host "[PASS] Sandbox persistence topology & Tier-2 domain ownership (user:// & StorageItem)" -ForegroundColor Green
 }
 
 Write-Host "--------------------------------------------------------" -ForegroundColor Cyan

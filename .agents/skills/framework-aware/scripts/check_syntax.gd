@@ -37,15 +37,9 @@ func _initialize() -> void:
 			failed_files.append(file_path)
 			continue
 		var gd_script: GDScript = res as GDScript
-		var has_members := (
-			not gd_script.get_script_method_list().is_empty()
-			or not gd_script.get_script_property_list().is_empty()
-			or not gd_script.get_script_constant_map().is_empty()
-		)
-		if not gd_script.can_instantiate() and not has_members:
-			var err := gd_script.reload(true)
-			if err != OK:
-				failed_files.append(file_path)
+		var err := gd_script.reload(true)
+		if err != OK:
+			failed_files.append(file_path)
 
 	if failed_files.is_empty():
 		print("[SYNTAX_PASS] %d" % total)
