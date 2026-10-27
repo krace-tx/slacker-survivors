@@ -1,15 +1,25 @@
+@tool
 class_name StateMachine
 extends RefCounted
 
 ## 有限与层次状态机（FSM / HFSM）执行内核与实时遥测器。[br]
 ##
 ## [b]核心特性：[/b][br]
-## 1. [b]双模状态注册与 HFSM 子图[/b]：支持代码注册状态、蓝图 `.tres` 编译与 `sub_graph_path` 层次子状态机自动挂载；[br]
-## 2. [b]黑板与脉冲事件 (`fire_event`)[/b]：内置 [BTBlackboard] 与单帧有效脉冲事件表，原生支持 `!cond`、`&& / ||` 与比较表达式；[br]
-## 3. [b]运行期无损热重载[/b]：通过 [method hot_reload_from_ir] 热更转换拓扑与黑板 Schema，不断流保留当前驻留状态。
+## 1. [b]双模状态注册与 HFSM 子图生命周期闭环[/b]：支持代码注册、蓝图 `.tres` 编译与 `sub_graph_path` 层次子状态机自动启停级联；[br]
+## 2. [b]$O(E_{\text{state}})$ 预索引转换表[/b]：按源状态预归并全局 `*` 转换边与优先级排序，避免每帧全图线性扫描与字典拆箱；[br]
+## 3. [b]黑板与脉冲事件 (`fire_event`)[/b]：内置 [BTBlackboard] 与单帧有效脉冲事件表，原生支持 `!cond`、`&& / ||` 与比较表达式；[br]
+## 4. [b]防重入死循环与运行期无损热重载[/b]：迭代式重入上限保护，并通过 [method hot_reload_from_ir] 不断流热更拓扑。
 
-#region Signals & Public Properties
+#region Signals, Inner Types & Public Properties
 signal state_changed(new_state: StringName, prev_state: StringName, msg: Dictionary)
+
+class _CompiledTransition extends RefCounted:
+	var def: FsmTransitionDef = null
+	var predicate: Callable = Callable()
+	var pred_argc: int = 0
+	var seq: int = 0
+	var from_ast: bool = false
+	var has_guard: bool = false
 
 ## 状态机内置共享黑板（自动与嵌套 HFSM 子状态机共享）。
 var blackboard: BTBlackboard = BTBlackboard.new()
@@ -17,13 +27,17 @@ var blackboard: BTBlackboard = BTBlackboard.new()
 
 #region Private State
 const _MAX_HISTORY_LEN: int = 12
+const _MAX_REENTRANT_TRANSITIONS: int = 8
 
 var _actor_id: int = 0
 var _graph_id: StringName = &"fsm"
 var _states: Dictionary = {} ## {StringName: BaseFsmState}
 var _state_sources: Dictionary = {} ## {StringName: Dictionary}
 var _ast_sub_machines: Dictionary = {} ## {StringName: bool}
-var _runtime_transitions: Array[Dictionary] = [] ## [{def, predicate, seq, from_ast}]
+var _runtime_transitions: Array[_CompiledTransition] = []
+var _transitions_by_state: Dictionary = {} ## {StringName: Array[_CompiledTransition]}
+var _any_transitions: Array[_CompiledTransition] = []
+var _transitions_dirty: bool = false
 var _ast: FsmGraphDef = FsmGraphDef.new()
 var _condition_registry: Dictionary = {} ## {StringName: Callable}
 var _pending_events: Dictionary = {} ## {StringName: Dictionary}
@@ -39,6 +53,8 @@ var _history: Array[StringName] = []
 var _is_transitioning: bool = false
 var _pending_target: StringName = &""
 var _pending_msg: Dictionary = {}
+var _pending_force: bool = false
+var _reentrant_guard_trips: int = 0
 var _seq_counter: int = 0
 #endregion
 
@@ -61,6 +77,7 @@ func add_state(state_id: StringName, state: BaseFsmState, title: String = "", ed
 	state.title = title if not title.is_empty() else String(state_id)
 	state.bind_context(self, get_actor())
 	_states[state_id] = state
+	_transitions_dirty = true
 
 	var caller_src: Dictionary = GraphDebugBridge.capture_caller_source()
 	if not caller_src.is_empty():
@@ -96,7 +113,6 @@ func add_transition(
 	var tr_def := FsmTransitionDef.create(from_state, to_state, condition_key, priority, min_state_time, description, trigger_event, bb_expr)
 	_ast.transitions.append(tr_def)
 	_append_runtime_transition(tr_def, predicate, false)
-	_sort_runtime_transitions()
 	return self
 
 
@@ -125,6 +141,10 @@ func start(initial_state_id: StringName = &"", msg: Dictionary = {}) -> bool:
 	var target: StringName = initial_state_id if not initial_state_id.is_empty() else _ast.initial_state
 	if target.is_empty() or not _states.has(target):
 		return false
+	if not _current_id.is_empty():
+		stop()
+	if _transitions_dirty:
+		_rebuild_transition_index()
 	_current_id = target
 	_previous_id = &""
 	_state_time = 0.0
@@ -138,6 +158,23 @@ func start(initial_state_id: StringName = &"", msg: Dictionary = {}) -> bool:
 	return true
 
 
+## 停止当前激活状态并自底向上级联退出所有激活的嵌套子状态机。
+func stop() -> void:
+	if not _current_id.is_empty() and _states.has(_current_id):
+		var cur_st: BaseFsmState = _states[_current_id] as BaseFsmState
+		if cur_st != null:
+			if cur_st.sub_machine is StateMachine:
+				(cur_st.sub_machine as StateMachine).stop()
+			cur_st._on_exit(&"")
+	_current_id = &""
+	_state_time = 0.0
+	_pending_events.clear()
+	_is_transitioning = false
+	_pending_target = &""
+	_pending_msg = {}
+	_pending_force = false
+
+
 func change_state(target_state_id: StringName, msg: Dictionary = {}, force: bool = false) -> bool:
 	if target_state_id.is_empty() or not _states.has(target_state_id):
 		return false
@@ -146,39 +183,63 @@ func change_state(target_state_id: StringName, msg: Dictionary = {}, force: bool
 	if _is_transitioning:
 		_pending_target = target_state_id
 		_pending_msg = msg
+		_pending_force = force
 		return true
 
-	var cur_state: BaseFsmState = _states.get(_current_id, null) as BaseFsmState
-	if cur_state != null and not force and not cur_state._can_transition_to(target_state_id):
-		return false
+	var next_target: StringName = target_state_id
+	var next_msg: Dictionary = msg
+	var next_force: bool = force
+	var hops: int = 0
+	var did_transition: bool = false
 
-	_is_transitioning = true
-	var prev_id: StringName = _current_id
-	if cur_state != null:
-		cur_state._on_exit(target_state_id)
+	while not next_target.is_empty():
+		if not _states.has(next_target) or (_current_id == next_target and not next_force):
+			break
+		var cur_state: BaseFsmState = _states.get(_current_id, null) as BaseFsmState
+		if cur_state != null and not next_force and not cur_state._can_transition_to(next_target):
+			break
+		if hops >= _MAX_REENTRANT_TRANSITIONS:
+			_reentrant_guard_trips += 1
+			_pending_target = &""
+			_pending_msg = {}
+			_pending_force = false
+			break
 
-	_previous_id = prev_id
-	_current_id = target_state_id
-	_state_time = 0.0
-	_total_transitions += 1
-	_last_transition_from = prev_id
-	_last_transition_to = target_state_id
-	_record_history(target_state_id)
+		hops += 1
+		_is_transitioning = true
+		var prev_id: StringName = _current_id
+		if cur_state != null:
+			if cur_state.sub_machine is StateMachine:
+				(cur_state.sub_machine as StateMachine).stop()
+			cur_state._on_exit(next_target)
 
-	var next_state: BaseFsmState = _states[target_state_id] as BaseFsmState
-	next_state._on_enter(prev_id, msg)
-	if next_state.sub_machine is StateMachine:
-		(next_state.sub_machine as StateMachine).start()
-	state_changed.emit(_current_id, prev_id, msg)
-	_is_transitioning = false
+		_previous_id = prev_id
+		_current_id = next_target
+		_state_time = 0.0
+		_total_transitions += 1
+		_last_transition_from = prev_id
+		_last_transition_to = next_target
+		_record_history(next_target)
 
-	if not _pending_target.is_empty():
-		var pt: StringName = _pending_target
-		var pm: Dictionary = _pending_msg
-		_pending_target = &""
-		_pending_msg = {}
-		change_state(pt, pm)
-	return true
+		var entered_state: BaseFsmState = _states[next_target] as BaseFsmState
+		entered_state._on_enter(prev_id, next_msg)
+		if entered_state.sub_machine is StateMachine:
+			(entered_state.sub_machine as StateMachine).start()
+		state_changed.emit(_current_id, prev_id, next_msg)
+		_is_transitioning = false
+		did_transition = true
+
+		if not _pending_target.is_empty():
+			next_target = _pending_target
+			next_msg = _pending_msg
+			next_force = _pending_force
+			_pending_target = &""
+			_pending_msg = {}
+			_pending_force = false
+		else:
+			next_target = &""
+
+	return did_transition
 
 
 func revert_to_previous(msg: Dictionary = {}) -> bool:
@@ -195,11 +256,12 @@ func fire_event(event_name: StringName, payload: Dictionary = {}) -> bool:
 			return true
 
 	_pending_events[event_name] = payload
-	for entry: Dictionary in _runtime_transitions:
+	var candidates: Array = _get_transitions_for(_current_id)
+	for entry_v: Variant in candidates:
+		var entry: _CompiledTransition = entry_v as _CompiledTransition
 		if _evaluate_transition_entry(entry, event_name):
-			var tr_def: FsmTransitionDef = entry["def"] as FsmTransitionDef
 			_pending_events.erase(event_name)
-			if change_state(tr_def.to_state, payload):
+			if change_state(entry.def.to_state, payload):
 				GraphDebugBridge.push_frame(get_instance_id(), true)
 				return true
 			_pending_events[event_name] = payload
@@ -215,9 +277,11 @@ func update(delta: float) -> void:
 	_state_time += maxf(0.0, delta)
 
 	var transitioned: bool = false
-	for entry: Dictionary in _runtime_transitions:
+	var candidates: Array = _get_transitions_for(_current_id)
+	for entry_v: Variant in candidates:
+		var entry: _CompiledTransition = entry_v as _CompiledTransition
 		if _evaluate_transition_entry(entry):
-			var tr_def: FsmTransitionDef = entry["def"] as FsmTransitionDef
+			var tr_def: FsmTransitionDef = entry.def
 			var ev_msg: Dictionary = _pending_events[tr_def.trigger_event] as Dictionary if (not tr_def.trigger_event.is_empty() and _pending_events.has(tr_def.trigger_event)) else {}
 			if change_state(tr_def.to_state, ev_msg):
 				transitioned = true
@@ -252,24 +316,29 @@ func send_event(event_name: StringName, payload: Variant = null) -> bool:
 #endregion
 
 
-#region Internal Compiler Hooks, Transition Evaluation & Telemetry
-func _evaluate_transition_entry(entry: Dictionary, only_event: StringName = &"") -> bool:
-	var tr_def: FsmTransitionDef = entry["def"] as FsmTransitionDef
-	if (tr_def.from_state != _current_id and tr_def.from_state != FsmTransitionDef.ANY_STATE) or tr_def.to_state == _current_id:
+#region Internal Compiler Hooks, Transition Indexing & Telemetry
+func _get_transitions_for(state_id: StringName) -> Array:
+	if _transitions_dirty:
+		_rebuild_transition_index()
+	if _transitions_by_state.has(state_id):
+		return _transitions_by_state[state_id] as Array
+	return _any_transitions
+
+
+func _evaluate_transition_entry(entry: _CompiledTransition, only_event: StringName = &"") -> bool:
+	var tr_def: FsmTransitionDef = entry.def
+	if tr_def.to_state == _current_id:
 		return false
 	if (not only_event.is_empty() and tr_def.trigger_event != only_event) or (not tr_def.trigger_event.is_empty() and not _pending_events.has(tr_def.trigger_event)):
 		return false
 	if tr_def.min_state_time > 0.0 and _state_time < tr_def.min_state_time:
 		return false
-
-	var pred: Callable = entry["predicate"] as Callable
-	var has_guard: bool = pred.is_valid() or not tr_def.trigger_event.is_empty() or not tr_def.condition_key.is_empty() or not tr_def.bb_expr.is_empty() or tr_def.min_state_time > 0.0
-	if bool(entry.get("from_ast", false)) and not has_guard:
+	if entry.from_ast and not entry.has_guard:
 		return false
 
 	var matched: bool = true
-	if pred.is_valid():
-		matched = bool(pred.call(self)) if pred.get_argument_count() >= 1 else bool(pred.call())
+	if entry.predicate.is_valid():
+		matched = bool(entry.predicate.call(self)) if entry.pred_argc >= 1 else bool(entry.predicate.call())
 	elif not tr_def.condition_key.is_empty():
 		matched = FlowBlackboardExpr.eval_expr(String(tr_def.condition_key), _lookup_condition, blackboard, self)
 	if matched and not tr_def.bb_expr.is_empty():
@@ -285,6 +354,9 @@ func _set_compiled_ast(graph_def: FsmGraphDef) -> void:
 	_ast = graph_def
 	_graph_id = graph_def.graph_id
 	_runtime_transitions.clear()
+	_transitions_by_state.clear()
+	_any_transitions.clear()
+	_transitions_dirty = true
 
 
 func _share_condition_registry(shared_reg: Dictionary) -> void: _condition_registry = shared_reg
@@ -295,6 +367,8 @@ func _get_condition_registry_internal() -> Dictionary: return _condition_registr
 
 
 func _reconcile_active_state_after_reload() -> void:
+	if _transitions_dirty:
+		_rebuild_transition_index()
 	if _current_id.is_empty():
 		return
 	if _states.has(_current_id):
@@ -302,6 +376,7 @@ func _reconcile_active_state_after_reload() -> void:
 		if cur_st != null and cur_st.sub_machine is StateMachine and (cur_st.sub_machine as StateMachine).get_current_state_id().is_empty():
 			(cur_st.sub_machine as StateMachine).start()
 	elif not _ast.initial_state.is_empty() and _states.has(_ast.initial_state):
+		_current_id = &""
 		start(_ast.initial_state)
 	else:
 		_current_id = &""
@@ -310,15 +385,63 @@ func _reconcile_active_state_after_reload() -> void:
 
 func _append_runtime_transition(tr_def: FsmTransitionDef, pred: Callable, from_ast: bool) -> void:
 	_seq_counter += 1
-	_runtime_transitions.append({"def": tr_def, "predicate": pred, "seq": _seq_counter, "from_ast": from_ast})
+	var ct := _CompiledTransition.new()
+	ct.def = tr_def
+	ct.predicate = pred
+	ct.pred_argc = pred.get_argument_count() if pred.is_valid() else 0
+	ct.seq = _seq_counter
+	ct.from_ast = from_ast
+	ct.has_guard = (
+		pred.is_valid()
+		or not tr_def.trigger_event.is_empty()
+		or not tr_def.condition_key.is_empty()
+		or not tr_def.bb_expr.is_empty()
+		or tr_def.min_state_time > 0.0
+	)
+	_runtime_transitions.append(ct)
+	_transitions_dirty = true
 
 
 func _sort_runtime_transitions() -> void:
-	_runtime_transitions.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var da: FsmTransitionDef = a["def"] as FsmTransitionDef
-		var db: FsmTransitionDef = b["def"] as FsmTransitionDef
-		return da.priority > db.priority if da.priority != db.priority else int(a["seq"]) < int(b["seq"])
-	)
+	_rebuild_transition_index()
+
+
+func _rebuild_transition_index() -> void:
+	_transitions_dirty = false
+	_transitions_by_state.clear()
+	_any_transitions.clear()
+
+	var n: int = _runtime_transitions.size()
+	for i: int in range(1, n):
+		var cur: _CompiledTransition = _runtime_transitions[i]
+		var j: int = i - 1
+		while j >= 0:
+			var prev: _CompiledTransition = _runtime_transitions[j]
+			var prev_higher: bool = prev.def.priority > cur.def.priority if prev.def.priority != cur.def.priority else prev.seq < cur.seq
+			if prev_higher:
+				break
+			_runtime_transitions[j + 1] = prev
+			j -= 1
+		_runtime_transitions[j + 1] = cur
+
+	for sid_var: Variant in _states.keys():
+		var sid: StringName = sid_var as StringName
+		var bucket: Array[_CompiledTransition] = []
+		_transitions_by_state[sid] = bucket
+
+	for ct: _CompiledTransition in _runtime_transitions:
+		var from_id: StringName = ct.def.from_state
+		if from_id == FsmTransitionDef.ANY_STATE:
+			_any_transitions.append(ct)
+			for sid_var: Variant in _transitions_by_state.keys():
+				(_transitions_by_state[sid_var as StringName] as Array).append(ct)
+		else:
+			if not _transitions_by_state.has(from_id):
+				var new_bucket: Array[_CompiledTransition] = []
+				for g_ct: _CompiledTransition in _any_transitions:
+					new_bucket.append(g_ct)
+				_transitions_by_state[from_id] = new_bucket
+			(_transitions_by_state[from_id] as Array).append(ct)
 
 
 func has_state(state_id: StringName) -> bool: return _states.has(state_id)
@@ -326,6 +449,7 @@ func get_current_state_id() -> StringName: return _current_id
 func get_previous_state_id() -> StringName: return _previous_id
 func get_state_time() -> float: return _state_time
 func get_total_transitions() -> int: return _total_transitions
+func get_reentrant_guard_trips() -> int: return _reentrant_guard_trips
 func get_ast() -> FsmGraphDef: return _ast
 
 
@@ -343,13 +467,24 @@ func get_active_sub_state_path() -> String:
 
 
 func clear() -> void:
+	stop()
+	for sid_var: Variant in _states.keys():
+		var st: BaseFsmState = _states[sid_var] as BaseFsmState
+		if st != null:
+			if st.sub_machine is StateMachine:
+				(st.sub_machine as StateMachine).clear()
+				st.sub_machine = null
+			if st is FsmLambdaState:
+				(st as FsmLambdaState).clear()
 	_states.clear()
 	_state_sources.clear()
 	_ast_sub_machines.clear()
 	_runtime_transitions.clear()
+	_transitions_by_state.clear()
+	_any_transitions.clear()
+	_transitions_dirty = false
 	_condition_registry.clear()
 	_pending_events.clear()
-	_current_id = &""
 	_previous_id = &""
 
 

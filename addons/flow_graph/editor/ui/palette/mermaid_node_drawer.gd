@@ -251,7 +251,7 @@ func _rebuild_groups(_force: bool) -> void:
 		return
 	for ch: Node in _groups_vb.get_children():
 		_groups_vb.remove_child(ch)
-		ch.free()
+		ch.queue_free()
 
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
 	var s: float = _ui_scale

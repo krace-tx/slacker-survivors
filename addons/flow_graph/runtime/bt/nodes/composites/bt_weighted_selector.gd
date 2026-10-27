@@ -1,3 +1,4 @@
+@tool
 class_name BTWeightedSelector
 extends BTNode
 
@@ -5,7 +6,7 @@ extends BTNode
 ##
 ## [b]享元执行契约：[/b][br]
 ## 1. 若 `ctx.blackboard` 节点记忆槽记录了上一帧处于 `RUNNING` 的子索引，则锁定继续评估该子分支直至其结束；[br]
-## 2. 否则按 [member weights] 加权不放回随机抽取子分支顺序依次尝试，直到某个子分支返回 `SUCCESS` 或 `RUNNING`。
+## 2. 否则按 [member weights] 执行 $O(N)$ 增量总权重不放回随机抽取，依次尝试子分支直至返回 `SUCCESS` 或 `RUNNING`。
 
 #region Constants & Config
 const _MEM_RUNNING_IDX: StringName = &"running_idx"
@@ -64,17 +65,15 @@ func _on_tick(ctx: BTContext) -> int:
 func _build_weighted_order(count: int) -> Array[int]:
 	var remaining_idx: Array[int] = []
 	var remaining_w: Array[float] = []
+	var total_w: float = 0.0
 	for i: int in range(count):
 		remaining_idx.append(i)
-		var w: float = weights[i] if i < weights.size() else 1.0
-		remaining_w.append(maxf(0.0, w))
+		var w: float = maxf(0.0, weights[i] if i < weights.size() else 1.0)
+		remaining_w.append(w)
+		total_w += w
 
 	var order: Array[int] = []
 	while not remaining_idx.is_empty():
-		var total_w: float = 0.0
-		for w_val: float in remaining_w:
-			total_w += w_val
-
 		var picked_pos: int = 0
 		if total_w > 0.0:
 			var roll: float = randf() * total_w
@@ -88,6 +87,7 @@ func _build_weighted_order(count: int) -> Array[int]:
 		else:
 			picked_pos = randi() % remaining_idx.size()
 
+		total_w = maxf(0.0, total_w - remaining_w[picked_pos])
 		order.append(remaining_idx[picked_pos])
 		remaining_idx.remove_at(picked_pos)
 		remaining_w.remove_at(picked_pos)

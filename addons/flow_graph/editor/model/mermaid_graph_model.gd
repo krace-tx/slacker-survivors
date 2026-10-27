@@ -16,7 +16,7 @@ const SCHEMA_FSM: StringName = &"fsm"
 const SCHEMA_BT: StringName = &"bt"
 
 const BT_ROOT_KIND: String = "Root"
-const BT_COMPOSITE_KINDS: Array[String] = ["Selector", "WeightedSelector", "Sequence", "Parallel"]
+const BT_COMPOSITE_KINDS: Array[String] = ["Selector", "WeightedSelector", "UtilitySelector", "Sequence", "Parallel"]
 const BT_DECORATOR_KINDS: Array[String] = [
 	"Inverter", "Cooldown", "Repeater", "TimeLimit",
 	"ForceSuccess", "ForceFailure", "Service", "Decorator",
@@ -458,7 +458,7 @@ func resolve_effective_schema() -> StringName:
 
 static func default_shape_for_kind(kind: String) -> String:
 	match kind:
-		"Selector", "WeightedSelector":
+		"Selector", "WeightedSelector", "UtilitySelector":
 			return "diamond"
 		"Sequence":
 			return "stadium"

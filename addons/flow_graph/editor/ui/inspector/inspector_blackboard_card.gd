@@ -164,7 +164,7 @@ func _sync_rows_in_place(vdict: Dictionary, editable_live: bool) -> void:
 	_row_widgets.clear()
 	for child: Node in _vars_list_vbox.get_children():
 		_vars_list_vbox.remove_child(child)
-		child.free()
+		child.queue_free()
 
 	if keys_arr.is_empty():
 		var empty_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.bb_empty"), kit.fs_sub, t.font_faint)
@@ -202,13 +202,16 @@ func _sync_rows_in_place(vdict: Dictionary, editable_live: bool) -> void:
 			ed.custom_minimum_size = Vector2(roundf(108.0 * kit.s), roundf(22.0 * kit.s))
 			ed.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			var submit_fn: Callable = func() -> void:
+				if not is_instance_valid(ed):
+					return
 				var raw_s: String = ed.text.strip_edges()
 				if raw_s != str(st_dict["base"]):
 					st_dict["base"] = raw_s
 					live_var_edit_requested.emit(k_name, raw_s, thint)
 			ed.text_submitted.connect(func(_s: String) -> void:
 				submit_fn.call()
-				ed.release_focus()
+				if is_instance_valid(ed) and ed.is_inside_tree():
+					ed.release_focus()
 			)
 			ed.focus_exited.connect(submit_fn)
 			row.add_child(ed)

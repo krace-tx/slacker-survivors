@@ -1,22 +1,27 @@
+@tool
 class_name BTCompiler
 extends RefCounted
 
 ## 行为树抽象语法树（AST）解析编译器与算子注册表（Behavior Tree AST Compiler & Registry）。[br]
 ##
 ## [b]核心职责：[/b][br]
-## 1. 维护动作/服务算子表（`_action_registry`）与条件算子表（`_condition_registry`）；[br]
-## 2. 将 [BTGraphDef]（含 15 种标准节点与 `SubTree` 外部公共子树嵌套）校验并编译为无状态享元 [BTTree]；[br]
+## 1. 维护动作/服务算子表（`_action_registry`）、条件算子表（`_condition_registry`）与效用评分算子表（`_utility_registry`）；[br]
+## 2. 将 [BTGraphDef]（含 16 种标准节点与 `SubTree` 外部公共子树嵌套）校验并编译为无状态享元 [BTTree]；[br]
 ## 3. 将自身编译器绑定至产物 [BTTree]，支撑运行期零重启 `hot_reload_from_ir()`。
 
 #region Constants & Private Registries
 const _MAX_SUB_TREE_DEPTH: int = 8
 const _SUB_TREE_ID_STRIDE: int = 10000
+const _DEEP_SUB_TREE_BASE_SLOT: int = 100
 
 var _action_registry: Dictionary = {}    ## {StringName: Callable}
 var _condition_registry: Dictionary = {} ## {StringName: Callable}
+var _utility_registry: Dictionary = {}   ## {StringName: Callable}
 var _action_sources: Dictionary = {}     ## {StringName: Dictionary}
 var _condition_sources: Dictionary = {}  ## {StringName: Dictionary}
+var _utility_sources: Dictionary = {}    ## {StringName: Dictionary}
 var _bypass_sub_cache: bool = false
+var _deep_subtree_slot: int = 0
 #endregion
 
 
@@ -46,6 +51,16 @@ func register_condition(condition_key: StringName, callable: Callable) -> BTComp
 	return self
 
 
+## 注册一个命名效用评分算子（`Callable(ctx: BTContext) -> float|bool`，归一化区间 `[0.0, 1.0]`）。
+func register_utility(utility_key: StringName, callable: Callable) -> BTCompiler:
+	if not utility_key.is_empty() and callable.is_valid():
+		_utility_registry[utility_key] = callable
+		var src: Dictionary = GraphDebugBridge.capture_caller_source()
+		if not src.is_empty():
+			_utility_sources[utility_key] = src
+	return self
+
+
 func has_action(action_key: StringName) -> bool:
 	return _action_registry.has(action_key)
 
@@ -56,6 +71,10 @@ func has_service(service_key: StringName) -> bool:
 
 func has_condition(condition_key: StringName) -> bool:
 	return _condition_registry.has(condition_key)
+
+
+func has_utility(utility_key: StringName) -> bool:
+	return _utility_registry.has(utility_key)
 #endregion
 
 
@@ -75,6 +94,7 @@ func compile(graph_def: BTGraphDef, bypass_sub_cache: bool = false) -> FlowGraph
 
 	var prev_bypass: bool = _bypass_sub_cache
 	_bypass_sub_cache = bypass_sub_cache
+	_deep_subtree_slot = 0
 	var root_res: FlowGraphResult = _compile_node_recursive(graph_def.root, 0, init_visited)
 	_bypass_sub_cache = prev_bypass
 	if root_res.is_err():
@@ -102,6 +122,11 @@ func _compile_node_recursive(def: BTNodeDef, depth: int = 0, visited_paths: Dict
 		&"WeightedSelector":
 			var weights: Array[float] = _extract_child_weights(def)
 			runtime_node = BTWeightedSelector.new(nid, ntitle, weights)
+		&"UtilitySelector":
+			var util_res: FlowGraphResult = _compile_utility_selector_node(def)
+			if util_res.is_err():
+				return util_res
+			runtime_node = util_res.value as BTNode
 		&"Sequence":
 			var is_reactive: bool = bool(p.get("reactive", false))
 			runtime_node = BTSequence.new(nid, ntitle, is_reactive)
@@ -261,7 +286,13 @@ func compile_sub_tree_node(
 		return sub_val
 
 	var cloned_root_def: BTNodeDef = BTNodeDef.from_dict(sub_graph.root.to_dict())
-	_offset_node_ids_recursive(cloned_root_def, nid * _SUB_TREE_ID_STRIDE)
+	var id_offset: int = 0
+	if depth == 0 and nid > 0 and nid < _DEEP_SUB_TREE_BASE_SLOT:
+		id_offset = nid * _SUB_TREE_ID_STRIDE
+	else:
+		_deep_subtree_slot += 1
+		id_offset = (_DEEP_SUB_TREE_BASE_SLOT + _deep_subtree_slot) * _SUB_TREE_ID_STRIDE
+	_offset_node_ids_recursive(cloned_root_def, id_offset)
 
 	var next_visited: Dictionary = visited_paths.duplicate()
 	if not sub_path.is_empty():
@@ -288,6 +319,69 @@ static func _extract_child_weights(def: BTNodeDef) -> Array[float]:
 			out.append(maxf(0.0, float(fallback_arr[i])))
 		else:
 			out.append(1.0)
+	return out
+
+
+func _compile_utility_selector_node(def: BTNodeDef) -> FlowGraphResult:
+	var nid: int = def.node_id
+	var p: Dictionary = def.params
+	var specs: Array[Dictionary] = _extract_child_utility_specs(def)
+	for sp: Dictionary in specs:
+		var err_res: FlowGraphResult = _validate_utility_spec_keys(sp, nid)
+		if err_res.is_err():
+			return err_res
+
+	var util_reg_ref: Dictionary = _utility_registry
+	var cond_reg_ref: Dictionary = _condition_registry
+	var lookup_cb: Callable = func(k: StringName) -> Callable:
+		if util_reg_ref.has(k):
+			return util_reg_ref[k] as Callable
+		return cond_reg_ref.get(k, Callable()) as Callable
+
+	var rt := BTUtilitySelector.new(
+		nid,
+		def.title,
+		specs,
+		float(p.get("momentum", 0.10)),
+		float(p.get("min_score", 0.01)),
+		int(p.get("top_k", 1)),
+		bool(p.get("memory", false)),
+		lookup_cb
+	)
+	return FlowGraphResult.ok(rt)
+
+
+func _validate_utility_spec_keys(spec: Dictionary, nid: int) -> FlowGraphResult:
+	var s: Dictionary = FlowUtilityScorer.unwrap_spec(spec)
+	var u_key_raw: String = str(s.get("utility_key", "")).strip_edges()
+	if not u_key_raw.is_empty():
+		var u_key := StringName(u_key_raw)
+		if not _utility_registry.has(u_key) and not _condition_registry.has(u_key):
+			return FlowGraphResult.err_code(
+				"BT.UnregisteredUtility",
+				"Utility key '%s' (node_id=%d) is not registered in BTCompiler." % [u_key_raw, nid]
+			)
+	var raw_cons: Variant = s.get("considerations", null)
+	if raw_cons is Array:
+		for item: Variant in raw_cons as Array:
+			if item is Dictionary:
+				var sub_res: FlowGraphResult = _validate_utility_spec_keys(item as Dictionary, nid)
+				if sub_res.is_err():
+					return sub_res
+	return FlowGraphResult.ok(true)
+
+
+static func _extract_child_utility_specs(def: BTNodeDef) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var fallback_arr: Array = def.params.get("utility_specs", []) as Array if def.params.get("utility_specs", []) is Array else []
+	for i: int in range(def.children.size()):
+		var ch_def: BTNodeDef = def.children[i] as BTNodeDef
+		if ch_def != null and ch_def.params.has("utility") and ch_def.params["utility"] is Dictionary:
+			out.append((ch_def.params["utility"] as Dictionary).duplicate(true))
+		elif i < fallback_arr.size() and fallback_arr[i] is Dictionary:
+			out.append((fallback_arr[i] as Dictionary).duplicate(true))
+		else:
+			out.append({})
 	return out
 
 

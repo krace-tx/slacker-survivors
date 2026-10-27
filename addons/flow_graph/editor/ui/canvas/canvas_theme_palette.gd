@@ -18,6 +18,7 @@ const IconEntryOrigin: Texture2D = FlowGraphIcons.NODE_ENTRY
 const IconKindAny: Texture2D = FlowGraphIcons.NODE_ANY
 const IconKindFinal: Texture2D = FlowGraphIcons.NODE_FINAL
 const IconKindSelector: Texture2D = FlowGraphIcons.NODE_SELECTOR
+const IconKindUtility: Texture2D = FlowGraphIcons.NODE_UTILITY
 const IconKindSequence: Texture2D = FlowGraphIcons.NODE_SEQUENCE
 const IconKindParallel: Texture2D = FlowGraphIcons.NODE_PARALLEL
 const IconKindInverter: Texture2D = FlowGraphIcons.NODE_INVERTER
@@ -28,7 +29,7 @@ const IconKindAction: Texture2D = FlowGraphIcons.NODE_ACTION
 const IconKindWait: Texture2D = FlowGraphIcons.NODE_WAIT
 const IconBoltTrigger: Texture2D = FlowGraphIcons.STATUS_BOLT
 
-const FLOW_KINDS: Array[String] = ["Selector", "WeightedSelector", "Fallback", "Sequence", "Parallel"]
+const FLOW_KINDS: Array[String] = ["Selector", "WeightedSelector", "UtilitySelector", "Fallback", "Sequence", "Parallel"]
 const DECORATOR_KINDS: Array[String] = [
 	"Decorator", "Inverter", "Cooldown", "Repeat", "Repeater",
 	"TimeLimit", "Timeout", "Limiter", "ForceSuccess", "ForceFailure",
@@ -191,6 +192,8 @@ static func resolve_kind_icon(kind: String, is_initial: bool, is_interrupt: bool
 			return IconEntryOrigin
 		"Selector", "WeightedSelector", "Fallback":
 			return IconKindSelector
+		"UtilitySelector":
+			return IconKindUtility
 		"Sequence":
 			return IconKindSequence
 		"Parallel", "SubTree":

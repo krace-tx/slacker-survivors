@@ -48,7 +48,12 @@ static func append_editable_edges(
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
 	var sec_title: String = FlowEditorI18n.t(&"insp.sec_fsm_edges")
 	if eff_schema != MermaidGraphModel.SCHEMA_FSM:
-		sec_title = FlowEditorI18n.t(&"insp.sec_bt_child_single") if BT_SINGLE_CHILD_KINDS.has(nkind) else FlowEditorI18n.t(&"insp.sec_bt_children")
+		if BT_SINGLE_CHILD_KINDS.has(nkind):
+			sec_title = FlowEditorI18n.t(&"insp.sec_bt_child_single")
+		elif nkind == "UtilitySelector":
+			sec_title = FlowEditorI18n.t(&"insp.sec_bt_utility_children")
+		else:
+			sec_title = FlowEditorI18n.t(&"insp.sec_bt_children")
 	parent_vbox.add_child(kit.make_section_header(sec_title, str(edges_list.size()), t.accent))
 
 	if eff_schema == MermaidGraphModel.SCHEMA_FSM:
@@ -59,6 +64,16 @@ static func append_editable_edges(
 				selected_edge_key, ops, ui_state, on_request_rebuild,
 				on_select_node, on_edge_edit, on_edge_delete
 			))
+	elif nkind == "UtilitySelector":
+		var u_ops: Dictionary = FlowOperatorScanner.get_cached()
+		var child_u_vbox: VBoxContainer = kit.make_vbox(5.0)
+		for idx: int in range(edges_list.size()):
+			child_u_vbox.add_child(_build_bt_utility_child_item(
+				kit, g, edges_list[idx], idx, edges_list.size(),
+				selected_edge_key, u_ops, ui_state, on_request_rebuild,
+				on_select_node, on_edge_edit, on_edge_delete
+			))
+		parent_vbox.add_child(child_u_vbox)
 	else:
 		var child_vbox: VBoxContainer = kit.make_vbox(4.0)
 		for idx: int in range(edges_list.size()):
@@ -364,6 +379,248 @@ static func _build_bt_child_row(
 	del_btn.pressed.connect(func() -> void: on_edge_delete.call(f_id, t_id))
 	hb.add_child(del_btn)
 	return row_box
+
+
+static func _build_bt_utility_child_item(
+	kit: InspectorStyleKit,
+	g: MermaidGraphModel,
+	ed: Dictionary,
+	idx: int,
+	total_count: int,
+	selected_edge_key: String,
+	ops: Dictionary,
+	ui_state: Dictionary,
+	on_request_rebuild: Callable,
+	on_select_node: Callable,
+	on_edge_edit: Callable,
+	on_edge_delete: Callable
+) -> PanelContainer:
+	var t: MermaidThemeTokens = MermaidThemeService.tokens()
+	var f_id: String = str(ed.get("from", ""))
+	var t_id: String = str(ed.get("to", ""))
+	var ekey: String = "%s->%s" % [f_id, t_id]
+	var is_canvas_sel: bool = (not selected_edge_key.is_empty() and selected_edge_key == ekey)
+
+	var exp_map: Dictionary = ui_state.get("expanded_edges", {}) as Dictionary
+	var is_expanded: bool = true
+	if is_canvas_sel:
+		is_expanded = true
+	elif exp_map.has(ekey):
+		is_expanded = bool(exp_map[ekey])
+	else:
+		is_expanded = (total_count <= 2) or (idx == 0 and selected_edge_key.is_empty())
+
+	var child_nd: Dictionary = g.find_node(t_id)
+	var child_title: String = str(child_nd.get("title", t_id))
+	var child_kind: String = str(child_nd.get("kind", "Action"))
+	var child_col: Color = CanvasThemePalette.resolve_accent_color(child_kind, false, false, false)
+
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", kit.sb_edge_item_active if is_canvas_sel else kit.sb_edge_item)
+	var evb: VBoxContainer = kit.make_vbox(6.0)
+	box.add_child(evb)
+
+	var h_row: HBoxContainer = kit.make_hbox(5.0)
+	evb.add_child(h_row)
+
+	var ord_pill := PanelContainer.new()
+	ord_pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var ord_lbl: Label = kit.make_label("#%d" % [idx + 1], kit.fs_sub, t.accent)
+	ord_pill.add_theme_stylebox_override("panel", kit.sb_unit_tag)
+	ord_pill.add_child(ord_lbl)
+	h_row.add_child(ord_pill)
+
+	var c_ico: Texture2D = CanvasThemePalette.resolve_kind_icon(child_kind, false, false, false)
+	if c_ico != null:
+		var ico_r: TextureRect = InspectorStyleKit.make_scaled_icon(c_ico, roundi(14.0 * kit.s))
+		ico_r.modulate = child_col
+		h_row.add_child(ico_r)
+
+	var disp_target: String = child_title if child_title == t_id else "%s (%s)" % [child_title, t_id]
+	var exp_btn := Button.new()
+	exp_btn.text = "%s  %s" % ["▾" if is_expanded else "▸", disp_target]
+	exp_btn.tooltip_text = FlowEditorI18n.t(&"insp.edge_expand_tip")
+	exp_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	exp_btn.flat = true
+	exp_btn.focus_mode = Control.FOCUS_NONE
+	exp_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exp_btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	exp_btn.add_theme_font_size_override("font_size", kit.fs_sub)
+	exp_btn.add_theme_color_override("font_color", t.font_strong)
+	exp_btn.add_theme_color_override("font_hover_color", t.accent.lightened(0.25))
+	exp_btn.pressed.connect(func() -> void:
+		var next_exp: Dictionary = ui_state.get("expanded_edges", {}) as Dictionary
+		next_exp[ekey] = not is_expanded
+		ui_state["expanded_edges"] = next_exp
+		if on_request_rebuild.is_valid():
+			on_request_rebuild.call()
+	)
+	h_row.add_child(exp_btn)
+
+	var ep_raw: Dictionary = ed.get("params", {}) as Dictionary
+	var u_spec: Dictionary = FlowUtilityScorer.unwrap_spec(ep_raw).duplicate(true)
+	var u_sum: Dictionary = _summarize_bt_utility_spec(u_spec)
+	var sum_pill := PanelContainer.new()
+	sum_pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var sum_lbl: Label = kit.make_label("", kit.fs_sub, Color.WHITE)
+	sum_pill.add_child(sum_lbl)
+	kit.apply_status_pill_theme(sum_pill, sum_lbl, str(u_sum["text"]), u_sum["color"] as Color)
+	h_row.add_child(sum_pill)
+
+	var loc_btn: Button = kit.make_mini_button("", FlowEditorI18n.t(&"insp.edge_locate_tip"), t.accent, InspectorStyleKit.IconFitView)
+	loc_btn.pressed.connect(func() -> void: on_select_node.call(t_id, true))
+	h_row.add_child(loc_btn)
+
+	var del_btn: Button = kit.make_mini_button("×", FlowEditorI18n.t(&"insp.edge_del_tip"), t.error)
+	del_btn.pressed.connect(func() -> void: on_edge_delete.call(f_id, t_id))
+	h_row.add_child(del_btn)
+
+	if not is_expanded:
+		return box
+
+	var uk_s: String = str(u_spec.get("utility_key", "")).strip_edges()
+	var bb_s: String = str(u_spec.get("bb_key", "")).strip_edges()
+	var curve_s: String = str(u_spec.get("curve", FlowUtilityScorer.CURVE_LINEAR)).strip_edges().to_lower()
+	var invert_on: bool = bool(u_spec.get("invert", false))
+	var min_v: float = float(u_spec.get("min_val", 0.0))
+	var max_v: float = float(u_spec.get("max_val", 1.0))
+	var weight_v: float = maxf(0.0, float(u_spec.get("weight", 1.0)))
+
+	var auto_m: int = 1 if (not uk_s.is_empty() and bb_s.is_empty()) else 0
+	var mode_map: Dictionary = ui_state.get("edge_modes", {}) as Dictionary
+	var cur_m: int = clampi(int(mode_map.get(ekey, auto_m)), 0, 1)
+	var tab_labels := PackedStringArray([
+		FlowEditorI18n.t(&"insp.util_mode_curve"),
+		FlowEditorI18n.t(&"insp.util_mode_op"),
+	])
+	var dots: Array[bool] = [not bb_s.is_empty(), not uk_s.is_empty()]
+	var on_mode_sel: Callable = func(next_m: int) -> void:
+		var m_dict: Dictionary = ui_state.get("edge_modes", {}) as Dictionary
+		m_dict[ekey] = next_m
+		ui_state["edge_modes"] = m_dict
+		if on_request_rebuild.is_valid():
+			on_request_rebuild.call()
+	evb.add_child(kit.make_segmented_tabs(tab_labels, cur_m, on_mode_sel, dots))
+
+	var inv_chip: Button = kit.make_toggle_chip(
+		FlowEditorI18n.t(&"insp.role_util_invert"),
+		invert_on,
+		t.warning,
+		FlowEditorI18n.t(&"insp.role_util_invert_tip"),
+		func() -> void:
+			_commit_bt_utility_patch(ed, f_id, t_id, {"invert": not invert_on}, on_edge_edit)
+	)
+
+	if cur_m == 0:
+		var bb_keys := PackedStringArray()
+		for bb_item: Dictionary in g.blackboard_schema:
+			var bk: String = str(bb_item.get("key", "")).strip_edges()
+			if not bk.is_empty():
+				bb_keys.append(bk)
+		var on_bb_commit: Callable = func(v: String) -> void:
+			_commit_bt_utility_patch(ed, f_id, t_id, {"bb_key": v, "utility_key": null}, on_edge_edit)
+		var bb_ctrl: HBoxContainer = kit.make_picker_input(bb_s, FlowEditorI18n.t(&"insp.ph_bb_key"), bb_keys, on_bb_commit, false, inv_chip)
+		evb.add_child(kit.make_form_row(FlowEditorI18n.t(&"insp.lbl_bb_key"), bb_ctrl))
+
+		var rng_row: HBoxContainer = kit.make_hbox(6.0)
+		rng_row.add_child(kit.make_inline_labeled_edit(
+			FlowEditorI18n.t(&"insp.lbl_util_min"),
+			"%.2f" % min_v,
+			FlowEditorI18n.t(&"insp.ph_util_min"),
+			"",
+			func(v: String) -> void:
+				_commit_bt_utility_patch(ed, f_id, t_id, {"min_val": float(InspectorStyleKit.parse_typed_literal(v, "float"))}, on_edge_edit)
+		))
+		rng_row.add_child(kit.make_inline_labeled_edit(
+			FlowEditorI18n.t(&"insp.lbl_util_max"),
+			"%.2f" % max_v,
+			FlowEditorI18n.t(&"insp.ph_util_max"),
+			"",
+			func(v: String) -> void:
+				_commit_bt_utility_patch(ed, f_id, t_id, {"max_val": float(InspectorStyleKit.parse_typed_literal(v, "float"))}, on_edge_edit)
+		))
+		evb.add_child(kit.make_form_row(FlowEditorI18n.t(&"insp.lbl_util_range"), rng_row))
+	else:
+		var util_cands: PackedStringArray = (ops.get("utilities", PackedStringArray()) as PackedStringArray).duplicate()
+		for c_tok: String in (ops.get("conditions", PackedStringArray()) as PackedStringArray):
+			if not util_cands.has(c_tok):
+				util_cands.append(c_tok)
+		var on_uk_commit: Callable = func(v: String) -> void:
+			_commit_bt_utility_patch(ed, f_id, t_id, {"utility_key": v, "bb_key": null}, on_edge_edit)
+		var uk_ctrl: HBoxContainer = kit.make_picker_input(uk_s, FlowEditorI18n.t(&"insp.ph_utility_key"), util_cands, on_uk_commit, false, inv_chip)
+		evb.add_child(kit.make_form_row(FlowEditorI18n.t(&"insp.lbl_utility_key"), uk_ctrl))
+
+	var curve_labels := PackedStringArray([
+		FlowEditorI18n.t(&"insp.curve_linear"),
+		FlowEditorI18n.t(&"insp.curve_quad"),
+		FlowEditorI18n.t(&"insp.curve_cubic"),
+		FlowEditorI18n.t(&"insp.curve_sqrt"),
+		FlowEditorI18n.t(&"insp.curve_smoothstep"),
+		FlowEditorI18n.t(&"insp.curve_logistic"),
+	])
+	var cw_row: HBoxContainer = kit.make_hbox(6.0)
+	cw_row.add_child(kit.make_option_button(
+		FlowUtilityScorer.CURVES,
+		maxi(0, FlowUtilityScorer.CURVES.find(curve_s)),
+		func(chosen_c: String, _i: int) -> void:
+			_commit_bt_utility_patch(ed, f_id, t_id, {"curve": chosen_c}, on_edge_edit),
+		curve_labels
+	))
+	cw_row.add_child(kit.make_inline_labeled_edit(
+		FlowEditorI18n.t(&"insp.lbl_util_weight"),
+		"%.2f" % weight_v,
+		FlowEditorI18n.t(&"insp.ph_util_weight"),
+		"",
+		func(v: String) -> void:
+			_commit_bt_utility_patch(ed, f_id, t_id, {"weight": maxf(0.0, float(InspectorStyleKit.parse_typed_literal(v, "float")))}, on_edge_edit)
+	))
+	evb.add_child(kit.make_form_row(FlowEditorI18n.t(&"insp.lbl_util_curve"), cw_row))
+	return box
+
+
+static func _summarize_bt_utility_spec(u_spec: Dictionary) -> Dictionary:
+	var t: MermaidThemeTokens = MermaidThemeService.tokens()
+	var uk_s: String = str(u_spec.get("utility_key", "")).strip_edges()
+	var bb_s: String = str(u_spec.get("bb_key", "")).strip_edges()
+	if uk_s.is_empty() and bb_s.is_empty() and not u_spec.has("considerations"):
+		var base_sc: float = clampf(float(u_spec.get("base_score", 0.5)), 0.0, 1.0)
+		return {
+			"text": FlowEditorI18n.t(&"insp.util_summary_base", [base_sc]),
+			"color": t.font_faint,
+		}
+	var raw_txt: String = FlowUtilityScorer.summarize_spec(u_spec)
+	var col: Color = t.warning if not uk_s.is_empty() else t.accent
+	return {
+		"text": raw_txt if raw_txt.length() <= 20 else (raw_txt.substr(0, 18) + ".."),
+		"color": col,
+	}
+
+
+static func _commit_bt_utility_patch(
+	ed: Dictionary,
+	f_id: String,
+	t_id: String,
+	u_patch: Dictionary,
+	on_edge_edit: Callable
+) -> void:
+	var next_ep: Dictionary = (ed.get("params", {}) as Dictionary).duplicate(true)
+	var next_u: Dictionary = {}
+	if next_ep.has("utility") and next_ep["utility"] is Dictionary:
+		next_u = (next_ep["utility"] as Dictionary).duplicate(true)
+	else:
+		for flat_k: String in ["bb_key", "utility_key", "min_val", "max_val", "curve", "invert", "weight", "base_score", "considerations"]:
+			if next_ep.has(flat_k):
+				next_u[flat_k] = next_ep[flat_k]
+				next_ep.erase(flat_k)
+	for k: Variant in u_patch.keys():
+		var v: Variant = u_patch[k]
+		if v == null or (v is String and (v as String).strip_edges().is_empty()):
+			next_u.erase(k)
+		else:
+			next_u[k] = v
+	next_ep["utility"] = next_u
+	var synth_lbl: String = FlowUtilityScorer.summarize_spec(next_u)
+	on_edge_edit.call(f_id, t_id, {"label": synth_lbl, "params": next_ep})
 
 
 static func append_live_fire_event_bar(kit: InspectorStyleKit, parent_vbox: VBoxContainer, on_fire_event: Callable) -> void:

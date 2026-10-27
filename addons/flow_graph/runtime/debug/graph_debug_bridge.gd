@@ -1,3 +1,4 @@
+@tool
 class_name GraphDebugBridge
 extends RefCounted
 
@@ -258,7 +259,7 @@ static func should_suspend_tick(memory_id: int) -> bool:
 
 ## 节流推送指定内存 ID 的最新状态快照至编辑器画布（默认 60ms 分频防 IPC 拥塞；`force=true` 或刚命中断点时立即穿透推送）。
 static func push_frame(memory_id: int, force: bool = false) -> void:
-	if not _is_session_enabled() or memory_id == 0 or not _bindings.has(memory_id):
+	if _bindings.is_empty() or memory_id == 0 or not _bindings.has(memory_id) or not _is_session_enabled():
 		return
 	var b: GraphDebugBinding = _bindings[memory_id] as GraphDebugBinding
 	if b == null or not b.is_alive():
@@ -289,7 +290,7 @@ static func push_frame(memory_id: int, force: bool = false) -> void:
 
 ## 主动上报一次有向边流转（驱动编辑器画布播放流光粒子脉冲）。
 static func notify_edge_flow(memory_id: int, from_id: String, to_id: String, label: String = "") -> void:
-	if not _is_session_enabled() or memory_id == 0 or not _bindings.has(memory_id):
+	if _bindings.is_empty() or memory_id == 0 or not _bindings.has(memory_id) or not _is_session_enabled():
 		return
 	if is_debugger_connected():
 		EngineDebugger.send_message(MSG_EDGE_FLOW, [memory_id, from_id, to_id, label])

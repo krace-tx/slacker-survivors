@@ -7,13 +7,13 @@ extends Resource
 ## 支持编译期结构校验 [method validate]、节点总数统计、黑板 Schema 声明以及与标准图 IR / JSON 的双向无损转换。
 
 #region Constants & Exports
-const _COMPOSITE_TYPES: Array[StringName] = [&"Selector", &"Sequence", &"Parallel", &"WeightedSelector"]
+const _COMPOSITE_TYPES: Array[StringName] = [&"Selector", &"Sequence", &"Parallel", &"WeightedSelector", &"UtilitySelector"]
 const _DECORATOR_TYPES: Array[StringName] = [
 	&"Inverter", &"Cooldown", &"Repeater", &"TimeLimit", &"ForceSuccess", &"ForceFailure", &"Service",
 ]
 const _KNOWN_KINDS: Array[String] = [
 	"Root",
-	"Selector", "WeightedSelector", "Sequence", "Parallel",
+	"Selector", "WeightedSelector", "UtilitySelector", "Sequence", "Parallel",
 	"Inverter", "Cooldown", "Repeater", "TimeLimit", "ForceSuccess", "ForceFailure", "Service",
 	"Condition", "Action", "Wait", "SubTree",
 ]
@@ -225,9 +225,18 @@ func apply_mermaid_ir(ir: Dictionary) -> void:
 				(adj[f_key] as Array).append(t_key)
 				in_deg[t_key] = int(in_deg[t_key]) + 1
 				var ep: Variant = ed.get("params", {})
-				if ep is Dictionary and (ep as Dictionary).has("weight"):
+				if ep is Dictionary:
+					var ep_dict: Dictionary = ep as Dictionary
 					var child_def: BTNodeDef = def_by_key[t_key] as BTNodeDef
-					child_def.params["weight"] = float((ep as Dictionary).get("weight", 1.0))
+					var parent_def_edge: BTNodeDef = def_by_key[f_key] as BTNodeDef
+					if ep_dict.has("weight"):
+						child_def.params["weight"] = float(ep_dict.get("weight", 1.0))
+					if ep_dict.has("utility") and ep_dict["utility"] is Dictionary:
+						child_def.params["utility"] = (ep_dict["utility"] as Dictionary).duplicate(true)
+					elif parent_def_edge.node_type == &"UtilitySelector" and (
+						ep_dict.has("bb_key") or ep_dict.has("utility_key") or ep_dict.has("curve") or ep_dict.has("base_score")
+					):
+						child_def.params["utility"] = ep_dict.duplicate(true)
 
 	var root_key: String = str(ir.get("initial_node_id", "")).strip_edges()
 	for k_r: String in key_order:
@@ -268,6 +277,7 @@ static func _collect_mermaid_recursive(node_def: BTNodeDef, nodes_out: Array[Dic
 	})
 
 	var parent_weights: Array = node_def.params.get("weights", []) as Array if node_def.params.get("weights", []) is Array else []
+	var parent_u_specs: Array = node_def.params.get("utility_specs", []) as Array if node_def.params.get("utility_specs", []) is Array else []
 	var child_order: int = 0
 	for ch_var: Variant in node_def.children:
 		var ch_def: BTNodeDef = ch_var as BTNodeDef
@@ -275,7 +285,16 @@ static func _collect_mermaid_recursive(node_def: BTNodeDef, nodes_out: Array[Dic
 			continue
 		var edge_params: Dictionary = {}
 		var lbl: String = "#%d" % (child_order + 1) if node_def.children.size() > 1 else ""
-		if node_def.node_type == &"WeightedSelector" or ch_def.params.has("weight"):
+		if node_def.node_type == &"UtilitySelector" or ch_def.params.has("utility"):
+			var u_spec: Dictionary = {}
+			if ch_def.params.has("utility") and ch_def.params["utility"] is Dictionary:
+				u_spec = (ch_def.params["utility"] as Dictionary).duplicate(true)
+			elif child_order < parent_u_specs.size() and parent_u_specs[child_order] is Dictionary:
+				u_spec = (parent_u_specs[child_order] as Dictionary).duplicate(true)
+			edge_params["utility"] = u_spec
+			if node_def.node_type == &"UtilitySelector":
+				lbl = FlowUtilityScorer.summarize_spec(u_spec)
+		elif node_def.node_type == &"WeightedSelector" or ch_def.params.has("weight"):
 			var w_val: float = float(ch_def.params.get("weight", 1.0))
 			if not ch_def.params.has("weight") and child_order < parent_weights.size():
 				w_val = float(parent_weights[child_order])
@@ -307,7 +326,7 @@ static func _wire_bt_children_recursive(cur_key: String, def_by_key: Dictionary,
 static func _shape_for_type(ntype: String) -> String:
 	match ntype:
 		"Root": return "round"
-		"Selector", "WeightedSelector": return "diamond"
+		"Selector", "WeightedSelector", "UtilitySelector": return "diamond"
 		"Sequence": return "stadium"
 		"Parallel", "SubTree": return "subroutine"
 		"Cooldown", "Inverter", "Repeater", "TimeLimit", "ForceSuccess", "ForceFailure", "Service": return "hexagon"
@@ -319,6 +338,13 @@ static func _fill_default_node_params(ntype: StringName, str_id: String, parsed_
 	if ntype == &"Action" and not p_dict.has("action_key"):
 		var is_auto_nid: bool = str_id.begins_with("n") and str_id.substr(1).is_valid_int()
 		p_dict["action_key"] = "action_%d" % parsed_id if is_auto_nid else str_id
+	elif ntype == &"UtilitySelector":
+		if not p_dict.has("momentum"):
+			p_dict["momentum"] = 0.10
+		if not p_dict.has("min_score"):
+			p_dict["min_score"] = 0.01
+		if not p_dict.has("top_k"):
+			p_dict["top_k"] = 1
 	elif ntype == &"Cooldown" and not p_dict.has("cooldown_sec"):
 		p_dict["cooldown_sec"] = 1.0
 	elif ntype == &"Wait" and not p_dict.has("duration_sec"):
@@ -347,7 +373,10 @@ static func _resolve_bt_node_type(kind: String, shape: String, title: String, pa
 			return &"Service"
 		return &"Inverter"
 	match shape:
-		"diamond": return &"WeightedSelector" if params.has("weights") else &"Selector"
+		"diamond":
+			if params.has("utility_specs") or params.has("momentum") or params.has("min_score") or params.has("top_k"):
+				return &"UtilitySelector"
+			return &"WeightedSelector" if params.has("weights") else &"Selector"
 		"stadium": return &"Sequence"
 		"subroutine": return &"SubTree" if params.has("sub_graph_path") else &"Parallel"
 		"round": return &"Condition"

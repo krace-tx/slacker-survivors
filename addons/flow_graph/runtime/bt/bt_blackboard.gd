@@ -14,7 +14,7 @@ var _node_memory: Dictionary = {} ## {int (node_id): Dictionary}
 #endregion
 
 
-#regionTyped Data Accessors
+#region Typed Data Accessors
 func set_var(key: StringName, value: Variant) -> void:
 	_data[key] = value
 
@@ -81,14 +81,14 @@ func get_all() -> Dictionary:
 func set_node_mem(node_id: int, field: StringName, value: Variant) -> void:
 	if not _node_memory.has(node_id):
 		_node_memory[node_id] = {}
-	var bucket: Dictionary = _node_memory[node_id]
+	var bucket: Dictionary = _node_memory[node_id] as Dictionary
 	bucket[field] = value
 
 
 func get_node_mem(node_id: int, field: StringName, default_val: Variant = null) -> Variant:
 	if not _node_memory.has(node_id):
 		return default_val
-	var bucket: Dictionary = _node_memory[node_id]
+	var bucket: Dictionary = _node_memory[node_id] as Dictionary
 	return bucket.get(field, default_val)
 
 

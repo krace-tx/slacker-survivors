@@ -1,3 +1,4 @@
+@tool
 class_name BTBuilder
 extends RefCounted
 
@@ -28,6 +29,12 @@ static func create(tree_id: StringName = &"bt_tree") -> BTBuilder:
 func declare_var(key: String, type_name: String, default_val: Variant) -> BTBuilder:
 	_blackboard_schema.append({"key": key, "type": type_name, "default": default_val})
 	return self
+
+
+## 预注册一个命名效用评分算子（`Callable(ctx: BTContext) -> float|bool`）。
+func register_utility(utility_key: StringName, callable: Callable) -> BTBuilder:
+	_compiler.register_utility(utility_key, callable)
+	return self
 #endregion
 
 
@@ -48,6 +55,33 @@ func weighted_selector(weights: Array[float] = [], title: String = "WeightedSele
 	var rt := BTWeightedSelector.new(nid, title, weights)
 	var params: Dictionary = {"weights": weights.duplicate()} if not weights.is_empty() else {}
 	var ast_def := BTNodeDef.create(nid, &"WeightedSelector", title, params)
+	_push_container(rt, ast_def)
+	return self
+
+
+## 压入一个效用评分选择节点（[BTUtilitySelector]，支持 `momentum` 惯性加分、`min_score` 阈值与 `top_k` 加权抽样）。
+func utility_selector(
+	title: String = "UtilitySelector",
+	momentum: float = 0.10,
+	min_score: float = 0.01,
+	top_k: int = 1,
+	memory: bool = false
+) -> BTBuilder:
+	var nid: int = _alloc_id()
+	var comp_ref: BTCompiler = _compiler
+	var lookup_cb: Callable = func(k: StringName) -> Callable:
+		if comp_ref._utility_registry.has(k):
+			return comp_ref._utility_registry[k] as Callable
+		return comp_ref._condition_registry.get(k, Callable()) as Callable
+	var rt := BTUtilitySelector.new(nid, title, [], momentum, min_score, top_k, memory, lookup_cb)
+	var params: Dictionary = {
+		"momentum": maxf(0.0, momentum),
+		"min_score": maxf(0.0, min_score),
+		"top_k": maxi(1, top_k),
+	}
+	if memory:
+		params["memory"] = true
+	var ast_def := BTNodeDef.create(nid, &"UtilitySelector", title, params)
 	_push_container(rt, ast_def)
 	return self
 
@@ -235,6 +269,62 @@ func sub_tree(sub_graph_path: String, title: String = "") -> BTBuilder:
 	return self
 
 
+## 为当前 `UtilitySelector` 刚刚挂载的最后一个子分支（叶节点或 `.end()` 闭合的子树）绑定原始效用配置字典。
+func with_utility(spec: Dictionary) -> BTBuilder:
+	var clean_spec: Dictionary = FlowUtilityScorer.unwrap_spec(spec).duplicate(true)
+	if not _node_stack.is_empty():
+		var parent_rt: BTNode = _node_stack[_node_stack.size() - 1]
+		if parent_rt is BTUtilitySelector:
+			var us: BTUtilitySelector = parent_rt as BTUtilitySelector
+			var last_idx: int = us.children.size() - 1
+			if last_idx >= 0:
+				us.set_child_spec(last_idx, clean_spec)
+	if not _ast_stack.is_empty():
+		var parent_ast: BTNodeDef = _ast_stack[_ast_stack.size() - 1]
+		if not parent_ast.children.is_empty():
+			var last_ast: BTNodeDef = parent_ast.children[parent_ast.children.size() - 1] as BTNodeDef
+			if last_ast != null:
+				last_ast.params["utility"] = clean_spec.duplicate(true)
+	return self
+
+
+## 为刚挂载的子分支绑定声明式黑板响应曲线评分（`[min_val..max_val] -> invert -> curve -> * weight`）。
+func with_utility_curve(
+	bb_key: StringName,
+	min_val: float = 0.0,
+	max_val: float = 1.0,
+	curve: String = FlowUtilityScorer.CURVE_LINEAR,
+	invert: bool = false,
+	weight: float = 1.0
+) -> BTBuilder:
+	return with_utility({
+		"bb_key": String(bb_key),
+		"min_val": min_val,
+		"max_val": max_val,
+		"curve": curve,
+		"invert": invert,
+		"weight": maxf(0.0, weight),
+	})
+
+
+## 为刚挂载的子分支绑定宿主效用算子评分（`callable: Callable(ctx: BTContext) -> float|bool`）。
+func with_utility_fn(
+	utility_key: StringName,
+	callable: Callable = Callable(),
+	weight: float = 1.0,
+	curve: String = FlowUtilityScorer.CURVE_LINEAR,
+	invert: bool = false
+) -> BTBuilder:
+	if not utility_key.is_empty() and callable.is_valid():
+		_compiler.register_utility(utility_key, callable)
+	return with_utility({
+		"utility_key": String(utility_key),
+		"curve": curve,
+		"invert": invert,
+		"weight": maxf(0.0, weight),
+	})
+
+
 ## 结束当前组合节点或装饰节点的子树构建，退回上一层父节点。
 func end() -> BTBuilder:
 	if not _node_stack.is_empty():
@@ -299,6 +389,12 @@ func _attach_leaf(rt: BTNode, ast_def: BTNodeDef) -> void:
 					parent_rt.add_child_node(rt)
 				else:
 					ws.add_weighted_child(rt, 1.0)
+			elif parent_rt is BTUtilitySelector:
+				var us: BTUtilitySelector = parent_rt as BTUtilitySelector
+				var init_spec: Dictionary = {}
+				if ast_def.params.has("utility") and ast_def.params["utility"] is Dictionary:
+					init_spec = (ast_def.params["utility"] as Dictionary).duplicate(true)
+				us.add_utility_child(rt, init_spec)
 			else:
 				parent_rt.add_child_node(rt)
 		if not _ast_stack.is_empty():

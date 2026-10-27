@@ -111,6 +111,14 @@ static func annotate_bt_metadata(
 
 	var e_params: Dictionary = raw_edge.get("params", {}) as Dictionary if raw_edge.get("params", {}) is Dictionary else {}
 	var n_params: Dictionary = target_node_rec.get("params", {}) as Dictionary if target_node_rec.get("params", {}) is Dictionary else {}
+	if e_params.has("utility") and idx >= 0 and not routed_rec.has("bt_child_order"):
+		var u_order: int = idx + 1
+		routed_rec["bt_child_order"] = u_order
+		routed_rec["branch_index"] = u_order
+		if not routed_rec.has("tap_badge_pos"):
+			var pts_u: PackedVector2Array = routed_rec.get("pts", PackedVector2Array()) as PackedVector2Array
+			if pts_u.size() >= 2:
+				routed_rec["tap_badge_pos"] = CanvasGeometry.interpolate_polyline(pts_u, 0.82)
 	if e_params.has("weight"):
 		routed_rec["bt_weight"] = float(e_params["weight"])
 	elif n_params.has("weight"):

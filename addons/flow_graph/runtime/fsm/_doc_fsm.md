@@ -26,7 +26,8 @@ addons/flow_graph/runtime/fsm/
 2. **条件取反、复合表达式与内置黑板（`FlowBlackboardExpr`）**：
    - `StateMachine` 自带 `blackboard: BTBlackboard`（编译时自动按 `FsmGraphDef.blackboard_schema` 注入默认值）；
    - 转换边的 `condition_key` 原生支持 `!enemy_in_sight`、`enemy_in_sight && !is_reloading` 等组合语法，同时可通过 `bb_expr` 直接编写 `stamina >= 25 && hp_ratio < 0.5` 黑板表达式。
-3. **层次状态机 `.tres` 子图嵌套（HFSM Sub-Graph）**：
-   - 为任意 `FsmStateDef` 设置 `sub_graph_path = "res://.../def_fsm_combat_combo.tres"`，编译时 `FsmCompiler` 自动递归加载并挂载为该状态的 `sub_machine`，共享宿主 `actor`、条件注册表与 `blackboard`；事件消费遵循「子状态机优先、父状态机兜底」。
-4. **运行期无损热重载（`hot_reload_from_ir`）**：
-   - 游戏运行中在编辑器修改转换条件、`min_state_time` 或新增状态并保存 `.tres` 后，自动原位热更新转换表，保留当前激活状态 `_current_id`、驻留时长 `_state_time` 与黑板数据不断流。
+3. **层次状态机 `.tres` 子图嵌套（HFSM Sub-Graph）与级联启停**：
+   - 为任意 `FsmStateDef` 设置 `sub_graph_path = "res://.../def_fsm_combat_combo.tres"`，编译时 `FsmCompiler` 自动递归加载并挂载为该状态的 `sub_machine`，共享宿主 `actor`、条件注册表与 `blackboard`；事件消费遵循「子状态机优先、父状态机兜底」，父状态退出或调用 `stop()` 时自底向上自动级联退出激活子状态机。
+4. **$O(E_{\text{state}})$ 预索引转换表、重入保护与无损热重载（`hot_reload_from_ir`）**：
+   - 转换边按源状态预归并全局 `*` 转换边与优先级排序，每帧仅评估当前驻留状态的出边，并内置迭代式 `_on_enter` 重入上限保护（防止乒乓状态切换栈溢出）；
+   - 游戏运行中修改转换条件、`min_state_time` 或增删状态并保存 `.tres` 后，自动原位热更新转换表，保留当前激活状态 `_current_id`、驻留时长 `_state_time` 与黑板数据不断流。

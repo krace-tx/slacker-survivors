@@ -198,7 +198,7 @@ func sync_state(store: MermaidSessionStore) -> void:
 	# 1. 左侧子图面包屑同步
 	for ch: Node in _crumb_box.get_children():
 		_crumb_box.remove_child(ch)
-		ch.free()
+		ch.queue_free()
 
 	var show_crumbs: bool = not breadcrumb_stack.is_empty()
 	_crumb_box.visible = show_crumbs

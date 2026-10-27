@@ -136,17 +136,19 @@ func build_outline_card(
 		var cap_nid: String = nid
 		var cap_sel: bool = is_sel
 		row.mouse_entered.connect(func() -> void:
-			if not cap_sel:
+			if not cap_sel and is_instance_valid(row):
 				row.add_theme_stylebox_override("panel", kit.sb_row_hover)
 		)
 		row.mouse_exited.connect(func() -> void:
-			if not cap_sel:
+			if not cap_sel and is_instance_valid(row):
 				row.add_theme_stylebox_override("panel", kit.sb_row_idle)
 		)
 		row.gui_input.connect(func(ev: InputEvent) -> void:
 			if FlowEditorInput.is_pointer_press(ev, FlowEditorInput.PTR_PRIMARY):
-				node_selected_from_inspector.emit(cap_nid, FlowEditorInput.is_pointer_double_click(ev, FlowEditorInput.PTR_PRIMARY))
-				row.accept_event()
+				var is_dbl: bool = FlowEditorInput.is_pointer_double_click(ev, FlowEditorInput.PTR_PRIMARY)
+				if is_instance_valid(row) and row.is_inside_tree():
+					row.accept_event()
+				node_selected_from_inspector.emit(cap_nid, is_dbl)
 		)
 		list_vbox.add_child(row)
 

@@ -144,6 +144,10 @@ static func _compute_frame_signature(frame: Dictionary) -> String:
 			for vk_str: String in vkeys:
 				parts.append("%s=%s" % [vk_str, _format_sig_value(vars_dict.get(vk_str, null))])
 
+	var raw_eb: Variant = frame.get("edge_badges", {})
+	if raw_eb is Dictionary and not (raw_eb as Dictionary).is_empty():
+		parts.append("#eb=" + _format_sig_value(raw_eb))
+
 	parts.append("#bp=" + str(frame.get("hit_breakpoint", "")))
 	return "|".join(parts)
 

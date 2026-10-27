@@ -1,3 +1,4 @@
+@tool
 class_name BTService
 extends BTNode
 
@@ -13,6 +14,8 @@ var service_key: StringName = &""
 var interval_sec: float = 0.25
 var jitter_sec: float = 0.05
 var params: Dictionary = {}
+
+var _service_argc: int = 0
 #endregion
 
 
@@ -29,6 +32,7 @@ func _init(
 	var resolved_title: String = p_title if not p_title.is_empty() else "Service"
 	super._init(p_node_id, &"Service", resolved_title, false)
 	service_cb = p_service_cb
+	_service_argc = service_cb.get_argument_count() if service_cb.is_valid() else 0
 	service_key = p_service_key
 	interval_sec = maxf(0.0, p_interval_sec)
 	jitter_sec = maxf(0.0, p_jitter_sec)
@@ -52,10 +56,9 @@ func _on_tick(ctx: BTContext) -> int:
 func _invoke_service(ctx: BTContext) -> void:
 	if not service_cb.is_valid():
 		return
-	var argc: int = service_cb.get_argument_count()
-	if argc >= 2:
+	if _service_argc >= 2:
 		service_cb.call(ctx, params)
-	elif argc == 1:
+	elif _service_argc == 1:
 		service_cb.call(ctx)
 	else:
 		service_cb.call()
@@ -63,6 +66,7 @@ func _invoke_service(ctx: BTContext) -> void:
 
 func clear() -> void:
 	service_cb = Callable()
+	_service_argc = 0
 	params.clear()
 	super.clear()
 #endregion

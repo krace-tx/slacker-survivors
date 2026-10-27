@@ -1,3 +1,4 @@
+@tool
 class_name BTNode
 extends RefCounted
 
@@ -33,7 +34,7 @@ func add_child_node(child: BTNode) -> BTNode:
 
 ## 执行单步评估并自动向 [BTContext] 写入可视化遥测轨迹。
 func tick(ctx: BTContext) -> int:
-	var status := _on_tick(ctx)
+	var status: int = _on_tick(ctx)
 	ctx.record_node_status(node_id, status, is_leaf and node_type != &"Condition", title)
 	return status
 

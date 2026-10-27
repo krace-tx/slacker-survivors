@@ -16,7 +16,7 @@ signal picker_closed(committed: bool)
 const NON_LEAF_BT_SET: Dictionary = {
 	"Cooldown": true, "Inverter": true, "Repeater": true, "TimeLimit": true, "Service": true,
 	"ForceSuccess": true, "ForceFailure": true,
-	"Sequence": true, "Selector": true, "Parallel": true, "WeightedSelector": true,
+	"Sequence": true, "Selector": true, "Parallel": true, "WeightedSelector": true, "UtilitySelector": true,
 }
 
 var _popup: PopupPanel = null
@@ -177,7 +177,7 @@ func _on_search_text_changed(new_text: String) -> void:
 func _rebuild_filtered_list(query: String) -> void:
 	for child: Node in _list_vbox.get_children():
 		_list_vbox.remove_child(child)
-		child.free()
+		child.queue_free()
 	_row_buttons.clear()
 	_filtered_kinds.clear()
 

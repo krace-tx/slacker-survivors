@@ -168,7 +168,7 @@ func rebuild_inspector(store: MermaidSessionStore, selected_node_id: String = ""
 	_bb_card.clear_refs()
 	for child: Node in _cards_vbox.get_children():
 		_cards_vbox.remove_child(child)
-		child.free()
+		child.queue_free()
 
 	if store == null:
 		return

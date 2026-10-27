@@ -9,6 +9,7 @@ const MermaidMetrics = preload(FlowGraphContracts.SCRIPT_METRICS)
 const CanvasGeometry = preload(FlowGraphContracts.SCRIPT_CANVAS_GEOMETRY)
 
 var active_node_states: Dictionary = {}
+var edge_badges: Dictionary = {}
 var continuous_edges: Array[Array] = []
 var burst_pulses: Array[Dictionary] = []
 var recent_trail_keys: Array[String] = []
@@ -19,6 +20,7 @@ var anim_clock: float = 0.0
 
 func clear() -> void:
 	active_node_states.clear()
+	edge_badges.clear()
 	continuous_edges.clear()
 	burst_pulses.clear()
 	recent_trail_keys.clear()
@@ -69,6 +71,8 @@ func tick(delta: float) -> bool:
 func apply_frame(frame: Dictionary) -> void:
 	var raw_active: Variant = frame.get("active_nodes", {})
 	active_node_states = (raw_active as Dictionary).duplicate(true) if raw_active is Dictionary else {}
+	var raw_eb: Variant = frame.get("edge_badges", {})
+	edge_badges = (raw_eb as Dictionary).duplicate(true) if raw_eb is Dictionary else {}
 	continuous_edges.clear()
 	var raw_edges: Variant = frame.get("active_edges", [])
 	if raw_edges is Array:

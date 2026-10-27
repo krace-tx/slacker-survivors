@@ -24,8 +24,8 @@ addons/flow_graph/runtime/debug/
 2. **$O(B)$ 零分配节流期断点快筛（Fast Breakpoint Probing）**：
    - 在默认 `60ms` IPC 节流窗口内，`push_frame()` 不执行全量 AST 遍历与黑板深拷贝，而是调用 `binding.probe_breakpoints_fast()` 直接按预解析整型 ID 检查 `BTContext.get_live_node_status()`；
    - 仅当断点节点新跃迁进入激活态时才置位一次性待推送锁存器（`_breakpoint_hit_pending`）并穿透节流立即推送，且单步（`step_once`）放行时自动清空旧断点命中标记，杜绝假阳性残留。
-3. **主蓝图与嵌套公共子图联动热重载（`flow_graph:hot_reload_resource`）**：
-   - 编辑器保存 `.tres`（或采纳外部磁盘变更）时，自动匹配所有直接挂载该资源及通过 `sub_graph_path` 嵌套引用该子图的在线实例（配合 `ResourceLoader.CACHE_MODE_REPLACE` 穿透缓存），并对共享同一棵享元 `BTTree` 的多实体按 `secondary_id` 自动去重，仅编译与序列化拓扑 1 次。
+3. **主蓝图与多层嵌套公共子图传递联动热重载（`flow_graph:hot_reload_resource`）**：
+   - 编辑器保存 `.tres`（或采纳外部磁盘变更）时，通过防环递归检索自动匹配所有直接挂载该资源及任意深度通过 `sub_graph_path` 间接嵌套引用该子图的在线实例（配合 `ResourceLoader.CACHE_MODE_REPLACE` 穿透缓存），并对共享同一棵享元 `BTTree` 的多实体按 `secondary_id` 自动去重，仅编译与序列化拓扑 1 次。
 4. **编辑器侧多会话防抖与 60 帧实质变迁去重（[`editor/debugger/`](../../editor/debugger/)）**：
    - `MermaidEditorDebugger` 维护活跃会话集，防止 `F5`/`F6` 快速重启时旧进程延迟 `stopped` 信号误清空新进程；
    - `SessionFrameRingBuffer` 签名去重自动过滤 `state_time` / `tick_count` / `elapsed_time` 与计时器徽章等递增噪音，静止待机原地刷新尾帧读数，确保 60 帧时间轴滑块完整保留最近 60 次真实状态跃迁与黑板突变。

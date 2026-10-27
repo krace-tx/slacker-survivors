@@ -190,6 +190,7 @@ const ICON_NODE_ENTRY: String = "res://addons/flow_graph/editor/assets/node/ico_
 const ICON_NODE_ANY: String = "res://addons/flow_graph/editor/assets/node/ico_mg_kind_any.svg"
 const ICON_NODE_FINAL: String = "res://addons/flow_graph/editor/assets/node/ico_mg_kind_final.svg"
 const ICON_NODE_SELECTOR: String = "res://addons/flow_graph/editor/assets/node/ico_mg_kind_selector.svg"
+const ICON_NODE_UTILITY: String = "res://addons/flow_graph/editor/assets/node/ico_mg_kind_utility.svg"
 const ICON_NODE_SEQUENCE: String = "res://addons/flow_graph/editor/assets/node/ico_mg_kind_sequence.svg"
 const ICON_NODE_PARALLEL: String = "res://addons/flow_graph/editor/assets/node/ico_mg_kind_parallel.svg"
 const ICON_NODE_INVERTER: String = "res://addons/flow_graph/editor/assets/node/ico_mg_kind_inverter.svg"

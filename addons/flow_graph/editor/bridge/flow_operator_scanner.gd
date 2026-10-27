@@ -44,7 +44,7 @@ static func refresh(root_dir: String = "res://") -> Dictionary:
 	return _scan_internal(root_dir, root_dir == "res://")
 
 
-## 扫描指定目录并返回 `{"actions": PackedStringArray, "conditions": PackedStringArray, "events": PackedStringArray, "states": PackedStringArray}`。
+## 扫描指定目录并返回 `{"actions": PackedStringArray, "conditions": PackedStringArray, "utilities": PackedStringArray, "events": PackedStringArray, "states": PackedStringArray}`。
 static func scan_project(root_dir: String = "res://") -> Dictionary:
 	return _scan_internal(root_dir, root_dir == "res://")
 
@@ -60,6 +60,7 @@ static func _scan_internal(root_dir: String, use_project_cache: bool) -> Diction
 
 	var action_set: Dictionary = {}
 	var cond_set: Dictionary = {}
+	var util_set: Dictionary = {}
 	var event_set: Dictionary = {}
 	var state_set: Dictionary = {}
 
@@ -84,6 +85,7 @@ static func _scan_internal(root_dir: String, use_project_cache: bool) -> Diction
 
 		_merge_tokens(entry.get("actions", PackedStringArray()) as PackedStringArray, action_set)
 		_merge_tokens(entry.get("conditions", PackedStringArray()) as PackedStringArray, cond_set)
+		_merge_tokens(entry.get("utilities", PackedStringArray()) as PackedStringArray, util_set)
 		_merge_tokens(entry.get("events", PackedStringArray()) as PackedStringArray, event_set)
 		_merge_tokens(entry.get("states", PackedStringArray()) as PackedStringArray, state_set)
 
@@ -96,6 +98,7 @@ static func _scan_internal(root_dir: String, use_project_cache: bool) -> Diction
 	var result: Dictionary = {
 		"actions": _sorted_packed_keys(action_set),
 		"conditions": _sorted_packed_keys(cond_set),
+		"utilities": _sorted_packed_keys(util_set),
 		"events": _sorted_packed_keys(event_set),
 		"states": _sorted_packed_keys(state_set),
 	}
@@ -113,12 +116,14 @@ static func _parse_single_gd_file(fpath: String, mtime: int, rx_bundle: Dictiona
 			"mtime": mtime,
 			"actions": PackedStringArray(),
 			"conditions": PackedStringArray(),
+			"utilities": PackedStringArray(),
 			"events": PackedStringArray(),
 			"states": PackedStringArray(),
 		}
 
 	var f_actions: Dictionary = {}
 	var f_conds: Dictionary = {}
+	var f_utils: Dictionary = {}
 	var f_events: Dictionary = {}
 	var f_states: Dictionary = {}
 
@@ -126,6 +131,7 @@ static func _parse_single_gd_file(fpath: String, mtime: int, rx_bundle: Dictiona
 	if content.contains("@flow_"):
 		_collect_matches(content, rx_bundle["action_anno"] as RegEx, f_actions)
 		_collect_matches(content, rx_bundle["cond_anno"] as RegEx, f_conds)
+		_collect_matches(content, rx_bundle["util_anno"] as RegEx, f_utils)
 		_collect_matches(content, rx_bundle["event_anno"] as RegEx, f_events)
 		_collect_matches(content, rx_bundle["state_anno"] as RegEx, f_states)
 
@@ -137,6 +143,8 @@ static func _parse_single_gd_file(fpath: String, mtime: int, rx_bundle: Dictiona
 		_collect_matches(code_only, rx_bundle["bt_action_call"] as RegEx, f_actions)
 		_collect_matches(code_only, rx_bundle["cond_call"] as RegEx, f_conds)
 		_collect_matches(code_only, rx_bundle["bt_cond_call"] as RegEx, f_conds)
+		_collect_matches(code_only, rx_bundle["util_call"] as RegEx, f_utils)
+		_collect_matches(code_only, rx_bundle["bt_util_call"] as RegEx, f_utils)
 		_collect_matches(code_only, rx_bundle["event_call"] as RegEx, f_events)
 		_collect_matches(code_only, rx_bundle["state_call"] as RegEx, f_states)
 
@@ -144,6 +152,7 @@ static func _parse_single_gd_file(fpath: String, mtime: int, rx_bundle: Dictiona
 		"mtime": mtime,
 		"actions": _sorted_packed_keys(f_actions),
 		"conditions": _sorted_packed_keys(f_conds),
+		"utilities": _sorted_packed_keys(f_utils),
 		"events": _sorted_packed_keys(f_events),
 		"states": _sorted_packed_keys(f_states),
 	}
@@ -222,6 +231,9 @@ static func _get_regex_bundle() -> Dictionary:
 		"cond_call": _compile_rx("\\bregister_condition\\s*\\(\\s*&?[\"']([A-Za-z0-9_./:-]+)[\"']"),
 		"bt_cond_call": _compile_rx("\\.condition\\s*\\(\\s*(?:&?[\"'][^\"']*[\"']|[^,()]+)\\s*,\\s*[^,()]+\\s*,\\s*&?[\"']!?([A-Za-z0-9_./:-]+)[\"']"),
 		"cond_anno": _compile_rx("(?:^|[^#])#\\s*@flow_condition\\s+([A-Za-z0-9_./:-]+)"),
+		"util_call": _compile_rx("\\bregister_utility\\s*\\(\\s*&?[\"']([A-Za-z0-9_./:-]+)[\"']"),
+		"bt_util_call": _compile_rx("\\.with_utility_fn\\s*\\(\\s*&?[\"']([A-Za-z0-9_./:-]+)[\"']"),
+		"util_anno": _compile_rx("(?:^|[^#])#\\s*@flow_utility\\s+([A-Za-z0-9_./:-]+)"),
 		"event_call": _compile_rx("\\bfire_event\\s*\\(\\s*&?[\"']([A-Za-z0-9_./:-]+)[\"']"),
 		"event_anno": _compile_rx("(?:^|[^#])#\\s*@flow_event\\s+([A-Za-z0-9_./:-]+)"),
 		"state_call": _compile_rx("\\badd_(?:callable|state)\\s*\\(\\s*&?[\"']([A-Za-z0-9_./:-]+)[\"']"),
@@ -262,6 +274,7 @@ static func _clone_result(src: Dictionary) -> Dictionary:
 	return {
 		"actions": (src.get("actions", PackedStringArray()) as PackedStringArray).duplicate(),
 		"conditions": (src.get("conditions", PackedStringArray()) as PackedStringArray).duplicate(),
+		"utilities": (src.get("utilities", PackedStringArray()) as PackedStringArray).duplicate(),
 		"events": (src.get("events", PackedStringArray()) as PackedStringArray).duplicate(),
 		"states": (src.get("states", PackedStringArray()) as PackedStringArray).duplicate(),
 	}

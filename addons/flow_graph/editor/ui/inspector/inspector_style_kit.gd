@@ -301,13 +301,16 @@ func make_line_edit(initial_text: String, placeholder: String = "", on_commit: C
 	if on_commit.is_valid():
 		var state: Dictionary = {"base": initial_text}
 		var commit_fn: Callable = func() -> void:
+			if not is_instance_valid(ed):
+				return
 			var cur: String = ed.text.strip_edges()
 			if cur != str(state["base"]):
 				state["base"] = cur
 				on_commit.call(cur)
 		ed.text_submitted.connect(func(_t: String) -> void:
 			commit_fn.call()
-			ed.release_focus()
+			if is_instance_valid(ed) and ed.is_inside_tree():
+				ed.release_focus()
 		)
 		ed.focus_exited.connect(commit_fn)
 	return ed
@@ -398,6 +401,8 @@ func make_picker_input(initial_text: String, placeholder: String, candidates: Pa
 	var state: Dictionary = {"base": initial_text}
 	var ed: LineEdit = make_line_edit(initial_text, placeholder)
 	var fire_commit: Callable = func(next_val: String) -> void:
+		if not is_instance_valid(ed):
+			return
 		var clean_v: String = next_val.strip_edges()
 		ed.text = clean_v
 		if clean_v != str(state["base"]):
@@ -406,9 +411,13 @@ func make_picker_input(initial_text: String, placeholder: String, candidates: Pa
 				on_commit.call(clean_v)
 	ed.text_submitted.connect(func(txt: String) -> void:
 		fire_commit.call(txt)
-		ed.release_focus()
+		if is_instance_valid(ed) and ed.is_inside_tree():
+			ed.release_focus()
 	)
-	ed.focus_exited.connect(func() -> void: fire_commit.call(ed.text))
+	ed.focus_exited.connect(func() -> void:
+		if is_instance_valid(ed):
+			fire_commit.call(ed.text)
+	)
 	box.add_child(ed)
 
 	var mb := MenuButton.new()
@@ -442,6 +451,8 @@ func make_picker_input(initial_text: String, placeholder: String, candidates: Pa
 	pop.add_separator()
 	pop.add_item(FlowEditorI18n.t(&"insp.picker_clear"), 9999)
 	pop.id_pressed.connect(func(id: int) -> void:
+		if not is_instance_valid(ed):
+			return
 		if id == 9999:
 			fire_commit.call("")
 		elif id == 9000:

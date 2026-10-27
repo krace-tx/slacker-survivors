@@ -1,3 +1,4 @@
+@tool
 class_name FsmCompiler
 extends RefCounted
 
@@ -90,8 +91,11 @@ static func hot_reload_into(fsm: StateMachine, ir: Dictionary) -> FlowGraphResul
 		if s_def != null:
 			valid_ids[s_def.state_id] = true
 
+	var was_running: bool = not fsm.get_current_state_id().is_empty()
 	var states_dict: Dictionary = fsm._get_states_internal()
 	var ast_subs: Dictionary = fsm._get_ast_sub_machines_internal()
+	if was_running and not valid_ids.has(fsm.get_current_state_id()):
+		fsm.stop()
 	for existing_key: Variant in states_dict.keys():
 		var sid: StringName = existing_key as StringName
 		if not valid_ids.has(sid):
@@ -102,6 +106,9 @@ static func hot_reload_into(fsm: StateMachine, ir: Dictionary) -> FlowGraphResul
 	if comp_res.is_err():
 		return comp_res
 
-	fsm._reconcile_active_state_after_reload()
+	if was_running and fsm.get_current_state_id().is_empty() and not ast_def.initial_state.is_empty() and fsm.has_state(ast_def.initial_state):
+		fsm.start(ast_def.initial_state)
+	else:
+		fsm._reconcile_active_state_after_reload()
 	return FlowGraphResult.ok(fsm)
 #endregion

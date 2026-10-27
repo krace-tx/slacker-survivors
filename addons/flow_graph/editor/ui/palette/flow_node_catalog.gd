@@ -29,6 +29,7 @@ const KIND_ALIASES: Dictionary = {
 	"Selector": "selector sel fallback xz xuanze",
 	"Parallel": "parallel par concurrent bx bingxing",
 	"WeightedSelector": "weighted random wsel jq jiaquan",
+	"UtilitySelector": "utility score curve ai usel xy xiaoyong pingfen",
 	"Action": "action act task dz dongzuo",
 	"Condition": "condition cond check bool tj tiaojian",
 	"Wait": "wait delay timer sleep dd dengdai",
@@ -78,6 +79,7 @@ static func build_groups(is_fsm: bool, is_empty_generic: bool, query: String = "
 			"specs": [
 				_spec("Sequence"),
 				_spec("Selector"),
+				_spec("UtilitySelector"),
 				_spec("Parallel"),
 				_spec("WeightedSelector"),
 			],

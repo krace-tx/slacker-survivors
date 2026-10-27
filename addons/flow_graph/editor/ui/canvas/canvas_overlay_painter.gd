@@ -25,6 +25,7 @@ static func draw_screen_labels(
 	var node_order: Array[String] = ctx["node_order"] as Array[String]
 	var routed_edges: Array[Dictionary] = ctx["routed_edges"] as Array[Dictionary]
 	var active_node_states: Dictionary = ctx["active_node_states"] as Dictionary
+	var edge_badges: Dictionary = ctx.get("edge_badges", {}) as Dictionary
 	var interrupt_source_hints: Dictionary = ctx["interrupt_source_hints"] as Dictionary
 	var focus_nodes: Dictionary = ctx["focus_nodes"] as Dictionary
 	var active_set: Dictionary = ctx["active_edge_set"] as Dictionary
@@ -86,7 +87,7 @@ static func draw_screen_labels(
 		if b_idx >= 1:
 			var brect: Rect2 = _draw_bt_priority_badge(
 				canvas, font, palette, ed, key, f_id, t_id, b_idx,
-				active_set, active_node_states, zoom, scroll_offset, ui_s, sub_fsize, sub_ascent_delta
+				active_set, active_node_states, edge_badges, zoom, scroll_offset, ui_s, sub_fsize, sub_ascent_delta
 			)
 			static_screen_obstacles.append(brect.grow(2.0 * ui_s))
 
@@ -206,6 +207,7 @@ static func _draw_bt_priority_badge(
 	b_idx: int,
 	active_set: Dictionary,
 	active_node_states: Dictionary,
+	edge_badges: Dictionary,
 	zoom: float,
 	scroll_offset: Vector2,
 	ui_s: float,
@@ -217,7 +219,7 @@ static func _draw_bt_priority_badge(
 		else CanvasGeometry.interpolate_polyline(ed["pts"] as PackedVector2Array, 0.82)
 	)
 	var tpos_s: Vector2 = tap_w * zoom - scroll_offset
-	var b_str: String = "#%d" % b_idx
+	var b_str: String = ("#%d · %s" % [b_idx, str(edge_badges[key])]) if edge_badges.has(key) else ("#%d" % b_idx)
 	var bsz: Vector2 = font.get_string_size(b_str, HORIZONTAL_ALIGNMENT_LEFT, -1, sub_fsize)
 	var b_pad: Vector2 = Vector2(8.0, 3.0) * ui_s
 	var brect := Rect2(tpos_s - (bsz + b_pad) * 0.5, bsz + b_pad)

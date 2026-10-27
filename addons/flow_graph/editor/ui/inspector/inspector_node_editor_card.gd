@@ -15,7 +15,7 @@ const InspectorStyleKit = preload(FlowGraphContracts.SCRIPT_INSPECTOR_STYLE_KIT)
 const InspectorEdgeEditorSubcard = preload(FlowGraphContracts.SCRIPT_INSPECTOR_EDGE_SUBCARD)
 
 const BT_ALL_KINDS: PackedStringArray = [
-	"Selector", "WeightedSelector", "Sequence", "Parallel",
+	"Selector", "UtilitySelector", "WeightedSelector", "Sequence", "Parallel",
 	"Inverter", "Cooldown", "Repeater", "TimeLimit", "ForceSuccess", "ForceFailure", "Service",
 	"Condition", "Action", "Wait", "SubTree",
 ]
@@ -339,6 +339,32 @@ func _append_editable_node_form(
 		"TimeLimit":
 			_add_float_row(kit, fv, nid, FlowEditorI18n.t(&"insp.lbl_timeout"), "timeout_sec", float(params.get("timeout_sec", 3.0)))
 		"Selector":
+			fv.add_child(kit.make_check_box(FlowEditorI18n.t(&"insp.chk_memory"), bool(params.get("memory", false)), func(on: bool) -> void: _emit_param_patch(nid, "memory", on)))
+		"UtilitySelector":
+			var u_row: HBoxContainer = kit.make_hbox(8.0)
+			u_row.add_child(kit.make_inline_labeled_edit(
+				FlowEditorI18n.t(&"insp.lbl_momentum"),
+				"%.2f" % float(params.get("momentum", 0.10)),
+				FlowEditorI18n.t(&"insp.ph_momentum"),
+				"",
+				func(v: String) -> void:
+					_emit_param_patch(nid, "momentum", maxf(0.0, float(InspectorStyleKit.parse_typed_literal(v, "float"))))
+			))
+			u_row.add_child(kit.make_inline_labeled_edit(
+				FlowEditorI18n.t(&"insp.lbl_min_score"),
+				"%.2f" % float(params.get("min_score", 0.01)),
+				FlowEditorI18n.t(&"insp.ph_min_score"),
+				"",
+				func(v: String) -> void:
+					_emit_param_patch(nid, "min_score", maxf(0.0, float(InspectorStyleKit.parse_typed_literal(v, "float"))))
+			))
+			fv.add_child(u_row)
+			fv.add_child(kit.make_form_row(FlowEditorI18n.t(&"insp.lbl_top_k"), kit.make_line_edit(
+				str(maxi(1, int(params.get("top_k", 1)))),
+				FlowEditorI18n.t(&"insp.ph_top_k"),
+				func(v: String) -> void:
+					_emit_param_patch(nid, "top_k", maxi(1, int(InspectorStyleKit.parse_typed_literal(v, "int"))))
+			)))
 			fv.add_child(kit.make_check_box(FlowEditorI18n.t(&"insp.chk_memory"), bool(params.get("memory", false)), func(on: bool) -> void: _emit_param_patch(nid, "memory", on)))
 		"Sequence":
 			fv.add_child(kit.make_check_box(FlowEditorI18n.t(&"insp.chk_reactive"), bool(params.get("reactive", false)), func(on: bool) -> void: _emit_param_patch(nid, "reactive", on)))

@@ -222,12 +222,19 @@ func _append_linter_diagnostics(kit: InspectorStyleKit, vbox: VBoxContainer, sto
 		if not target_nid.is_empty():
 			row.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 			row.tooltip_text = FlowEditorI18n.t(&"insp.lint_locate_tip", [target_nid])
-			row.mouse_entered.connect(func() -> void: row.add_theme_stylebox_override("panel", kit.sb_row_hover))
-			row.mouse_exited.connect(func() -> void: row.add_theme_stylebox_override("panel", kit.sb_row_idle))
+			row.mouse_entered.connect(func() -> void:
+				if is_instance_valid(row):
+					row.add_theme_stylebox_override("panel", kit.sb_row_hover)
+			)
+			row.mouse_exited.connect(func() -> void:
+				if is_instance_valid(row):
+					row.add_theme_stylebox_override("panel", kit.sb_row_idle)
+			)
 			row.gui_input.connect(func(ev: InputEvent) -> void:
 				if FlowEditorInput.is_pointer_press(ev, FlowEditorInput.PTR_PRIMARY):
+					if is_instance_valid(row) and row.is_inside_tree():
+						row.accept_event()
 					diagnostic_node_clicked.emit(target_nid)
-					row.accept_event()
 			)
 		lv.add_child(row)
 

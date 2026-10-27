@@ -1,3 +1,4 @@
+@tool
 class_name BTInverter
 extends BTNode
 
@@ -13,6 +14,6 @@ func _init(p_node_id: int = 0, p_title: String = "Inverter") -> void:
 func _on_tick(ctx: BTContext) -> int:
 	if children.is_empty():
 		return BTStatus.Status.FAILURE
-	var child_status := children[0].tick(ctx)
+	var child_status: int = children[0].tick(ctx)
 	return BTStatus.invert(child_status)
 #endregion

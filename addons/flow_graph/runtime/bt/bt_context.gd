@@ -1,3 +1,4 @@
+@tool
 class_name BTContext
 extends RefCounted
 
@@ -32,6 +33,7 @@ var _active_leaf_title: String = ""
 var _debug_forced_node_id: int = 0
 var _debug_forced_prev_id: int = 0
 var _debug_forced_until: float = 0.0
+var _synced_tree_epoch: int = -1
 #endregion
 
 
@@ -51,10 +53,23 @@ func get_actor() -> Object:
 #endregion
 
 
-#region Internal Tick & Telemetry Recording
+#region Internal Tick, Epoch Sync & Telemetry Recording
+## 获取已同步的行为树热重载纪元号（`O(1)` 整型比较，避免每帧查询黑板字典）。
+func get_tree_epoch() -> int:
+	return _synced_tree_epoch
+
+
+## 当树首次运行或发生 `hot_reload_from_ir` 纪元递增时同步清理已废弃节点的遥测残留。
+func sync_tree_epoch(epoch: int) -> void:
+	if _synced_tree_epoch >= 0 and _synced_tree_epoch != epoch:
+		_node_status_map.clear()
+		_node_tick_stamp.clear()
+	_synced_tree_epoch = epoch
+
+
 ## 由 [BTTree] 在每次 Tick 开始前调用。返回 `false` 表示当前处于分频节流跳过帧。
 func begin_tick(dt: float) -> bool:
-	var safe_dt := maxf(0.0, dt)
+	var safe_dt: float = maxf(0.0, dt)
 	elapsed_time += safe_dt
 	if tick_interval > 0.0:
 		_accumulated_dt += safe_dt
@@ -135,7 +150,7 @@ func get_active_leaf_title() -> String:
 func get_telemetry_snapshot() -> Dictionary:
 	var active_nodes: Dictionary = {}
 	for nid: Variant in _node_status_map.keys():
-		var id_int := int(nid)
+		var id_int: int = int(nid)
 		if int(_node_tick_stamp.get(id_int, -1)) == tick_count:
 			active_nodes[id_int] = String(BTStatus.to_string_name(int(_node_status_map[id_int])))
 	return {

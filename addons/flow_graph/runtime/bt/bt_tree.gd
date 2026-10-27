@@ -1,3 +1,4 @@
+@tool
 class_name BTTree
 extends RefCounted
 
@@ -5,7 +6,7 @@ extends RefCounted
 ##
 ## [b]核心设计：[/b][br]
 ## 1. 同时持有无状态运行根节点 [member root]（`BTNode`）与源抽象语法树 [member ast]（`BTGraphDef`）；[br]
-## 2. 首帧自动按 `ast.blackboard_schema` 向实体黑板注入缺失默认值；[br]
+## 2. 首帧与热更纪元切换时通过 $O(1)$ 整型纪元门禁自动按 `ast.blackboard_schema` 注入缺失默认值（热路径零字典开销）；[br]
 ## 3. 支持运行期 [method hot_reload_from_ir] 原位热更享元根节点，同屏百怪下一帧即刻按新 AI 逻辑评估。
 
 #region Properties
@@ -35,10 +36,10 @@ func tick(ctx: BTContext, delta: float) -> int:
 	if root == null or ctx == null:
 		return BTStatus.Status.FAILURE
 
-	if ast != null and not ast.blackboard_schema.is_empty():
-		if ctx.tick_count == 0 or int(ctx.blackboard.get_node_mem(-1, &"__schema_epoch", -1)) != _reload_epoch:
+	if ctx.get_tree_epoch() != _reload_epoch:
+		ctx.sync_tree_epoch(_reload_epoch)
+		if ast != null and not ast.blackboard_schema.is_empty():
 			FlowBlackboardExpr.apply_schema_defaults(ast.blackboard_schema, ctx.blackboard)
-			ctx.blackboard.set_node_mem(-1, &"__schema_epoch", _reload_epoch)
 
 	var ctx_id: int = ctx.get_instance_id()
 	if GraphDebugBridge.should_suspend_tick(ctx_id):
@@ -84,6 +85,8 @@ func hot_reload_from_ir(ir: Dictionary) -> FlowGraphResult:
 		return comp_res if comp_res != null else FlowGraphResult.err_code("BT.HotReloadFailed", "Compiler returned null.")
 
 	var rebuilt_tree: BTTree = comp_res.value as BTTree
+	if root != null:
+		root.clear()
 	if ast == null:
 		ast = probe_def
 	else:

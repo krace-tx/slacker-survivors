@@ -823,6 +823,7 @@ func _current_focus_id() -> String:
 static func _default_params_for_kind(kind: String, new_id: String) -> Dictionary:
 	match kind:
 		"Action": return {"action_key": new_id}
+		"UtilitySelector": return {"momentum": 0.10, "min_score": 0.01, "top_k": 1}
 		"Cooldown": return {"cooldown_sec": 1.0, "jitter_sec": 0.0}
 		"Wait": return {"duration_sec": 0.5, "jitter_sec": 0.0}
 		"Repeater": return {"repeat_count": 3, "abort_on_failure": true}
