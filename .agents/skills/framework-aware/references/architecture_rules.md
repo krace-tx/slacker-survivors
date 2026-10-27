@@ -47,7 +47,7 @@
 ### 3.1 目录单复数黄金法则
 - **领域 / 系统 / 能力 / 架构职能 ➔ 统一单数 (Singular)**：
   - `src/framework/`、`src/game/`、`src/test/`
-  - `infra/async/`、`infra/bt/`、`infra/cache/`、`infra/fsm/`、`infra/param/` (`R02`)、`infra/scheduler/`、`infra/shader/`、`infra/spine/`
+  - `infra/async/`、`infra/cache/`、`infra/param/` (`R02`)、`infra/scheduler/`、`infra/shader/`、`infra/spine/`（FSM / BT / Debug 运行时归属独立零依赖插件 `addons/flow_graph/runtime/`）
   - `modules/logger/` (`R04`)、`modules/network/`（门面为 `App.net`，`R01`）等 15 个模块目录
   - `shared/model/`、`shared/service/`、`shared/component/` 及 Feature 内的 `model/`、`service/`、`engine/`、`presenter/`、`view/scene/<domain>/`、`view/component/<domain>/`
 - **同质资源 / 切片集合 / 公开类型容器 ➔ 统一复数 (Plural)**：

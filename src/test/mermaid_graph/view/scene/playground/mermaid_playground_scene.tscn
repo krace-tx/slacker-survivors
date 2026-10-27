@@ -1,0 +1,273 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/test/mermaid_graph/view/scene/playground/mermaid_playground_scene.gd" id="1_scene"]
+[ext_resource type="Script" path="res://src/test/mermaid_graph/view/scene/playground/mermaid_playground_view.gd" id="2_view"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+bg_color = Color(0.082, 0.11, 0.165, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.72, 0.96, 0.34)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+bg_color = Color(0.086, 0.106, 0.145, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.11)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_log"]
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+bg_color = Color(0.067, 0.082, 0.114, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.09)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="MermaidPlaygroundScene" type="Node"]
+script = ExtResource("1_scene")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BgColor" type="ColorRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.051, 0.063, 0.09, 1)
+
+[node name="UI" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_view")
+
+[node name="SafeMargin" type="MarginContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="MainLayout" type="VBoxContainer" parent="UI/SafeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TopBar" type="HBoxContainer" parent="UI/SafeMargin/MainLayout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleBox" type="VBoxContainer" parent="UI/SafeMargin/MainLayout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="TitleLabel" type="Label" parent="UI/SafeMargin/MainLayout/TopBar/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "FlowGraph 图蓝图 × FSM / BT 标准架构演练场"
+
+[node name="GuideLabel" type="Label" parent="UI/SafeMargin/MainLayout/TopBar/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.79, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+text = "💡 联调提示：切回编辑器顶部 [FlowGraph] 视图 -> 切换运行实例 / 双击节点强制跳转 / 点「跳转代码」直达 GuardFsmAgent 或 SlimeBtSquad / 按 F8 观察「离线快照」"
+autowrap_mode = 3
+
+[node name="RerunVerifyBtn" type="Button" parent="UI/SafeMargin/MainLayout/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(168, 34)
+layout_mode = 2
+size_flags_vertical = 4
+text = "重新运行 5 项契约自检"
+
+[node name="StatusPill" type="PanelContainer" parent="UI/SafeMargin/MainLayout"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="StatusPillLabel" type="Label" parent="UI/SafeMargin/MainLayout/StatusPill"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.91, 0.98, 1)
+theme_override_font_sizes/font_size = 13
+text = "初始化中..."
+
+[node name="CardsRow" type="HBoxContainer" parent="UI/SafeMargin/MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="GuardFsmCard" type="PanelContainer" parent="UI/SafeMargin/MainLayout/CardsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderLabel" type="Label" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.78, 0.98, 1)
+theme_override_font_sizes/font_size = 15
+text = "① 有限状态机标准模板 · GuardFsmAgent"
+
+[node name="GuardInfoText" type="RichTextLabel" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/line_separation = 5
+theme_override_font_sizes/normal_font_size = 13
+theme_override_font_sizes/bold_font_size = 13
+bbcode_enabled = true
+selection_enabled = true
+
+[node name="GuardActions" type="HFlowContainer" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="ToggleEnemyBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox/GuardActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "👁 视野：安全无敌情 (点击索敌)"
+
+[node name="TriggerStunBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox/GuardActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "⚡ 触发全局重击 (* -> stun)"
+
+[node name="RevertStateBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox/GuardActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "↩ 回退前驱状态"
+
+[node name="SlimeBtCard" type="PanelContainer" parent="UI/SafeMargin/MainLayout/CardsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="CardVBox" type="VBoxContainer" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderLabel" type="Label" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.78, 0.98, 1)
+theme_override_font_sizes/font_size = 15
+text = "② 享元行为树标准模板 · SlimeBtSquad"
+
+[node name="SlimeInfoText" type="RichTextLabel" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/line_separation = 5
+theme_override_font_sizes/normal_font_size = 13
+theme_override_font_sizes/bold_font_size = 13
+bbcode_enabled = true
+selection_enabled = true
+
+[node name="SlimeActions" type="HFlowContainer" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="AlphaDamageBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox/SlimeActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "🗡 史莱姆A 扣血 -35%"
+
+[node name="AlphaHealBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox/SlimeActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "💚 史莱姆A 满血恢复"
+
+[node name="AlphaDistBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox/SlimeActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "📏 史莱姆A 切换远/近距离"
+
+[node name="BravoModeBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox/SlimeActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "🔁 史莱姆B 切换残血/近战"
+
+[node name="LogCard" type="PanelContainer" parent="UI/SafeMargin/MainLayout"]
+custom_minimum_size = Vector2(0, 152)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_log")
+
+[node name="LogVBox" type="VBoxContainer" parent="UI/SafeMargin/MainLayout/LogCard"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LogTitle" type="Label" parent="UI/SafeMargin/MainLayout/LogCard/LogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.76, 1)
+theme_override_font_sizes/font_size = 12
+text = "实时状态流转与契约验证日志"
+
+[node name="LogOutput" type="RichTextLabel" parent="UI/SafeMargin/MainLayout/LogCard/LogVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/line_separation = 4
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 12
+bbcode_enabled = true
+scroll_following = true
+selection_enabled = true

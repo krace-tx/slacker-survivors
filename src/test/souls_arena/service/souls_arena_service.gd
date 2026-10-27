@@ -68,7 +68,9 @@ func cleanup_on_exit() -> void:
 	if _sound_service != null:
 		_sound_service.cleanup()
 		_sound_service = null
-	_boss_ai = null
+	if _boss_ai != null:
+		_boss_ai.clear()
+		_boss_ai = null
 	_player = null
 	_boss = null
 	_state = null
