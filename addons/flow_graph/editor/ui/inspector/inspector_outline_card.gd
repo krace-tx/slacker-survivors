@@ -1,7 +1,7 @@
 @tool
 extends RefCounted
 
-## 检视器卡片 3 & 4：交互式拓扑节点大纲（O(N) 原位状态刷新）与 P3 黑板 Schema 声明编辑器（Inspector Outline & Schema Card）。
+## 检视器卡片 3 & 4：可折叠拓扑节点大纲（O(N) 原位状态刷新）与带列头的黑板 Schema 契约编辑器（Inspector Outline & Schema Card）。
 
 const MermaidGraphModel = preload(FlowGraphContracts.SCRIPT_GRAPH_MODEL)
 const MermaidSessionStore = preload(FlowGraphContracts.SCRIPT_SESSION_STORE)
@@ -14,9 +14,11 @@ const BB_TYPES: PackedStringArray = ["float", "int", "bool", "String"]
 
 signal node_selected_from_inspector(node_id: String, center_view: bool)
 signal schema_edited(new_schema: Array[Dictionary])
+signal ui_rebuild_requested()
 
 ## `{String (node_id): {"panel": PanelContainer, "badge": Label, "selected": bool}}`
 var _outline_rows: Dictionary = {}
+var _outline_collapsed: bool = false
 
 
 #region 拓扑节点大纲构建与原位刷新
@@ -36,17 +38,24 @@ func build_outline_card(
 	clear_refs()
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
 	var card: PanelContainer = kit.make_card(false)
-	var vbox: VBoxContainer = kit.make_vbox(7.0)
+	var vbox: VBoxContainer = kit.make_vbox(6.0)
 	card.add_child(vbox)
 
-	var hdr_row: HBoxContainer = kit.make_hbox(6.0)
-	vbox.add_child(hdr_row)
-	var hdr_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.outline_title"), kit.fs_body, t.font)
-	hdr_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hdr_row.add_child(hdr_lbl)
-	hdr_row.add_child(kit.make_label(FlowEditorI18n.t(&"insp.outline_sub", [g.nodes.size()]), kit.fs_sub, t.font_faint))
+	var fold_btn: Button = kit.make_mini_button("▸" if _outline_collapsed else "▾", "", t.font_dim)
+	fold_btn.pressed.connect(func() -> void:
+		_outline_collapsed = not _outline_collapsed
+		ui_rebuild_requested.emit()
+	)
+	vbox.add_child(kit.make_section_header(FlowEditorI18n.t(&"insp.outline_title"), str(g.nodes.size()), t.accent, fold_btn))
 
-	var list_vbox: VBoxContainer = kit.make_vbox(4.0)
+	if _outline_collapsed:
+		return card
+
+	var hint_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.outline_click_hint"), kit.fs_sub, t.font_faint)
+	hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(hint_lbl)
+
+	var list_vbox: VBoxContainer = kit.make_vbox(3.5)
 	vbox.add_child(list_vbox)
 
 	var is_runtime: bool = store.is_live_selected() or store.is_snapshot_selected()
@@ -72,25 +81,26 @@ func build_outline_card(
 
 		var accent_col: Color = CanvasThemePalette.resolve_accent_color(nkind, is_initial, is_interrupt, CanvasThemePalette.is_fsm_terminal(g, nid))
 		var bar := ColorRect.new()
-		bar.custom_minimum_size = Vector2(maxf(2.5, roundf(3.0 * kit.s)), roundf(16.0 * kit.s))
+		bar.custom_minimum_size = Vector2(maxf(2.5, roundf(3.0 * kit.s)), roundf(15.0 * kit.s))
 		bar.color = accent_col
 		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		hbox.add_child(bar)
 
 		if has_bp:
-			var bp_lbl: Label = kit.make_label("●", kit.fs_sub, t.error)
-			bp_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			hbox.add_child(bp_lbl)
+			var bp_ico: TextureRect = InspectorStyleKit.make_scaled_icon(InspectorStyleKit.IconStatusLive, roundi(11.0 * kit.s))
+			bp_ico.modulate = t.error
+			bp_ico.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			hbox.add_child(bp_ico)
 
 		var ico_tex: Texture2D = CanvasThemePalette.resolve_kind_icon(nkind, is_initial, is_interrupt, CanvasThemePalette.is_fsm_terminal(g, nid))
 		if ico_tex != null:
-			var ico_r: TextureRect = InspectorStyleKit.make_scaled_icon(ico_tex, roundi(15.0 * kit.s))
+			var ico_r: TextureRect = InspectorStyleKit.make_scaled_icon(ico_tex, roundi(14.0 * kit.s))
 			ico_r.modulate = accent_col
 			ico_r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			hbox.add_child(ico_r)
 
 		var title_s: String = ("%s  (%s)" % [ntitle, nid]) if ntitle != nid else nid
-		var t_lbl: Label = kit.make_label(title_s, kit.fs_body, t.font_strong if is_sel else t.font)
+		var t_lbl: Label = kit.make_label(title_s, kit.fs_sub, t.font_strong if is_sel else t.font)
 		t_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		t_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		t_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -134,11 +144,9 @@ func build_outline_card(
 				row.add_theme_stylebox_override("panel", kit.sb_row_idle)
 		)
 		row.gui_input.connect(func(ev: InputEvent) -> void:
-			if ev is InputEventMouseButton:
-				var mb: InputEventMouseButton = ev as InputEventMouseButton
-				if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
-					node_selected_from_inspector.emit(cap_nid, mb.double_click)
-					row.accept_event()
+			if FlowEditorInput.is_pointer_press(ev, FlowEditorInput.PTR_PRIMARY):
+				node_selected_from_inspector.emit(cap_nid, FlowEditorInput.is_pointer_double_click(ev, FlowEditorInput.PTR_PRIMARY))
+				row.accept_event()
 		)
 		list_vbox.add_child(row)
 
@@ -173,14 +181,8 @@ func refresh_live(active_nodes: Dictionary) -> void:
 func build_schema_card(kit: InspectorStyleKit, g: MermaidGraphModel) -> PanelContainer:
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
 	var card: PanelContainer = kit.make_card(false)
-	var vbox: VBoxContainer = kit.make_vbox(7.0)
+	var vbox: VBoxContainer = kit.make_vbox(6.0)
 	card.add_child(vbox)
-
-	var hdr_row: HBoxContainer = kit.make_hbox(6.0)
-	vbox.add_child(hdr_row)
-	var hdr_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.schema_title", [g.blackboard_schema.size()]), kit.fs_body, t.font)
-	hdr_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hdr_row.add_child(hdr_lbl)
 
 	var add_btn: Button = kit.make_action_button(FlowEditorI18n.t(&"insp.schema_add"), null, false)
 	add_btn.add_theme_color_override("font_color", t.accent)
@@ -189,10 +191,12 @@ func build_schema_card(kit: InspectorStyleKit, g: MermaidGraphModel) -> PanelCon
 		next_arr.append({"key": _next_unique_bb_key(next_arr), "type": "float", "default": 0.0})
 		schema_edited.emit(next_arr)
 	)
-	hdr_row.add_child(add_btn)
+	vbox.add_child(kit.make_section_header(FlowEditorI18n.t(&"insp.schema_title", [g.blackboard_schema.size()]), "", t.accent, add_btn))
 
 	if g.blackboard_schema.is_empty():
-		vbox.add_child(kit.make_label(FlowEditorI18n.t(&"insp.schema_empty_hint"), kit.fs_sub, t.font_faint))
+		var empty_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.schema_empty_hint"), kit.fs_sub, t.font_faint)
+		empty_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(empty_lbl)
 		return card
 
 	var table := PanelContainer.new()
@@ -200,6 +204,21 @@ func build_schema_card(kit: InspectorStyleKit, g: MermaidGraphModel) -> PanelCon
 	var rows_vbox: VBoxContainer = kit.make_vbox(4.0)
 	table.add_child(rows_vbox)
 	vbox.add_child(table)
+
+	var col_hdr: HBoxContainer = kit.make_hbox(4.0)
+	var ck_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.schema_col_key"), kit.fs_sub, t.font_faint)
+	ck_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col_hdr.add_child(ck_lbl)
+	var ct_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.schema_col_type"), kit.fs_sub, t.font_faint)
+	ct_lbl.custom_minimum_size = Vector2(roundf(60.0 * kit.s), 0.0)
+	col_hdr.add_child(ct_lbl)
+	var cd_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.schema_col_def"), kit.fs_sub, t.font_faint)
+	cd_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col_hdr.add_child(cd_lbl)
+	var spc := Control.new()
+	spc.custom_minimum_size = Vector2(roundf(23.0 * kit.s), 0.0)
+	col_hdr.add_child(spc)
+	rows_vbox.add_child(col_hdr)
 
 	for i: int in range(g.blackboard_schema.size()):
 		var entry: Dictionary = g.blackboard_schema[i]
@@ -248,7 +267,7 @@ func build_schema_card(kit: InspectorStyleKit, g: MermaidGraphModel) -> PanelCon
 			)
 			row.add_child(def_ed)
 
-		var del_btn: Button = kit.make_mini_button("✕", FlowEditorI18n.t(&"insp.schema_del_tip"), t.error)
+		var del_btn: Button = kit.make_mini_button("×", FlowEditorI18n.t(&"insp.schema_del_tip"), t.error)
 		del_btn.pressed.connect(func() -> void:
 			var next_s: Array[Dictionary] = _clone_schema(g.blackboard_schema)
 			if row_idx < next_s.size():

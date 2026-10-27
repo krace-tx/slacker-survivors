@@ -12,6 +12,7 @@ const _DECORATOR_TYPES: Array[StringName] = [
 	&"Inverter", &"Cooldown", &"Repeater", &"TimeLimit", &"ForceSuccess", &"ForceFailure", &"Service",
 ]
 const _KNOWN_KINDS: Array[String] = [
+	"Root",
 	"Selector", "WeightedSelector", "Sequence", "Parallel",
 	"Inverter", "Cooldown", "Repeater", "TimeLimit", "ForceSuccess", "ForceFailure", "Service",
 	"Condition", "Action", "Wait", "SubTree",
@@ -55,7 +56,18 @@ func _validate_node_recursive(node: BTNodeDef, seen_ids: Dictionary) -> FlowGrap
 
 	var is_composite: bool = node.node_type in _COMPOSITE_TYPES
 	var is_decorator: bool = node.node_type in _DECORATOR_TYPES
-	if is_composite and node.children.is_empty():
+	if node.node_type == &"Root":
+		if node != root:
+			return FlowGraphResult.err_code(
+				"BT.NestedRoot",
+				"Root node '%s' (id=%d) can only be the top-level entry root." % [node.title, node.node_id]
+			)
+		if node.children.size() != 1:
+			return FlowGraphResult.err_code(
+				"BT.InvalidRootChildCount",
+				"Root node '%s' (id=%d) must connect to exactly 1 child." % [node.title, node.node_id]
+			)
+	elif is_composite and node.children.is_empty():
 		return FlowGraphResult.err_code(
 			"BT.EmptyComposite",
 			"Composite node '%s' (id=%d) must have at least 1 child." % [node.title, node.node_id]
@@ -218,6 +230,10 @@ func apply_mermaid_ir(ir: Dictionary) -> void:
 					child_def.params["weight"] = float((ep as Dictionary).get("weight", 1.0))
 
 	var root_key: String = str(ir.get("initial_node_id", "")).strip_edges()
+	for k_r: String in key_order:
+		if (def_by_key[k_r] as BTNodeDef).node_type == &"Root":
+			root_key = k_r
+			break
 	if not def_by_key.has(root_key):
 		root_key = ""
 		for k: String in key_order:
@@ -290,6 +306,7 @@ static func _wire_bt_children_recursive(cur_key: String, def_by_key: Dictionary,
 
 static func _shape_for_type(ntype: String) -> String:
 	match ntype:
+		"Root": return "round"
 		"Selector", "WeightedSelector": return "diamond"
 		"Sequence": return "stadium"
 		"Parallel", "SubTree": return "subroutine"

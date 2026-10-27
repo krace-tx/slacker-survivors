@@ -3,9 +3,19 @@ extends RefCounted
 
 ## 会话 60 帧环形历史遥测缓冲（60-Frame Telemetry Ring Buffer）。[br]
 ##
-## 按 `session_id` 独立维护最近 [constant MAX_FRAMES] 帧实质状态变化快照（对静止待机重复帧按 `active_nodes + vars` 签名去重），并支持停止运行时通过 [method copy_history] 无损继承至离线快照会话供时间轴倒带回放。
+## [b]核心设计：[/b][br]
+## 1. 按 `session_id` 独立维护最近 [constant MAX_FRAMES] 帧**实质状态变化**快照；[br]
+## 2. 计算结构化签名时自动剥离 `state_time` / `tick_count` / `elapsed_time` 与计时器徽章等纯时间递增噪音：待机静止帧原地刷新尾帧读数而不挤占历史槽位，确保 60 帧滑块真正记录最近 60 次状态跃迁或黑板突变；[br]
+## 3. 支持停止运行时通过 [method copy_history] 无损继承至离线快照会话供时间轴倒带回放。
 
 const MAX_FRAMES: int = 60
+
+## 签名去重时忽略的纯时间/帧计数噪音键（避免静止待机时冲刷掉前序真实状态跳变历史）
+const _VOLATILE_VAR_KEYS: Dictionary = {
+	"state_time": true,
+	"tick_count": true,
+	"elapsed_time": true,
+}
 
 ## `{String (session_id): {"frames": Array[Dictionary], "last_sig": String, "next_seq": int}}`
 var _buffers: Dictionary = {}
@@ -21,8 +31,16 @@ func record_frame(session_id: String, frame: Dictionary, force: bool = false) ->
 	var bucket: Dictionary = _ensure_bucket(clean_id)
 	var frames_arr: Array[Dictionary] = bucket["frames"] as Array[Dictionary]
 	var sig: String = _compute_frame_signature(frame)
+	var now_msec: int = Time.get_ticks_msec()
 
 	if not force and not frames_arr.is_empty() and str(bucket.get("last_sig", "")) == sig:
+		# 拓扑激活态与黑板实质变量均未变化：原地刷新尾帧的计时器读数，不挤占 60 帧历史槽位
+		var tail: Dictionary = frames_arr[frames_arr.size() - 1]
+		var prev_seq: int = int(tail.get("seq", 1))
+		var updated_tail: Dictionary = frame.duplicate(true)
+		updated_tail["seq"] = prev_seq
+		updated_tail["timestamp_msec"] = now_msec
+		frames_arr[frames_arr.size() - 1] = updated_tail
 		return
 
 	var seq_num: int = int(bucket.get("next_seq", 1))
@@ -31,7 +49,7 @@ func record_frame(session_id: String, frame: Dictionary, force: bool = false) ->
 
 	var snap: Dictionary = frame.duplicate(true)
 	snap["seq"] = seq_num
-	snap["timestamp_msec"] = Time.get_ticks_msec()
+	snap["timestamp_msec"] = now_msec
 	frames_arr.append(snap)
 
 	while frames_arr.size() > MAX_FRAMES:
@@ -81,7 +99,7 @@ func clear_all() -> void:
 #endregion
 
 
-#region 内部桶初始化与签名计算
+#region 内部桶初始化与确定性轻量签名计算
 
 func _ensure_bucket(session_id: String) -> Dictionary:
 	if not _buffers.has(session_id):
@@ -94,11 +112,71 @@ func _ensure_bucket(session_id: String) -> Dictionary:
 	return _buffers[session_id] as Dictionary
 
 
+## 生成忽略纯计时器噪音的确定性帧签名（零 `JSON.stringify` 类型丢失与大对象分配）。
 static func _compute_frame_signature(frame: Dictionary) -> String:
-	return JSON.stringify({
-		"active_nodes": frame.get("active_nodes", {}),
-		"vars": frame.get("vars", {}),
-		"hit_bp": str(frame.get("hit_breakpoint", "")),
-	})
+	var parts := PackedStringArray()
+
+	var raw_nodes: Variant = frame.get("active_nodes", {})
+	if raw_nodes is Dictionary:
+		var nodes_dict: Dictionary = raw_nodes as Dictionary
+		if not nodes_dict.is_empty():
+			var nkeys := PackedStringArray()
+			for nk: Variant in nodes_dict.keys():
+				nkeys.append(str(nk))
+			nkeys.sort()
+			for nk_str: String in nkeys:
+				var nv: Variant = nodes_dict.get(nk_str, null)
+				var nstate: String = str((nv as Dictionary).get("state", "")) if nv is Dictionary else str(nv)
+				parts.append("%s:%s" % [nk_str, nstate])
+
+	parts.append("#")
+
+	var raw_vars: Variant = frame.get("vars", {})
+	if raw_vars is Dictionary:
+		var vars_dict: Dictionary = raw_vars as Dictionary
+		if not vars_dict.is_empty():
+			var vkeys := PackedStringArray()
+			for vk: Variant in vars_dict.keys():
+				var vk_str: String = str(vk)
+				if not _VOLATILE_VAR_KEYS.has(vk_str):
+					vkeys.append(vk_str)
+			vkeys.sort()
+			for vk_str: String in vkeys:
+				parts.append("%s=%s" % [vk_str, _format_sig_value(vars_dict.get(vk_str, null))])
+
+	parts.append("#bp=" + str(frame.get("hit_breakpoint", "")))
+	return "|".join(parts)
+
+
+static func _format_sig_value(val: Variant) -> String:
+	match typeof(val):
+		TYPE_NIL:
+			return "null"
+		TYPE_BOOL:
+			return "1" if bool(val) else "0"
+		TYPE_INT:
+			return "i:%d" % int(val)
+		TYPE_FLOAT:
+			return "f:%.4f" % snappedf(float(val), 0.0001)
+		TYPE_STRING, TYPE_STRING_NAME:
+			return "s:%s" % str(val)
+		TYPE_ARRAY:
+			var arr: Array = val as Array
+			var sub := PackedStringArray()
+			for item: Variant in arr:
+				sub.append(_format_sig_value(item))
+			return "[%s]" % ",".join(sub)
+		TYPE_DICTIONARY:
+			var d: Dictionary = val as Dictionary
+			var dkeys := PackedStringArray()
+			for k: Variant in d.keys():
+				dkeys.append(str(k))
+			dkeys.sort()
+			var dsub := PackedStringArray()
+			for ks: String in dkeys:
+				dsub.append("%s:%s" % [ks, _format_sig_value(d.get(ks, null))])
+			return "{%s}" % ",".join(dsub)
+		_:
+			return "%d:%s" % [typeof(val), str(val)]
 
 #endregion

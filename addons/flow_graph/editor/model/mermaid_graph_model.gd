@@ -15,6 +15,7 @@ const SCHEMA_GENERIC: StringName = &"generic"
 const SCHEMA_FSM: StringName = &"fsm"
 const SCHEMA_BT: StringName = &"bt"
 
+const BT_ROOT_KIND: String = "Root"
 const BT_COMPOSITE_KINDS: Array[String] = ["Selector", "WeightedSelector", "Sequence", "Parallel"]
 const BT_DECORATOR_KINDS: Array[String] = [
 	"Inverter", "Cooldown", "Repeater", "TimeLimit",
@@ -23,6 +24,8 @@ const BT_DECORATOR_KINDS: Array[String] = [
 const BT_LEAF_KINDS: Array[String] = ["Condition", "Action", "Wait", "SubTree"]
 
 var schema: StringName = SCHEMA_GENERIC
+## 当会话绑定至具体 `.tres` 资源或运行期实例时为 `true`，删空节点不会退回 `SCHEMA_GENERIC`；草稿会话为 `false`，删空节点后自动恢复全品类可选态。
+var schema_locked: bool = false
 var diagram_type: StringName = TYPE_FLOWCHART
 var direction: StringName = &"LR"
 var title: String = "mermaid_graph"
@@ -51,6 +54,19 @@ func clear() -> void:
 	blackboard_schema.clear()
 	initial_node_id = ""
 	schema = SCHEMA_GENERIC
+	schema_locked = false
+	diagram_type = TYPE_FLOWCHART
+
+
+func is_empty_generic() -> bool:
+	return nodes.is_empty() and not schema_locked and schema == SCHEMA_GENERIC
+
+
+func find_bt_root_id() -> String:
+	for nd: Dictionary in nodes:
+		if str(nd.get("kind", "")) == BT_ROOT_KIND:
+			return str(nd.get("id", ""))
+	return ""
 
 
 func ensure_node(
@@ -164,8 +180,13 @@ func remove_node(node_id: String) -> bool:
 			edges.remove_at(i)
 	_refresh_edge_orders()
 
-	if initial_node_id == clean_id:
-		initial_node_id = str(nodes[0]["id"]) if not nodes.is_empty() else ""
+	if nodes.is_empty() and not schema_locked:
+		schema = SCHEMA_GENERIC
+		diagram_type = TYPE_FLOWCHART
+		initial_node_id = ""
+	elif initial_node_id == clean_id:
+		var bt_root_id: String = find_bt_root_id() if resolve_effective_schema() == SCHEMA_BT else ""
+		initial_node_id = bt_root_id if not bt_root_id.is_empty() else (str(nodes[0]["id"]) if not nodes.is_empty() else "")
 	return true
 
 
@@ -424,11 +445,13 @@ func reorder_bt_children_by_layout(parent_id: String = "", is_vertical: bool = f
 func resolve_effective_schema() -> StringName:
 	if schema == SCHEMA_FSM or schema == SCHEMA_BT:
 		return schema
+	if nodes.is_empty() and not schema_locked:
+		return SCHEMA_GENERIC
 	if diagram_type == TYPE_STATE_V2:
 		return SCHEMA_FSM
 	for nd: Dictionary in nodes:
 		var k: String = str(nd.get("kind", ""))
-		if BT_COMPOSITE_KINDS.has(k) or BT_DECORATOR_KINDS.has(k) or BT_LEAF_KINDS.has(k):
+		if k == BT_ROOT_KIND or BT_COMPOSITE_KINDS.has(k) or BT_DECORATOR_KINDS.has(k) or BT_LEAF_KINDS.has(k):
 			return SCHEMA_BT
 	return SCHEMA_BT if diagram_type == TYPE_FLOWCHART else SCHEMA_GENERIC
 
@@ -443,7 +466,7 @@ static func default_shape_for_kind(kind: String) -> String:
 			return "subroutine"
 		"Inverter", "Cooldown", "Repeater", "TimeLimit", "ForceSuccess", "ForceFailure", "Service", "Decorator":
 			return "hexagon"
-		"Condition", "State":
+		"Condition", "State", "Root":
 			return "round"
 		"Action", "Wait":
 			return "rect"
@@ -593,6 +616,8 @@ func to_topology_dict() -> Dictionary:
 func to_snapshot_dict() -> Dictionary:
 	var snap: Dictionary = to_topology_dict()
 	snap["raw_schema"] = String(schema)
+	snap["raw_diagram_type"] = String(diagram_type)
+	snap["schema_locked"] = schema_locked
 	var snap_nodes: Array = snap["nodes"] as Array
 	for i: int in range(mini(snap_nodes.size(), nodes.size())):
 		(snap_nodes[i] as Dictionary)["has_pos"] = bool(nodes[i].get("has_pos", false))
@@ -603,5 +628,13 @@ func restore_snapshot_dict(snap: Dictionary) -> void:
 	load_from_topology_dict(snap)
 	if snap.has("raw_schema"):
 		schema = StringName(str(snap["raw_schema"]))
+	if snap.has("raw_diagram_type"):
+		diagram_type = StringName(str(snap["raw_diagram_type"]))
+	if snap.has("schema_locked"):
+		schema_locked = bool(snap["schema_locked"])
+	if nodes.is_empty() and not schema_locked:
+		schema = SCHEMA_GENERIC
+		diagram_type = TYPE_FLOWCHART
+		initial_node_id = ""
 
 #endregion

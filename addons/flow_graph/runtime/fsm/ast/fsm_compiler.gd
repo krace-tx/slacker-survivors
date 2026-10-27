@@ -15,7 +15,8 @@ static func compile_into(
 	fsm: StateMachine,
 	graph_def: FsmGraphDef,
 	depth: int = 0,
-	visited_paths: Dictionary = {}
+	visited_paths: Dictionary = {},
+	bypass_sub_cache: bool = false
 ) -> FlowGraphResult:
 	if graph_def == null:
 		return FlowGraphResult.err_code("FSM.NullGraphDef", "Cannot compile null FsmGraphDef.")
@@ -49,14 +50,15 @@ static func compile_into(
 		var st_inst: BaseFsmState = states_dict[s_def.state_id] as BaseFsmState
 		var sub_path: String = s_def.sub_graph_path.strip_edges()
 		if not sub_path.is_empty() and depth < MAX_SUB_GRAPH_DEPTH and not next_visited.has(sub_path) and ResourceLoader.exists(sub_path):
-			var sub_res: FsmGraphDef = load(sub_path) as FsmGraphDef
+			var cache_mode: ResourceLoader.CacheMode = ResourceLoader.CACHE_MODE_REPLACE if bypass_sub_cache else ResourceLoader.CACHE_MODE_REUSE
+			var sub_res: FsmGraphDef = ResourceLoader.load(sub_path, "", cache_mode) as FsmGraphDef
 			if sub_res != null and (graph_def.resource_path.is_empty() or sub_res.resource_path != graph_def.resource_path):
 				var sub_fsm := StateMachine.new(fsm.get_actor(), sub_res.graph_id)
 				sub_fsm.blackboard = fsm.blackboard
 				sub_fsm._share_condition_registry(fsm._get_condition_registry_internal())
 				var branch_visited: Dictionary = next_visited.duplicate()
 				branch_visited[sub_path] = true
-				if compile_into(sub_fsm, sub_res, depth + 1, branch_visited).is_ok():
+				if compile_into(sub_fsm, sub_res, depth + 1, branch_visited, bypass_sub_cache).is_ok():
 					st_inst.sub_machine = sub_fsm
 					ast_subs[s_def.state_id] = true
 		elif sub_path.is_empty() and ast_subs.has(s_def.state_id):
@@ -96,7 +98,7 @@ static func hot_reload_into(fsm: StateMachine, ir: Dictionary) -> FlowGraphResul
 			states_dict.erase(sid)
 			ast_subs.erase(sid)
 
-	var comp_res: FlowGraphResult = compile_into(fsm, ast_def, 0, {})
+	var comp_res: FlowGraphResult = compile_into(fsm, ast_def, 0, {}, true)
 	if comp_res.is_err():
 		return comp_res
 

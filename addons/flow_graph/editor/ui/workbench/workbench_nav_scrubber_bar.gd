@@ -5,7 +5,7 @@ extends PanelContainer
 ##
 ## 挂载在顶栏下方、画布上方；当既无子图下钻面包屑、也无多帧历史可回放时自动 `visible = false` 零空间占用：[br]
 ## - 左侧 P3 子图面包屑：`[← 返回上级]  parent.tres  ›  child.tres`，支持任意层级一键跳回；[br]
-## - 右侧 P2 时间轴滑块：`[◀]` + `HSlider` + `帧 X / Y` + `[▶]` + `[● 回到实时]`，支持 `LIVE` 与停止后 `SNAPSHOT` 逐帧回溯。
+## - 右侧 P2 时间轴滑块：`[◀]` + `HSlider` + `帧 X / Y` + `[▶]` + `[回到实时]`，支持 `LIVE` 与停止后 `SNAPSHOT` 逐帧回溯。
 
 const MermaidSessionStore = preload(FlowGraphContracts.SCRIPT_SESSION_STORE)
 const MermaidThemeService = preload(FlowGraphContracts.SCRIPT_THEME_SERVICE)

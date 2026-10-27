@@ -13,6 +13,7 @@ const MermaidGraphCanvas = preload(FlowGraphContracts.SCRIPT_CANVAS)
 const MermaidSyntaxHighlighter = preload(FlowGraphContracts.SCRIPT_SYNTAX_HIGHLIGHTER)
 const MermaidInspectorPanel = preload(FlowGraphContracts.SCRIPT_INSPECTOR_PANEL)
 const MermaidResourceBrowser = preload(FlowGraphContracts.SCRIPT_RESOURCE_BROWSER)
+const MermaidNodeDrawer = preload(FlowGraphContracts.SCRIPT_NODE_DRAWER)
 const WorkbenchNavScrubberBar = preload(FlowGraphContracts.SCRIPT_WB_NAV_BAR)
 const WorkbenchMutationController = preload(FlowGraphContracts.SCRIPT_WB_MUTATION_CTRL)
 const WorkbenchDebugSessionController = preload(FlowGraphContracts.SCRIPT_WB_DEBUG_CTRL)
@@ -33,6 +34,7 @@ signal standalone_window_toggled(enabled: bool)
 signal float_workbench_toggled(enabled: bool)
 signal float_topmost_toggled(enabled: bool)
 
+@onready var _toggle_drawer_btn: Button = %ToggleDrawerBtn as Button
 @onready var _instance_select: OptionButton = %InstanceSelect as OptionButton
 @onready var _open_res_btn: Button = %OpenResBtn as Button
 @onready var _save_res_btn: Button = %SaveResBtn as Button
@@ -49,7 +51,10 @@ signal float_topmost_toggled(enabled: bool)
 @onready var _lang_toggle_btn: Button = %LangToggleBtn as Button
 @onready var _window_menu_btn: MenuButton = %WindowMenuBtn as MenuButton
 @onready var _toggle_sidebar_btn: Button = %ToggleSidebarBtn as Button
+@onready var _left_node_drawer: MermaidNodeDrawer = %LeftNodeDrawer as MermaidNodeDrawer
 @onready var _graph_canvas: MermaidGraphCanvas = %GraphCanvas as MermaidGraphCanvas
+@onready var _expand_drawer_pod: PanelContainer = %ExpandDrawerPod as PanelContainer
+@onready var _expand_drawer_btn: Button = %ExpandDrawerBtn as Button
 @onready var _zoom_out_btn: Button = %ZoomOutBtn as Button
 @onready var _zoom_reset_btn: Button = %ZoomResetBtn as Button
 @onready var _zoom_in_btn: Button = %ZoomInBtn as Button
@@ -136,6 +141,13 @@ func _ready() -> void:
 	_minimap_toggle_btn.toggled.connect(func(on: bool) -> void: _graph_canvas.minimap_enabled = on)
 	if _lang_toggle_btn != null:
 		_lang_toggle_btn.pressed.connect(func() -> void: toggle_editor_locale())
+	if _toggle_drawer_btn != null:
+		_toggle_drawer_btn.toggled.connect(set_node_drawer_open)
+	if _expand_drawer_btn != null:
+		_expand_drawer_btn.pressed.connect(func() -> void: set_node_drawer_open(true))
+	if _left_node_drawer != null:
+		_left_node_drawer.collapse_requested.connect(func() -> void: set_node_drawer_open(false))
+		_left_node_drawer.node_spawn_clicked.connect(func(k: String, p: String) -> void: _mutations.add_node_from_drawer(k, p))
 	_toggle_sidebar_btn.toggled.connect(func(show_bar: bool) -> void: _right_sidebar.visible = show_bar)
 
 	_zoom_out_btn.pressed.connect(func() -> void: _graph_canvas.zoom_step(1.0 / 1.18))
@@ -168,6 +180,7 @@ func _ready() -> void:
 	_graph_canvas.node_force_requested.connect(_debug_ctrl.send_force_node)
 	_graph_canvas.node_inspected.connect(func(nid: String) -> void: _refresh_inspector_panel(nid))
 	_graph_canvas.sub_graph_open_requested.connect(func(sp: String, _nid: String) -> void: _on_sub_graph_open_requested(sp))
+	_graph_canvas.node_drawer_toggle_requested.connect(func() -> void: set_node_drawer_open(not (_left_node_drawer != null and _left_node_drawer.visible)))
 	_graph_canvas.view_zoom_changed.connect(func(_z: float) -> void: _refresh_zoom_label())
 
 	_catalog.catalog_changed.connect(_on_catalog_changed)
@@ -187,21 +200,22 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	FlowEditorI18n.unsubscribe(self)
+	if _debug_ctrl != null: _debug_ctrl.unbind_debugger()
 	_chrome.dispose()
 	if _catalog != null: _catalog.dispose()
 
 func _shortcut_input(event: InputEvent) -> void:
-	if not is_visible_in_tree() or not (event is InputEventKey): return
-	var ke: InputEventKey = event as InputEventKey
-	if not ke.pressed or ke.echo or not ke.is_command_or_control_pressed(): return
-	if ke.keycode == KEY_S and not ke.shift_pressed:
+	if not is_visible_in_tree(): return
+	var act: StringName = FlowEditorInput.resolve_workbench_action(event, false)
+	if act == &"": return
+	if act == FlowEditorInput.WB_SAVE:
 		_on_save_res_pressed()
 		accept_event()
 		return
 	var f_owner: Control = get_viewport().gui_get_focus_owner() if get_viewport() != null else null
 	if f_owner is LineEdit or f_owner is CodeEdit: return
-	if ke.keycode == KEY_Z and not ke.shift_pressed and _mutations.undo(): accept_event()
-	elif (ke.keycode == KEY_Y or (ke.keycode == KEY_Z and ke.shift_pressed)) and _mutations.redo(): accept_event()
+	if act == FlowEditorInput.WB_UNDO and _mutations.undo(): accept_event()
+	elif act == FlowEditorInput.WB_REDO and _mutations.redo(): accept_event()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED and is_node_ready():
@@ -210,6 +224,7 @@ func _notification(what: int) -> void:
 			_refresh_inspector_panel(_graph_canvas.get_selected_node_id() if _graph_canvas != null else "")
 			_refresh_zoom_label()
 	elif (what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_WM_WINDOW_FOCUS_IN) and is_node_ready():
+		FlowGraphIcons.sync_editor_main_screen_button()
 		_chrome.queue_external_check(false)
 
 func apply_ui_scale_override(scale_val: float) -> void:
@@ -222,12 +237,22 @@ func set_editor_locale(locale: StringName, persist: bool = true) -> void:
 func toggle_editor_locale(persist: bool = true) -> StringName:
 	return FlowEditorI18n.toggle_locale(persist)
 
+func set_node_drawer_open(open: bool) -> void:
+	if _left_node_drawer != null:
+		_left_node_drawer.visible = open
+	if _toggle_drawer_btn != null:
+		_toggle_drawer_btn.set_pressed_no_signal(open)
+	if _expand_drawer_pod != null:
+		_expand_drawer_pod.visible = not open
+
 func _on_locale_changed() -> void:
 	if not is_node_ready(): return
 	_chrome.apply_locale()
 	if _nav_bar != null: _nav_bar.apply_locale(_store)
+	if _left_node_drawer != null: _left_node_drawer.apply_locale()
 	if _resource_browser != null: _resource_browser.apply_locale()
 	if _graph_canvas != null: _graph_canvas.apply_locale()
+	_dpi.reapply_all(_nav_bar)
 	_sync_resource_browser_entries()
 	_rebuild_instance_dropdown()
 	_render_active_graph()
@@ -329,6 +354,8 @@ func _check_external_file_changes(force_content_check: bool = true) -> void:
 	var reloaded: Array = diff.get("reloaded", []) as Array
 	var conflicts: Array = diff.get("conflicts", []) as Array
 	if reloaded.is_empty() and conflicts.is_empty(): return
+	for rpath_v: Variant in reloaded:
+		_debug_ctrl.notify_hot_reload_if_running(str(rpath_v))
 	_rebuild_instance_dropdown()
 	_update_save_btn_visual()
 	var active_path: String = _store.active_key if _store.is_resource_selected() else ""
@@ -372,8 +399,11 @@ func _on_inspector_switch_to_live(memory_id: int) -> void:
 		_render_active_graph()
 
 func _on_resolve_external_conflict(resource_path: String, accept_disk: bool) -> void:
-	if accept_disk: _store.reload_resource_from_disk(resource_path)
-	else: _store.dismiss_external_conflict(resource_path)
+	if accept_disk:
+		if bool(_store.reload_resource_from_disk(resource_path).get("ok", false)):
+			_debug_ctrl.notify_hot_reload_if_running(resource_path)
+	else:
+		_store.dismiss_external_conflict(resource_path)
 	_rebuild_instance_dropdown()
 	_update_save_btn_visual()
 	_render_active_graph()
@@ -429,6 +459,10 @@ func _render_active_graph(focus_node_override: String = "\b") -> void:
 			_mode_badge_label.add_theme_color_override("font_color", t.accent if is_res else t.font_dim)
 
 	if _nav_bar != null: _nav_bar.sync_state(_store)
+	if _left_node_drawer != null:
+		var is_empty_gen: bool = (g == null) or g.is_empty_generic()
+		var is_fsm_g: bool = (g != null and g.resolve_effective_schema() == MermaidGraphModel.SCHEMA_FSM)
+		_left_node_drawer.sync_context(is_fsm_g, is_empty_gen, read_only_topo)
 	_refresh_inspector_panel(_graph_canvas.get_selected_node_id())
 	_refresh_zoom_label()
 
@@ -463,7 +497,9 @@ func _rebuild_instance_dropdown() -> void:
 	_sync_resource_browser_marks()
 
 func _refresh_inspector_panel(inspected_node_id: String = "") -> void:
-	if _inspector_panel != null: _inspector_panel.rebuild_inspector(_store, inspected_node_id)
+	var sel_edge: String = _graph_canvas.get_selected_edge_key() if _graph_canvas != null else ""
+	if _inspector_panel != null:
+		_inspector_panel.rebuild_inspector(_store, inspected_node_id, sel_edge)
 
 func _refresh_zoom_label() -> void:
 	if _zoom_reset_btn != null and _graph_canvas != null: _zoom_reset_btn.text = "%d%%" % _graph_canvas.get_display_zoom_percent()

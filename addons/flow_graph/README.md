@@ -1,10 +1,10 @@
 # FlowGraph (`addons/flow_graph`)
 
-Godot 4 **零外部依赖、开箱即用**的算法图运行时与可视化工作台插件：**内置纯内存有限/层次状态机（FSM / HFSM）+ 15 种节点的享元行为树（Flyweight BT）+ 轻量黑板布尔表达式引擎 + 通用算法图运行期调试桥接器（`runtime/`）**，搭配顶部主视口（Main Screen）**`FlowGraph`** 零语法可视化直编画布、五卡片原位检视器、64 步 Undo/Redo、静态拓扑 Linter、60 帧时间轴倒带回放、实时黑板热改、保存热重载与子图面包屑下钻工作台（`editor/`）。
+Godot 4 **零外部依赖、开箱即用**的算法图运行时与可视化工作台插件：**内置纯内存有限/层次状态机（FSM / HFSM）+ 显式树根（`Root`）与 15 种标准节点的享元行为树（Flyweight BT）+ 轻量黑板布尔表达式引擎 + 通用算法图运行期调试桥接器（`runtime/`）**，搭配顶部主视口（Main Screen）**`FlowGraph`** 零语法可视化直编画布、五卡片原位检视器、64 步 Undo/Redo、静态拓扑 Linter、60 帧时间轴倒带回放、实时黑板热改、保存热重载与子图面包屑下钻工作台（`editor/`）。
 
 > **零外部依赖与低认知负担契约**：
 > 1. 整个 `addons/flow_graph/` 不引用任何宿主项目业务或框架脚本（统一使用自包含 `FlowGraphResult`），整包拷贝至任何空白 Godot 4 工程即可直接运行；
-> 2. 全量 83 个 `.gd` 脚本严格按正交职责拆解（中位文件规模 ~115 行），零裸字符串 `preload("...")`（全部收敛至 `FlowGraphContracts` / `FlowGraphIcons`），并内置单语纯净的 `ZH / EN` 实时热切换与中性占位词体系。
+> 2. 全量 103 个 `.gd` 脚本严格按正交职责拆解（中位文件规模 ~120 行），零裸字符串 `preload("...")`（全部收敛至 `FlowGraphContracts` / `FlowGraphIcons`），全部鼠键/滚轮/手势收敛至单一语义映射层 `editor/input/`，并内置单语纯净的 `ZH / EN` 实时热切换与中性占位词体系。
 
 ---
 
@@ -26,14 +26,15 @@ addons/flow_graph/
 │   │   ├── base_fsm_state.gd                        # 强类型状态基类 (支持嵌套 sub_machine)
 │   │   ├── fsm_lambda_state.gd                      # 轻量闭包状态
 │   │   └── ast/                                     # FsmGraphDef / FsmStateDef / FsmTransitionDef / FsmCompiler (HFSM 子图编译)
-│   ├── bt/                                          # 享元行为树内核 + 15 种标准节点 (_doc_bt.md)
+│   ├── bt/                                          # 享元行为树内核 + Root 入口与 15 种标准节点 (_doc_bt.md)
 │   │   ├── bt_builder.gd                            # 链式代码造树器 (BTBuilder)
 │   │   ├── bt_tree.gd                               # 无状态享元行为树本体 (单树驱动百怪 + Schema 注入 + 热重载)
 │   │   ├── bt_context.gd                            # 单实体运行上下文 (BTContext)
 │   │   ├── bt_blackboard.gd                         # 单实体黑板与节点记忆槽 (BTBlackboard)
 │   │   ├── bt_status.gd                             # 三态枚举 (SUCCESS / FAILURE / RUNNING)
 │   │   ├── ast/                                     # BTGraphDef / BTNodeDef / BTCompiler (含 SubTree 命名空间偏移隔离)
-│   │   └── nodes/                                   # 三大标准积木家族：
+│   │   └── nodes/                                   # 显式树根入口 + 三大标准积木家族：
+│   │       ├── bt_root.gd                           #   Root 显式单出口树根入口节点 (BTRoot)
 │   │       ├── composites/                          #   Selector(含 memory 防打断) / WeightedSelector / Sequence / Parallel
 │   │       ├── decorators/                          #   Cooldown(含 jitter) / Repeater / TimeLimit / Inverter / ForceStatus / Service
 │   │       └── leaves/                              #   Action / Condition(含表达式) / Wait(含 jitter) / SubTree
@@ -53,6 +54,9 @@ addons/flow_graph/
     │   ├── flow_editor_i18n.gd                      #   FlowEditorI18n：ZH/EN 热切换、EditorSettings 持久化与弱引用订阅总线
     │   ├── flow_i18n_zh.gd                          #   简体中文单语词典（零括号双语混排、中性输入占位词）
     │   └── flow_i18n_en.gd                          #   English 单语词典（100% 键位对齐、中性输入占位词）
+    ├── input/                                       # 统一鼠键与手势语义映射层 (_doc_input.md)：
+    │   ├── flow_input_bindings.gd                   #   插件唯一物理键码/鼠标按钮声明表（支持 EditorSettings 覆盖）
+    │   └── flow_editor_input.gd                     #   FlowEditorInput：工作台/画布/弹窗三层作用域解析、修饰键与手势统一服务
     ├── model/
     │   └── mermaid_graph_model.gd                   # Canonical Graph IR、完备节点/边 CRUD、BT 坐标重排与快照克隆
     ├── codec/
@@ -62,9 +66,9 @@ addons/flow_graph/
     ├── lint/
     │   └── flow_graph_linter.gd                     # 静态拓扑校验器 (孤岛节点 / 缺失入口 / 装饰器元数 / 子图环路诊断)
     ├── bridge/
-    │   ├── mermaid_resource_bridge.gd               # 鸭子类型蓝图读写桥接 (to_flow_graph_ir / to_mermaid_ir)
-    │   ├── mermaid_resource_catalog.gd              # 基于 EditorFileSystem 缓存的零加载全项目图资源自动扫描器
-    │   └── flow_operator_scanner.gd                 # 零实例化扫描工程 .gd 注册算子/条件/事件候选表
+    │   ├── mermaid_resource_bridge.gd               # 零耦合协议读写桥接、二阶段继承链发现与单文件增量刷新
+    │   ├── mermaid_resource_catalog.gd              # 基于 EditorFileSystem 的零加载图资源索引器与 O(1) 路径检索
+    │   └── flow_operator_scanner.gd                 # 单文件 mtime 增量缓存、注释去噪与 BTBuilder 链式算子嗅探器
     ├── layout/                                      # 多态自动布局引擎 (FSM 四象限星型 / BT 轮廓紧缩树 / Sugiyama DAG)
     ├── debugger/                                    # 跨进程调试接收与四态会话仓库包：
     │   ├── mermaid_editor_debugger.gd               # EditorDebuggerPlugin IPC 收发与 hot_reload_resource 下发
@@ -75,14 +79,21 @@ addons/flow_graph/
     │   └── mermaid_session_store.gd                 # 四态统一会话仓库门面
     └── ui/
         ├── theme/                                   # Godot 4 实时主题令牌采样与控件样式注入
+        ├── palette/                                 # 左侧可折叠节点库抽屉与统一分组目录包：
+        │   ├── flow_node_catalog.gd                 #   FSM + BT 6 大语义分组、缩写检索、家族色与图标解析表
+        │   ├── node_drawer_item_row.gd              #   单击智能追加 + 原生 _get_drag_data 胶囊拖拽预览条目
+        │   └── mermaid_node_drawer.gd               #   左侧可折叠手风琴节点库抽屉 (搜索过滤 + 模式自适应分组)
         ├── canvas/                                  # 模块化矢量画布与四分包边路由引擎：
         │   ├── routing/                             # edge_obstacle_avoidance / fsm_hub / bt_bus(#1,#2) / dag_channel
-        │   ├── canvas_context_menu.gd               # 画布空白与节点右键 CRUD / 断点 / 子图菜单
-        │   ├── canvas_input_controller.gd           # 缩放平移、节点拖拽、拉线、双击下钻与 Ctrl+Z/Y/D/Del 快捷键
+        │   ├── canvas_selection_model.gd            # 单选/多选与左键矩形框选状态机 (Replace / Shift 追加 / Ctrl 反选)
+        │   ├── canvas_context_menu.gd               # 轻量聚焦右键菜单 (支持多选批量复制/删除/切换断点、节点与连线菜单)
+        │   ├── canvas_quick_node_picker.gd          # 可拼音/缩写/关键字检索的浮动建点面板 (拉线空白释放/轻触Space/Shift+A/双击空白)
+        │   ├── canvas_inline_renamer.gd             # 画布胶囊原位重命名浮层 (双击节点/F2/Tab 连建自动唤起)
+        │   ├── canvas_input_controller.gd           # 左键框选/多选等距群组拖拽、中键/右键/Space抓手平移、磁吸拉线与语义快捷键派发
         │   ├── canvas_telemetry_state.gd            # 呼吸高亮与流光脉冲动画状态机
-        │   ├── canvas_painter.gd                    # 世界空间几何绘制 (含 ● 断点徽章与 ⧉ 子图角标)
+        │   ├── canvas_painter.gd                    # 世界空间几何绘制 (方向自适应端口、贝塞尔预览线、磁吸靶环、断点与子图角标)
         │   ├── canvas_overlay_painter.gd            # 1:1 屏幕抗碰撞标签、BT #1/#2 顺序胶囊与鹰眼小地图
-        │   └── mermaid_graph_canvas.gd              # 画布门面
+        │   └── mermaid_graph_canvas.gd              # 画布门面 (帧级路由脏合并与 BT 实时拖拽重排预览)
         ├── inspector/                               # 五卡片模块化原位检视器包：
         │   ├── inspector_style_kit.gd               # 样式盒与带 ▾ 算子嗅探补全输入框工厂
         │   ├── inspector_kpi_card.gd                # 会话 KPI、冲突处理、源蓝图互切与 Linter 诊断列表
@@ -106,8 +117,8 @@ addons/flow_graph/
 
 ## 二、 核心能力矩阵（P0 ~ P3 全闭环）
 
-- **P0 零语法可视化直编**：画布右键直接新建 FSM 状态与 15 种 BT 节点、拖拽子节点自动按坐标重排 `#1 / #2` 执行优先级、检视面板原位修改全部节点与转换边参数、`Ctrl+Z / Ctrl+Y` 64 步撤销重做、静态拓扑 Linter 实时报错定位。
+- **P0 丝滑零语法可视化直编**：**左侧可折叠分组节点库抽屉**（5 大语义家族手风琴分组，支持直接拖拽至画布/节点/连线上放置或单击智能追加）、方向自适应不消失端口、三次贝塞尔磁吸拉线、**拉线空白释放自动建点并连线**（单步原子 Undo）、`Space / Shift+A / 双击空白` 可检索快速建点面板、`Tab` 下游快速衍生建点、`双击节点 / F2` 胶囊原位重命名、双击连线中间插入节点、BT 叶子禁出边 / 装饰器单子节点自动替换 / 拖拽实时重排 `#1 / #2` 执行优先级、64 步 Undo/Redo 与静态拓扑 Linter 实时报错定位。
 - **P1 实战级 FSM & BT 内核**：FSM 原生支持 `fire_event(&"hit", payload)` 脉冲事件、`!cond` 与 `&& / ||` 复合条件表达式；BT 原生内置随机抖动 `Cooldown / Wait`（防百怪齐射）、防打断 `Selector(memory=true)`、`WeightedSelector` 权重抽招、`Repeater`、`TimeLimit` 超时中断、`ForceSuccess / ForceFailure` 与低频感知 `BTService`。
-- **P2 杀手级运行期联调**：运行中直接在右侧黑板表勾选/改数实时注入游戏内存（`set_var`）；在任意节点右键打 `●` 断点，命中瞬间自动冻结该 AI 实例；底部滑块随时倒带回看最近 **60 帧**状态跃迁与当时黑板快照（`F8` 停止后依然可回放）；修改 `.tres` 按 `Ctrl+S` 保存即刻热更新运行中实例，无需重启游戏。
+- **P2 杀手级运行期联调**：运行中直接在右侧黑板表勾选/改数实时注入游戏内存（`set_var`）；在任意节点右键打断点，命中瞬间自动冻结该 AI 实例；底部滑块随时倒带回看最近 **60 帧**状态跃迁与当时黑板快照（`F8` 停止后依然可回放）；修改 `.tres` 按 `Ctrl+S` 保存即刻热更新运行中实例，无需重启游戏。
 - **P3 规模化子图嵌套与算子补全**：FSM 状态与 BT `SubTree` 支持挂载外部公共 `.tres` 子图，双击节点直接钻入子图并通过顶部面包屑一键返回；自动扫描工程 `.gd` 脚本中的算子与事件名，在检视面板提供 `▾` 一键下拉补全与黑板 Schema 强类型契约声明。
 - **契约化路径治理与单语双语种实时切换**：所有 `preload(...)` 与配置键统一收敛至 `FlowGraphContracts` / `FlowGraphIcons`（零裸字符串预加载）；顶栏右侧内置 `中文 / EN` 一键实时切换按钮，全界面严格单语呈现（杜绝 `中文 (English)` 混排），所有输入框统一采用克制中性的名词占位符。

@@ -9,6 +9,7 @@ const MermaidGraphCanvas = preload(FlowGraphContracts.SCRIPT_CANVAS)
 const MermaidSyntaxHighlighter = preload(FlowGraphContracts.SCRIPT_SYNTAX_HIGHLIGHTER)
 const MermaidInspectorPanel = preload(FlowGraphContracts.SCRIPT_INSPECTOR_PANEL)
 const MermaidResourceBrowser = preload(FlowGraphContracts.SCRIPT_RESOURCE_BROWSER)
+const MermaidNodeDrawer = preload(FlowGraphContracts.SCRIPT_NODE_DRAWER)
 const WorkbenchNavScrubberBar = preload(FlowGraphContracts.SCRIPT_WB_NAV_BAR)
 const MermaidThemeService = preload(FlowGraphContracts.SCRIPT_THEME_SERVICE)
 const MermaidThemeTokens = preload(FlowGraphContracts.SCRIPT_THEME_TOKENS)
@@ -43,6 +44,9 @@ func apply_theme() -> void:
 		var u_btn: Button = _wb.get_node_or_null(path) as Button
 		if u_btn != null:
 			MermaidWorkbenchStyler.style_flat_button(u_btn, t, t.font, t.icon, Vector4(6, 2, 6, 2))
+	var nd: MermaidNodeDrawer = _wb.get_node_or_null("%LeftNodeDrawer") as MermaidNodeDrawer
+	if nd != null:
+		nd.apply_theme(t)
 	var rb: MermaidResourceBrowser = _wb.get_node_or_null("%ResourceBrowser") as MermaidResourceBrowser
 	if rb != null:
 		rb.apply_theme(t)
@@ -54,10 +58,10 @@ func apply_theme() -> void:
 		gc.queue_redraw()
 
 
-func reapply_all() -> void:
+func reapply_all(nav_bar: WorkbenchNavScrubberBar = null) -> void:
 	apply_theme()
 	_last_applied_scale = -1.0
-	apply_dpi_scale()
+	apply_dpi_scale(nav_bar)
 	if _on_theme_resynced.is_valid():
 		_on_theme_resynced.call()
 
@@ -95,14 +99,14 @@ func apply_dpi_scale(nav_bar: WorkbenchNavScrubberBar = null) -> bool:
 		var hb: HBoxContainer = _wb.get_node_or_null(hb_p) as HBoxContainer
 		if hb != null:
 			hb.add_theme_constant_override("separation", roundi(5.0 * s))
-	for sp_p: String in ["%Sep1", "%Sep2", "%Sep3"]:
+	for sp_p: String in ["%Sep0", "%Sep1", "%Sep2", "%Sep3"]:
 		var sep_r: ColorRect = _wb.get_node_or_null(sp_p) as ColorRect
 		if sep_r != null:
 			sep_r.custom_minimum_size = Vector2(maxf(1.0, roundf(1.0 * s)), roundf(16.0 * s))
 
 	var inst_sel: OptionButton = _wb.get_node_or_null("%InstanceSelect") as OptionButton
 	if inst_sel != null:
-		inst_sel.custom_minimum_size = Vector2(roundf(320.0 * s), btn_h)
+		inst_sel.custom_minimum_size = Vector2(roundf(296.0 * s), btn_h)
 		inst_sel.add_theme_font_size_override("font_size", base_fs)
 		inst_sel.add_theme_constant_override("icon_max_width", ico_px)
 		_scale_styles(inst_sel, [&"normal", &"hover", &"pressed"], 10.0 * s, 4.0 * s, 4.0 * s)
@@ -110,11 +114,13 @@ func apply_dpi_scale(nav_bar: WorkbenchNavScrubberBar = null) -> bool:
 			inst_sel.get_popup().add_theme_font_size_override("font_size", base_fs)
 			inst_sel.get_popup().add_theme_constant_override("icon_max_width", ico_px)
 
-	for tb_p: String in ["%OpenResBtn", "%SaveResBtn", "%PauseBtn", "%DirToggleBtn", "%AutoLayoutBtn", "%LangToggleBtn"]:
+	for tb_p: String in ["%ToggleDrawerBtn", "%OpenResBtn", "%SaveResBtn", "%PauseBtn", "%DirToggleBtn", "%AutoLayoutBtn", "%LangToggleBtn"]:
 		var tb: Button = _wb.get_node_or_null(tb_p) as Button
 		if tb != null:
 			tb.custom_minimum_size = Vector2(roundf(44.0 * s) if tb_p == "%LangToggleBtn" else 0.0, btn_h)
 			tb.add_theme_font_size_override("font_size", sub_fs if tb_p == "%LangToggleBtn" else base_fs)
+			if tb.icon != null:
+				tb.expand_icon = true
 			tb.add_theme_constant_override("icon_max_width", ico_px)
 			_scale_styles(tb, [&"normal", &"hover", &"pressed"], 10.0 * s, 4.0 * s, 4.0 * s)
 
@@ -125,6 +131,18 @@ func apply_dpi_scale(nav_bar: WorkbenchNavScrubberBar = null) -> bool:
 			ib.add_theme_font_size_override("font_size", base_fs)
 			ib.add_theme_constant_override("icon_max_width", maxi(16, roundi(17.0 * s)))
 			_scale_styles(ib, [&"normal", &"hover", &"pressed"], 6.0 * s, 5.0 * s, 4.0 * s)
+
+	var exp_pod: PanelContainer = _wb.get_node_or_null("%ExpandDrawerPod") as PanelContainer
+	if exp_pod != null:
+		var e_off: float = roundf(14.0 * s)
+		exp_pod.offset_left = e_off
+		exp_pod.offset_top = e_off
+		_scale_styles(exp_pod, [&"panel"], 4.0 * s, 3.0 * s, 6.0 * s)
+	var exp_btn: Button = _wb.get_node_or_null("%ExpandDrawerBtn") as Button
+	if exp_btn != null:
+		exp_btn.custom_minimum_size = Vector2(0.0, roundf(26.0 * s))
+		exp_btn.add_theme_font_size_override("font_size", sub_fs)
+		_scale_styles(exp_btn, [&"normal", &"hover", &"pressed"], 8.0 * s, 3.0 * s, 4.0 * s)
 
 	var z_pod: PanelContainer = _wb.get_node_or_null("%ZoomPod") as PanelContainer
 	if z_pod != null:
@@ -150,15 +168,19 @@ func apply_dpi_scale(nav_bar: WorkbenchNavScrubberBar = null) -> bool:
 
 	var r_side: Control = _wb.get_node_or_null("%RightSidebar") as Control
 	if r_side != null:
-		r_side.custom_minimum_size = Vector2(roundf(368.0 * s), 0.0)
+		var side_w: float = 396.0 if FlowEditorI18n.is_english() else 368.0
+		r_side.custom_minimum_size = Vector2(roundf(side_w * s), 0.0)
 	_scale_styles(_wb.get_node_or_null("%DockHeader") as Control, [&"panel"], 8.0 * s, 5.0 * s, 0.0)
 	for tab_p: String in ["%TabTelemetryBtn", "%TabResourcesBtn", "%TabSourceBtn"]:
 		var tab_b: Button = _wb.get_node_or_null(tab_p) as Button
 		if tab_b != null:
 			tab_b.custom_minimum_size = Vector2(0.0, roundf(28.0 * s))
 			tab_b.add_theme_font_size_override("font_size", base_fs)
+			if tab_b.icon != null:
+				tab_b.expand_icon = true
 			tab_b.add_theme_constant_override("icon_max_width", ico_px)
-			_scale_styles(tab_b, [&"normal", &"hover", &"pressed"], 10.0 * s, 4.0 * s, 4.0 * s)
+			_scale_styles(tab_b, [&"normal", &"hover", &"pressed"], 8.0 * s, 4.0 * s, 4.0 * s)
+	FlowGraphIcons.sync_editor_main_screen_button()
 
 	_scale_styles(_wb.get_node_or_null("%ModeChip") as Control, [&"panel"], 8.0 * s, 3.0 * s, 4.0 * s)
 	var m_lbl: Label = _wb.get_node_or_null("%ModeBadgeLabel") as Label
@@ -179,6 +201,9 @@ func apply_dpi_scale(nav_bar: WorkbenchNavScrubberBar = null) -> bool:
 	var insp: MermaidInspectorPanel = _wb.get_node_or_null("%InspectorPanel") as MermaidInspectorPanel
 	if insp != null:
 		insp.setup_metrics(s, base_fs)
+	var nd: MermaidNodeDrawer = _wb.get_node_or_null("%LeftNodeDrawer") as MermaidNodeDrawer
+	if nd != null:
+		nd.apply_metrics(s, base_fs)
 	var rb: MermaidResourceBrowser = _wb.get_node_or_null("%ResourceBrowser") as MermaidResourceBrowser
 	if rb != null:
 		rb.apply_metrics(s, base_fs)

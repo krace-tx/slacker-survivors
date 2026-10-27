@@ -6,42 +6,17 @@ extends RefCounted
 ## 支持「空白处双击 / 空格唤起」、「拉线松手即建点自动连线」与「连线中间插入节点」三种上下文；内置实时模糊筛选与键盘上下键秒选。
 
 const CanvasThemePalette = preload(FlowGraphContracts.SCRIPT_CANVAS_PALETTE)
+const FlowNodeCatalog = preload(FlowGraphContracts.SCRIPT_NODE_CATALOG)
 const MermaidThemeService = preload(FlowGraphContracts.SCRIPT_THEME_SERVICE)
 const MermaidThemeTokens = preload(FlowGraphContracts.SCRIPT_THEME_TOKENS)
 
 signal node_kind_chosen(kind: String, world_pos: Vector2, connect_from_id: String, split_to_id: String)
 signal picker_closed(committed: bool)
 
-const ALL_BT_KINDS: PackedStringArray = [
-	"Sequence", "Selector", "Action", "Condition",
-	"Cooldown", "Wait", "Parallel", "WeightedSelector",
-	"Inverter", "Repeater", "TimeLimit", "Service",
-	"ForceSuccess", "ForceFailure", "SubTree",
-]
-
-const NON_LEAF_BT_KINDS: PackedStringArray = [
-	"Cooldown", "Inverter", "Repeater", "TimeLimit", "Service",
-	"ForceSuccess", "ForceFailure",
-	"Sequence", "Selector", "Parallel", "WeightedSelector",
-]
-
-const KIND_ALIASES: Dictionary = {
-	"State": "state st zt zhuangtai",
-	"Sequence": "sequence seq sx shunxu",
-	"Selector": "selector sel fallback xz xuanze",
-	"WeightedSelector": "weighted random wsel jq jiaquan",
-	"Parallel": "parallel par bx bingxing",
-	"Cooldown": "cooldown cd lq lengque",
-	"Repeater": "repeater repeat loop rep xh xunhuan",
-	"TimeLimit": "timelimit timeout tl cs chaoshi",
-	"Inverter": "inverter not inv qf qufan",
-	"ForceSuccess": "forcesuccess succeed fs",
-	"ForceFailure": "forcefailure fail ff",
-	"Service": "service tick srv fw fuwu",
-	"Action": "action act task dz dongzuo",
-	"Condition": "condition cond check tj tiaojian",
-	"Wait": "wait delay timer dd dengdai",
-	"SubTree": "subtree sub ref zs zishu",
+const NON_LEAF_BT_SET: Dictionary = {
+	"Cooldown": true, "Inverter": true, "Repeater": true, "TimeLimit": true, "Service": true,
+	"ForceSuccess": true, "ForceFailure": true,
+	"Sequence": true, "Selector": true, "Parallel": true, "WeightedSelector": true,
 }
 
 var _popup: PopupPanel = null
@@ -51,7 +26,10 @@ var _scroll: ScrollContainer = null
 var _list_vbox: VBoxContainer = null
 var _row_buttons: Array[Button] = []
 var _filtered_kinds: Array[String] = []
-var _available_kinds: PackedStringArray = PackedStringArray()
+var _is_fsm_ctx: bool = false
+var _is_empty_generic_ctx: bool = false
+var _is_edge_insert_ctx: bool = false
+var _has_bt_root_ctx: bool = false
 var _highlight_idx: int = 0
 var _ui_scale: float = 1.0
 
@@ -114,7 +92,8 @@ func open_picker(
 	connect_from_id: String = "",
 	from_display_title: String = "",
 	split_to_id: String = "",
-	to_display_title: String = ""
+	to_display_title: String = "",
+	has_bt_root: bool = false
 ) -> void:
 	if _popup == null:
 		return
@@ -123,8 +102,11 @@ func open_picker(
 	_pending_from_id = connect_from_id
 	_pending_split_to_id = split_to_id
 	_committed_this_open = false
+	_is_fsm_ctx = is_fsm
+	_is_empty_generic_ctx = is_empty_generic
+	_is_edge_insert_ctx = not split_to_id.is_empty()
+	_has_bt_root_ctx = has_bt_root
 
-	_available_kinds = _resolve_candidate_kinds(is_fsm, is_empty_generic, not split_to_id.is_empty())
 	_apply_popup_theme()
 
 	if not split_to_id.is_empty():
@@ -141,7 +123,8 @@ func open_picker(
 	_search_edit.text = ""
 	_rebuild_filtered_list("")
 
-	var pop_size := Vector2i(roundi(248.0 * _ui_scale), roundi(292.0 * _ui_scale))
+	var picker_w: float = 264.0 if FlowEditorI18n.is_english() else 248.0
+	var pop_size := Vector2i(roundi(picker_w * _ui_scale), roundi(296.0 * _ui_scale))
 	_popup.size = pop_size
 	_popup.position = screen_pos
 	_popup.popup()
@@ -150,20 +133,7 @@ func open_picker(
 #endregion
 
 
-#region 候选过滤、列表构建与键盘导航
-
-static func _resolve_candidate_kinds(is_fsm: bool, is_empty_generic: bool, is_edge_insert: bool) -> PackedStringArray:
-	var out := PackedStringArray()
-	if is_fsm:
-		out.append("State")
-		return out
-	if is_empty_generic and not is_edge_insert:
-		out.append("State")
-	var bt_pool: PackedStringArray = NON_LEAF_BT_KINDS if is_edge_insert else ALL_BT_KINDS
-	for k: String in bt_pool:
-		out.append(k)
-	return out
-
+#region 候选过滤、分组列表构建与键盘导航
 
 func _apply_popup_theme() -> void:
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
@@ -211,18 +181,34 @@ func _rebuild_filtered_list(query: String) -> void:
 	_row_buttons.clear()
 	_filtered_kinds.clear()
 
-	var q: String = query.strip_edges().to_lower()
-	for kind_s: String in _available_kinds:
-		var disp: String = FlowEditorI18n.kind_label(kind_s)
-		var aliases: String = str(KIND_ALIASES.get(kind_s, ""))
-		if q.is_empty() or kind_s.to_lower().contains(q) or disp.to_lower().contains(q) or aliases.contains(q):
-			_filtered_kinds.append(kind_s)
+	var raw_groups: Array[Dictionary] = FlowNodeCatalog.build_groups(_is_fsm_ctx, _is_empty_generic_ctx and not _is_edge_insert_ctx, query)
+	var groups_to_show: Array[Dictionary] = []
+	for grp: Dictionary in raw_groups:
+		var kept: Array[Dictionary] = []
+		for item_v: Variant in (grp["items"] as Array):
+			var it: Dictionary = item_v as Dictionary
+			var k_id: String = str(it.get("kind", ""))
+			var p_id: String = str(it.get("preset", ""))
+			if k_id == "Root" and (_has_bt_root_ctx or not _pending_from_id.is_empty() or _is_edge_insert_ctx):
+				continue
+			if p_id == FlowNodeCatalog.PRESET_INTERRUPT and (not _pending_from_id.is_empty() or _is_edge_insert_ctx):
+				continue
+			if _is_edge_insert_ctx and not _is_fsm_ctx and not NON_LEAF_BT_SET.has(k_id):
+				continue
+			kept.append(it)
+		if not kept.is_empty():
+			groups_to_show.append({
+				"title": str(grp["title"]),
+				"color": grp["color"] as Color,
+				"items": kept,
+			})
 
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
 	var s: float = _ui_scale
 	var fs_row: int = maxi(12, roundi(12.5 * s))
+	var fs_grp: int = maxi(10, roundi(10.5 * s))
 
-	if _filtered_kinds.is_empty():
+	if groups_to_show.is_empty():
 		var empty_lbl := Label.new()
 		empty_lbl.text = FlowEditorI18n.t(&"picker.empty")
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -233,30 +219,40 @@ func _rebuild_filtered_list(query: String) -> void:
 		return
 
 	_highlight_idx = 0
-	for i: int in range(_filtered_kinds.size()):
-		var k_name: String = _filtered_kinds[i]
-		var btn := Button.new()
-		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		btn.focus_mode = Control.FOCUS_NONE
-		btn.expand_icon = false
-		btn.custom_minimum_size = Vector2(0.0, roundf(28.0 * s))
-		btn.text = FlowEditorI18n.kind_label(k_name)
-		var is_init_ico: bool = (k_name == "State")
-		var ico: Texture2D = CanvasThemePalette.resolve_kind_icon(k_name, is_init_ico, false, false)
-		var cat_col: Color = CanvasThemePalette.resolve_accent_color(k_name, is_init_ico, false, false)
-		btn.icon = ico
-		btn.add_theme_constant_override("icon_max_width", maxi(14, roundi(15.0 * s)))
-		btn.add_theme_constant_override("h_separation", roundi(7.0 * s))
-		btn.add_theme_font_size_override("font_size", fs_row)
-		btn.add_theme_color_override("font_color", t.font)
-		btn.add_theme_color_override("font_hover_color", t.font_strong)
-		btn.add_theme_color_override("icon_normal_color", cat_col)
-		btn.add_theme_color_override("icon_hover_color", cat_col.lightened(0.15))
-		var idx_capture: int = i
-		btn.mouse_entered.connect(func() -> void: _set_highlight_index(idx_capture, false))
-		btn.pressed.connect(func() -> void: _commit_index(idx_capture))
-		_list_vbox.add_child(btn)
-		_row_buttons.append(btn)
+	for grp: Dictionary in groups_to_show:
+		var grp_lbl := Label.new()
+		grp_lbl.text = str(grp["title"])
+		grp_lbl.add_theme_font_size_override("font_size", fs_grp)
+		grp_lbl.add_theme_color_override("font_color", Color(grp["color"] as Color, 0.85))
+		_list_vbox.add_child(grp_lbl)
+
+		for it_v: Variant in (grp["items"] as Array):
+			var it: Dictionary = it_v as Dictionary
+			var k_name: String = str(it.get("key", it.get("kind", "")))
+			var idx_capture: int = _filtered_kinds.size()
+			_filtered_kinds.append(k_name)
+
+			var btn := Button.new()
+			btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			btn.focus_mode = Control.FOCUS_NONE
+			btn.expand_icon = false
+			btn.clip_text = true
+			btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			btn.custom_minimum_size = Vector2(0.0, roundf(27.0 * s))
+			btn.text = str(it["title"])
+			var cat_col: Color = it["color"] as Color
+			btn.icon = it["icon"] as Texture2D
+			btn.add_theme_constant_override("icon_max_width", maxi(14, roundi(15.0 * s)))
+			btn.add_theme_constant_override("h_separation", roundi(7.0 * s))
+			btn.add_theme_font_size_override("font_size", fs_row)
+			btn.add_theme_color_override("font_color", t.font)
+			btn.add_theme_color_override("font_hover_color", t.font_strong)
+			btn.add_theme_color_override("icon_normal_color", cat_col)
+			btn.add_theme_color_override("icon_hover_color", cat_col.lightened(0.15))
+			btn.mouse_entered.connect(func() -> void: _set_highlight_index(idx_capture, false))
+			btn.pressed.connect(func() -> void: _commit_index(idx_capture))
+			_list_vbox.add_child(btn)
+			_row_buttons.append(btn)
 
 	_refresh_row_styles()
 
@@ -298,23 +294,22 @@ func _refresh_row_styles() -> void:
 
 
 func _on_search_gui_input(event: InputEvent) -> void:
-	if not (event is InputEventKey):
+	var act: StringName = FlowEditorInput.resolve_modal_action(event, true)
+	if act == &"":
 		return
-	var ke: InputEventKey = event as InputEventKey
-	if not ke.pressed:
-		return
-	if ke.keycode == KEY_DOWN:
-		_set_highlight_index(_highlight_idx + 1, true)
-		_search_edit.accept_event()
-	elif ke.keycode == KEY_UP:
-		_set_highlight_index(_highlight_idx - 1, true)
-		_search_edit.accept_event()
-	elif ke.keycode == KEY_ENTER or ke.keycode == KEY_KP_ENTER:
-		_commit_index(_highlight_idx)
-		_search_edit.accept_event()
-	elif ke.keycode == KEY_ESCAPE:
-		close_picker()
-		_search_edit.accept_event()
+	match act:
+		FlowEditorInput.MODAL_NAV_NEXT:
+			_set_highlight_index(_highlight_idx + 1, true)
+			_search_edit.accept_event()
+		FlowEditorInput.MODAL_NAV_PREV:
+			_set_highlight_index(_highlight_idx - 1, true)
+			_search_edit.accept_event()
+		FlowEditorInput.MODAL_CONFIRM:
+			_commit_index(_highlight_idx)
+			_search_edit.accept_event()
+		FlowEditorInput.MODAL_CANCEL:
+			close_picker()
+			_search_edit.accept_event()
 
 
 func _commit_index(idx: int) -> void:

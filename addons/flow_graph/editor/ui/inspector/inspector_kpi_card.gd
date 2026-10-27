@@ -1,7 +1,7 @@
 @tool
 extends RefCounted
 
-## 检视器卡片 1：会话概览、3 维 KPI、冲突解决、蓝图↔运行互切与静态拓扑诊断（Inspector KPI & Linter Card）。
+## 检视器卡片 1：紧凑会话状态条、冲突解决、蓝图↔运行互切与静态拓扑诊断（Inspector Session Header & Linter Card）。
 
 const MermaidGraphModel = preload(FlowGraphContracts.SCRIPT_GRAPH_MODEL)
 const MermaidSessionStore = preload(FlowGraphContracts.SCRIPT_SESSION_STORE)
@@ -35,14 +35,14 @@ func build(kit: InspectorStyleKit, store: MermaidSessionStore, g: MermaidGraphMo
 	clear_refs()
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
 	var card: PanelContainer = kit.make_card(false)
-	var vbox: VBoxContainer = kit.make_vbox(8.0)
+	var vbox: VBoxContainer = kit.make_vbox(6.0)
 	card.add_child(vbox)
 
-	var top_row: HBoxContainer = kit.make_hbox(7.0)
+	var top_row: HBoxContainer = kit.make_hbox(6.0)
 	vbox.add_child(top_row)
-	top_row.add_child(InspectorStyleKit.make_scaled_icon(_resolve_mode_icon(store), roundi(16.0 * kit.s)))
+	top_row.add_child(InspectorStyleKit.make_scaled_icon(_resolve_mode_icon(store), roundi(15.0 * kit.s)))
 
-	var title_lbl: Label = kit.make_label(_resolve_session_title(store, g), kit.fs_title, t.font_strong)
+	var title_lbl: Label = kit.make_label(_resolve_session_title(store, g), kit.fs_body, t.font_strong)
 	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	top_row.add_child(title_lbl)
@@ -61,26 +61,37 @@ func build(kit: InspectorStyleKit, store: MermaidSessionStore, g: MermaidGraphMo
 	var sub_txt: String = _resolve_session_subtitle(store)
 	if not sub_txt.is_empty():
 		var sub_lbl: Label = kit.make_label(sub_txt, kit.fs_sub, t.font_dim)
-		sub_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		sub_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		sub_lbl.tooltip_text = sub_txt
 		vbox.add_child(sub_lbl)
 
-	var kpi_row: HBoxContainer = kit.make_hbox(6.0)
-	vbox.add_child(kpi_row)
+	# 紧凑单行拓扑摘要条（替代高占高三宫格，让下方的焦点节点编辑器直达首屏）
+	var meta_strip := PanelContainer.new()
+	meta_strip.add_theme_stylebox_override("panel", kit.sb_meta_strip)
+	var meta_row: HBoxContainer = kit.make_hbox(6.0)
+	meta_strip.add_child(meta_row)
+	vbox.add_child(meta_strip)
+
+	var arch_lbl: Label = kit.make_label(_describe_schema_short(g), kit.fs_sub, t.accent)
+	meta_row.add_child(arch_lbl)
+	meta_row.add_child(kit.make_label("·", kit.fs_sub, t.font_faint))
+
 	var topo_scale: String = FlowEditorI18n.t(&"insp.kpi_scale_fmt", [g.nodes.size(), g.edges.size()]) if g != null else FlowEditorI18n.t(&"insp.kpi_scale_zero")
-	kpi_row.add_child(_make_kpi_tile(kit, FlowEditorI18n.t(&"insp.kpi_arch"), _describe_schema_short(g), t.accent)["panel"] as PanelContainer)
-	kpi_row.add_child(_make_kpi_tile(kit, FlowEditorI18n.t(&"insp.kpi_scale"), topo_scale, t.font)["panel"] as PanelContainer)
+	meta_row.add_child(kit.make_label(topo_scale, kit.fs_sub, t.font))
+	meta_row.add_child(kit.make_label("·", kit.fs_sub, t.font_faint))
 
 	var is_runtime: bool = store.is_live_selected() or store.is_snapshot_selected()
 	var active_nodes: Dictionary = frame.get("active_nodes", {}) as Dictionary if frame.get("active_nodes", {}) is Dictionary else {}
-	var tile3: Dictionary = _make_kpi_tile(
-		kit,
-		FlowEditorI18n.t(&"insp.kpi_focus") if is_runtime else FlowEditorI18n.t(&"insp.kpi_entry"),
-		_summarize_active_focus(g, active_nodes) if is_runtime else _resolve_entry_display(g),
-		t.success if is_runtime else t.cat_entry
-	)
-	_kpi_active_val_lbl = tile3["val_lbl"] as Label
-	kpi_row.add_child(tile3["panel"] as PanelContainer)
+	var focus_prefix: String = FlowEditorI18n.t(&"insp.kpi_focus_short") if is_runtime else FlowEditorI18n.t(&"insp.kpi_entry_short")
+	meta_row.add_child(kit.make_label(focus_prefix, kit.fs_sub, t.font_dim))
+
+	var focus_val_txt: String = _summarize_active_focus(g, active_nodes) if is_runtime else _resolve_entry_display(g)
+	var focus_val_lbl: Label = kit.make_label(focus_val_txt, kit.fs_sub, t.success if is_runtime else t.cat_entry)
+	focus_val_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	focus_val_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	focus_val_lbl.tooltip_text = focus_val_txt
+	meta_row.add_child(focus_val_lbl)
+	_kpi_active_val_lbl = focus_val_lbl
 
 	_append_resource_live_link_and_conflict(kit, vbox, store)
 	if store.is_editable_mode() and g != null:
@@ -94,7 +105,9 @@ func refresh_live(kit: InspectorStyleKit, store: MermaidSessionStore, g: Mermaid
 		kit.apply_status_pill_theme(_status_pill_panel, _status_pill_lbl, str(pill_info["text"]), pill_info["color"] as Color)
 	if _kpi_active_val_lbl != null:
 		var active_nodes: Dictionary = frame.get("active_nodes", {}) as Dictionary if frame.get("active_nodes", {}) is Dictionary else {}
-		_kpi_active_val_lbl.text = _summarize_active_focus(g, active_nodes)
+		var summary_txt: String = _summarize_active_focus(g, active_nodes)
+		_kpi_active_val_lbl.text = summary_txt
+		_kpi_active_val_lbl.tooltip_text = summary_txt
 
 #endregion
 
@@ -185,15 +198,26 @@ func _append_linter_diagnostics(kit: InspectorStyleKit, vbox: VBoxContainer, sto
 	for issue: Dictionary in last_lint_issues:
 		var is_err: bool = str(issue.get("severity", "")) == FlowGraphLinter.SEVERITY_ERROR
 		var target_nid: String = str(issue.get("node_id", "")).strip_edges()
-		var mark: String = "● " if is_err else "▲ "
 		var item_col: Color = t.error if is_err else t.warning
 
 		var row := PanelContainer.new()
 		row.add_theme_stylebox_override("panel", kit.sb_row_idle)
-		var msg_lbl: Label = kit.make_label(mark + str(issue.get("message", "")), kit.fs_sub, item_col.lerp(t.font, 0.35))
+		var row_hb: HBoxContainer = kit.make_hbox(6.0)
+		row_hb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(row_hb)
+
+		var dot := ColorRect.new()
+		dot.custom_minimum_size = Vector2(maxf(2.5, roundf(3.0 * kit.s)), roundf(12.0 * kit.s))
+		dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		dot.color = item_col
+		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row_hb.add_child(dot)
+
+		var msg_lbl: Label = kit.make_label(str(issue.get("message", "")), kit.fs_sub, item_col.lerp(t.font, 0.35))
+		msg_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		msg_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		msg_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		row.add_child(msg_lbl)
+		row_hb.add_child(msg_lbl)
 
 		if not target_nid.is_empty():
 			row.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -201,7 +225,7 @@ func _append_linter_diagnostics(kit: InspectorStyleKit, vbox: VBoxContainer, sto
 			row.mouse_entered.connect(func() -> void: row.add_theme_stylebox_override("panel", kit.sb_row_hover))
 			row.mouse_exited.connect(func() -> void: row.add_theme_stylebox_override("panel", kit.sb_row_idle))
 			row.gui_input.connect(func(ev: InputEvent) -> void:
-				if ev is InputEventMouseButton and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT and (ev as InputEventMouseButton).pressed:
+				if FlowEditorInput.is_pointer_press(ev, FlowEditorInput.PTR_PRIMARY):
 					diagnostic_node_clicked.emit(target_nid)
 					row.accept_event()
 			)
@@ -213,22 +237,6 @@ func _append_linter_diagnostics(kit: InspectorStyleKit, vbox: VBoxContainer, sto
 
 
 #region 概览元数据解析辅助
-
-static func _make_kpi_tile(kit: InspectorStyleKit, caption: String, val_text: String, val_color: Color) -> Dictionary:
-	var p := PanelContainer.new()
-	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	p.add_theme_stylebox_override("panel", kit.sb_kpi_tile)
-	var vb: VBoxContainer = kit.make_vbox(2.0)
-	p.add_child(vb)
-	var c_lbl: Label = kit.make_label(caption, kit.fs_sub, MermaidThemeService.tokens().font_faint)
-	c_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	vb.add_child(c_lbl)
-	var v_lbl: Label = kit.make_label(val_text, kit.fs_kpi, val_color)
-	v_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	v_lbl.tooltip_text = val_text
-	vb.add_child(v_lbl)
-	return {"panel": p, "val_lbl": v_lbl}
-
 
 static func _resolve_mode_icon(store: MermaidSessionStore) -> Texture2D:
 	if store.is_live_selected():

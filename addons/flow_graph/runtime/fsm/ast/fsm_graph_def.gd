@@ -249,7 +249,7 @@ func apply_mermaid_ir(ir: Dictionary) -> void:
 			var desc: String = str(ep.get("description", ""))
 
 			if ep.is_empty() and not lbl.is_empty():
-				if lbl.begins_with("[⚡") and lbl.ends_with("]") and lbl.length() > 3:
+				if lbl.begins_with("[@") and lbl.ends_with("]") and lbl.length() > 3:
 					trig_ev = StringName(lbl.substr(2, lbl.length() - 3).strip_edges())
 				elif lbl.ends_with("s") and lbl.trim_suffix("s").is_valid_float():
 					min_t = float(lbl.trim_suffix("s"))
@@ -283,7 +283,7 @@ static func _format_transition_label(tr: FsmTransitionDef) -> String:
 	if lbl.is_empty():
 		var parts: PackedStringArray = PackedStringArray()
 		if not tr.trigger_event.is_empty():
-			parts.append("[⚡%s]" % String(tr.trigger_event))
+			parts.append("[@%s]" % String(tr.trigger_event))
 		if not tr.condition_key.is_empty():
 			parts.append(String(tr.condition_key))
 		if not tr.bb_expr.is_empty():

@@ -13,13 +13,22 @@ const MermaidLayout = preload(FlowGraphContracts.SCRIPT_LAYOUT)
 ## 解析 Mermaid 文本并生成新图与布局计划；返回 `{"ok": bool, "error": String, "graph": MermaidGraphModel, "plan": Dictionary}`。
 static func parse_and_build(source: String, prev_graph: MermaidGraphModel) -> Dictionary:
 	if source.strip_edges().is_empty():
-		return {"ok": true, "error": "", "graph": MermaidGraphModel.new(), "plan": {}}
+		var empty_g := MermaidGraphModel.new()
+		if prev_graph != null and prev_graph.schema_locked:
+			empty_g.schema_locked = true
+			empty_g.schema = prev_graph.schema
+			empty_g.diagram_type = prev_graph.diagram_type
+			empty_g.direction = prev_graph.direction
+			empty_g.title = prev_graph.title
+		return {"ok": true, "error": "", "graph": empty_g, "plan": {}}
 
 	var res: Dictionary = MermaidCodec.parse(source)
 	if not bool(res.get("ok", false)):
 		return {"ok": false, "error": str(res.get("error", ""))}
 
 	var next_g: MermaidGraphModel = res["graph"] as MermaidGraphModel
+	if prev_graph != null and prev_graph.schema_locked:
+		next_g.schema_locked = true
 	inherit_preserved_metadata(prev_graph, next_g)
 	var next_plan: Dictionary = MermaidLayout.apply_layout(next_g, false)
 	return {"ok": true, "error": "", "graph": next_g, "plan": next_plan}

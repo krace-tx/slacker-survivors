@@ -16,8 +16,9 @@ addons/flow_graph/runtime/bt/
 │   ├── bt_graph_def.gd               # 整棵树 AST 资源 (含 blackboard_schema 与子边权重互转)
 │   ├── bt_node_def.gd                # 单个节点 AST 资源
 │   └── bt_compiler.gd                # 蓝图编译器 (支持 SubTree 命名空间偏移 nid*10000 零冲突隔离)
-└── nodes/                            # [三大无状态积木家族]
+└── nodes/                            # [入口与三大无状态积木家族]
 	├── bt_node.gd
+	├── bt_root.gd                    # Root 显式单出口树根入口节点
 	├── composites/                   # Selector(含 memory 防打断) / WeightedSelector / Sequence(含 reactive) / Parallel
 	├── decorators/                   # Cooldown(含 jitter) / Repeater / TimeLimit / Inverter / ForceStatus / Service
 	└── leaves/                       # Action / Condition(含 !cond 与表达式) / Wait(含 jitter) / SubTree

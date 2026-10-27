@@ -112,7 +112,22 @@ static func lint(graph: MermaidGraphModel, owner_res_path: String = "") -> Array
 		var params: Dictionary = nd.get("params", {}) as Dictionary if nd.get("params", {}) is Dictionary else {}
 
 		if eff_schema == MermaidGraphModel.SCHEMA_BT:
-			if MermaidGraphModel.BT_COMPOSITE_KINDS.has(kind) and child_cnt == 0:
+			if kind == MermaidGraphModel.BT_ROOT_KIND:
+				if int(in_deg.get(nid, 0)) > 0:
+					results.append(_make_issue(
+						SEVERITY_ERROR,
+						"BT_ROOT_HAS_PARENT",
+						nid,
+						FlowEditorI18n.t(&"lint.bt_root_parent", [ntitle])
+					))
+				if child_cnt != 1:
+					results.append(_make_issue(
+						SEVERITY_ERROR,
+						"BT_ROOT_ARITY",
+						nid,
+						FlowEditorI18n.t(&"lint.bt_root_arity", [ntitle, child_cnt])
+					))
+			elif MermaidGraphModel.BT_COMPOSITE_KINDS.has(kind) and child_cnt == 0:
 				results.append(_make_issue(
 					SEVERITY_ERROR,
 					"BT_EMPTY_COMPOSITE",
@@ -135,7 +150,7 @@ static func lint(graph: MermaidGraphModel, owner_res_path: String = "") -> Array
 				))
 
 		var sub_path: String = str(params.get("sub_graph_path", nd.get("sub_graph_path", ""))).strip_edges()
-		if kind == "SubTree" or not sub_path.is_empty():
+		if kind == "SubTree" or not sub_path.is_empty() or bool(params.get("submachine", false)):
 			if sub_path.is_empty():
 				results.append(_make_issue(
 					SEVERITY_ERROR,
@@ -162,6 +177,9 @@ static func lint(graph: MermaidGraphModel, owner_res_path: String = "") -> Array
 
 
 static func _pick_primary_bt_root(graph: MermaidGraphModel, in_deg: Dictionary, out_adj: Dictionary) -> String:
+	var explicit_root: String = graph.find_bt_root_id()
+	if not explicit_root.is_empty():
+		return explicit_root
 	var fallback_zero: String = ""
 	for nd: Dictionary in graph.nodes:
 		var nid: String = str(nd.get("id", "")).strip_edges()

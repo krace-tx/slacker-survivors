@@ -79,7 +79,7 @@ func hot_reload_from_ir(ir: Dictionary) -> FlowGraphResult:
 	if comp == null or not comp.has_method(&"compile"):
 		return FlowGraphResult.err_code("BT.MissingCompiler", "BTTree '%s' has no bound BTCompiler for hot-reload." % String(tree_id))
 
-	var comp_res: FlowGraphResult = comp.call(&"compile", probe_def) as FlowGraphResult
+	var comp_res: FlowGraphResult = comp.call(&"compile", probe_def, true) as FlowGraphResult
 	if comp_res == null or comp_res.is_err():
 		return comp_res if comp_res != null else FlowGraphResult.err_code("BT.HotReloadFailed", "Compiler returned null.")
 

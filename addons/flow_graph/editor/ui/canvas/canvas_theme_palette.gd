@@ -82,6 +82,8 @@ var sb_card_running: StyleBoxFlat = null
 var sb_card_success: StyleBoxFlat = null
 var sb_card_failure: StyleBoxFlat = null
 var sb_select_ring: StyleBoxFlat = null
+var sb_multi_select_ring: StyleBoxFlat = null
+var sb_marquee: StyleBoxFlat = null
 var sb_any_zone: StyleBoxFlat = null
 var sb_any_badge: StyleBoxFlat = null
 var sb_portal_idle: StyleBoxFlat = null
@@ -143,6 +145,8 @@ func _init() -> void:
 	sb_card_success = make_flat_sb(t.surface.lerp(t.success, 0.06), Color(t.success, 0.55), 1, r_card)
 	sb_card_failure = make_flat_sb(t.surface.lerp(t.error, 0.08), Color(t.error, 0.6), 1, r_card)
 	sb_select_ring = make_flat_sb(clear, t.accent, 2, r_card + 2)
+	sb_multi_select_ring = make_flat_sb(Color(t.accent, 0.06), Color(t.accent, 0.72), 2, r_card + 2)
+	sb_marquee = make_flat_sb(Color(t.accent, 0.12), Color(t.accent, 0.86), 1, maxi(2, r_ui - 1))
 
 	sb_any_zone = make_flat_sb(Color(t.font, 0.018), Color(t.cat_interrupt, 0.22), 1, r_card + 2)
 	sb_any_badge = make_flat_sb(t.surface, Color(t.cat_interrupt, 0.55), 1, r_ui)
@@ -183,6 +187,8 @@ static func resolve_accent_color(kind: String, is_initial: bool, is_interrupt: b
 ## 返回节点语义图标；FSM 普通状态返回 `null`（不绘制图标，标题左移占位）。
 static func resolve_kind_icon(kind: String, is_initial: bool, is_interrupt: bool = false, is_terminal: bool = false) -> Texture2D:
 	match kind:
+		"Root":
+			return IconEntryOrigin
 		"Selector", "WeightedSelector", "Fallback":
 			return IconKindSelector
 		"Sequence":
@@ -227,6 +233,8 @@ static func is_fsm_terminal(graph: MermaidGraphModel, node_id: String) -> bool:
 
 
 static func _family_color(t: MermaidThemeTokens, kind: String, is_initial: bool, is_interrupt: bool, is_terminal: bool) -> Color:
+	if kind == "Root":
+		return t.cat_entry
 	if kind == "SubTree":
 		return t.cat_sequence
 	if FLOW_KINDS.has(kind):

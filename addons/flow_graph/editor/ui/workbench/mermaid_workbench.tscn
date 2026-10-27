@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://addons/flow_graph/editor/ui/workbench/mermaid_workbench.gd" id="1_workbench"]
 [ext_resource type="Script" path="res://addons/flow_graph/editor/ui/canvas/mermaid_graph_canvas.gd" id="2_canvas"]
@@ -17,6 +17,8 @@
 [ext_resource type="Script" path="res://addons/flow_graph/editor/ui/workbench/mermaid_inspector_panel.gd" id="15_insp_panel"]
 [ext_resource type="Texture2D" path="res://addons/flow_graph/editor/assets/toolbar/ico_mg_resource_list.svg" id="16_ico_res_list"]
 [ext_resource type="Script" path="res://addons/flow_graph/editor/ui/workbench/mermaid_resource_browser.gd" id="17_res_browser"]
+[ext_resource type="Texture2D" path="res://addons/flow_graph/editor/assets/toolbar/ico_mg_left_drawer.svg" id="18_ico_left_drawer"]
+[ext_resource type="Script" path="res://addons/flow_graph/editor/ui/palette/mermaid_node_drawer.gd" id="19_node_drawer"]
 
 [node name="MermaidWorkbench" type="VBoxContainer"]
 anchors_preset = 15
@@ -37,6 +39,26 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 5
+
+[node name="ToggleDrawerBtn" type="Button" parent="ToolbarPanel/ToolbarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "展开或收起左侧节点抽屉"
+focus_mode = 0
+toggle_mode = true
+button_pressed = true
+theme_override_constants/h_separation = 6
+text = "节点库"
+icon = ExtResource("18_ico_left_drawer")
+
+[node name="Sep0" type="ColorRect" parent="ToolbarPanel/ToolbarHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1, 16)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.22, 0.255, 0.31, 0.85)
 
 [node name="InstanceSelect" type="OptionButton" parent="ToolbarPanel/ToolbarHBox"]
 unique_name_in_owner = true
@@ -235,18 +257,32 @@ expand_icon = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MainSplit" type="HSplitContainer" parent="WorkspaceBackdrop"]
+[node name="WorkspaceRow" type="HBoxContainer" parent="WorkspaceBackdrop"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="LeftNodeDrawer" type="PanelContainer" parent="WorkspaceBackdrop/WorkspaceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(236, 0)
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("19_node_drawer")
+
+[node name="MainSplit" type="HSplitContainer" parent="WorkspaceBackdrop/WorkspaceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 3
 
-[node name="CanvasStage" type="Control" parent="WorkspaceBackdrop/MainSplit"]
+[node name="CanvasStage" type="Control" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.65
 
-[node name="GraphCanvas" type="Control" parent="WorkspaceBackdrop/MainSplit/CanvasStage"]
+[node name="GraphCanvas" type="Control" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage"]
 unique_name_in_owner = true
 clip_contents = true
 layout_mode = 1
@@ -258,7 +294,24 @@ grow_vertical = 2
 focus_mode = 2
 script = ExtResource("2_canvas")
 
-[node name="ZoomPod" type="PanelContainer" parent="WorkspaceBackdrop/MainSplit/CanvasStage"]
+[node name="ExpandDrawerPod" type="PanelContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+offset_left = 14.0
+offset_top = 14.0
+offset_right = 14.0
+offset_bottom = 14.0
+
+[node name="ExpandDrawerBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage/ExpandDrawerPod"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+tooltip_text = "展开左侧节点抽屉"
+focus_mode = 0
+text = "» 节点库"
+
+[node name="ZoomPod" type="PanelContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 2
@@ -271,12 +324,12 @@ offset_bottom = -14.0
 grow_horizontal = 1
 grow_vertical = 0
 
-[node name="ZoomRow" type="HBoxContainer" parent="WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod"]
+[node name="ZoomRow" type="HBoxContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage/ZoomPod"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="ZoomOutBtn" type="Button" parent="WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
+[node name="ZoomOutBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 26)
 layout_mode = 2
@@ -284,7 +337,7 @@ tooltip_text = "缩小画布"
 focus_mode = 0
 text = "-"
 
-[node name="ZoomResetBtn" type="Button" parent="WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
+[node name="ZoomResetBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(54, 26)
 layout_mode = 2
@@ -292,7 +345,7 @@ tooltip_text = "重置为 100% 缩放"
 focus_mode = 0
 text = "100%"
 
-[node name="ZoomInBtn" type="Button" parent="WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
+[node name="ZoomInBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 26)
 layout_mode = 2
@@ -300,14 +353,14 @@ tooltip_text = "放大画布"
 focus_mode = 0
 text = "+"
 
-[node name="ZoomSep" type="ColorRect" parent="WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
+[node name="ZoomSep" type="ColorRect" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(1, 14)
 layout_mode = 2
 size_flags_vertical = 4
 color = Color(0.24, 0.28, 0.34, 0.85)
 
-[node name="FitViewBtn" type="Button" parent="WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
+[node name="FitViewBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/CanvasStage/ZoomPod/ZoomRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 26)
 layout_mode = 2
@@ -317,27 +370,27 @@ icon = ExtResource("12_ico_fit")
 icon_alignment = 1
 expand_icon = true
 
-[node name="RightSidebar" type="PanelContainer" parent="WorkspaceBackdrop/MainSplit"]
+[node name="RightSidebar" type="PanelContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(368, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="SidebarVBox" type="VBoxContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar"]
+[node name="SidebarVBox" type="VBoxContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar"]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="DockHeader" type="PanelContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox"]
+[node name="DockHeader" type="PanelContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HeaderRow" type="HBoxContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader"]
+[node name="HeaderRow" type="HBoxContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/DockHeader"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="TabTelemetryBtn" type="Button" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
+[node name="TabTelemetryBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
@@ -348,7 +401,7 @@ theme_override_constants/h_separation = 6
 text = "检视"
 icon = ExtResource("13_ico_telem")
 
-[node name="TabResourcesBtn" type="Button" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
+[node name="TabResourcesBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
@@ -359,7 +412,7 @@ theme_override_constants/h_separation = 6
 text = "资源"
 icon = ExtResource("16_ico_res_list")
 
-[node name="TabSourceBtn" type="Button" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
+[node name="TabSourceBtn" type="Button" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
@@ -371,65 +424,65 @@ theme_override_constants/h_separation = 6
 text = "源码"
 icon = ExtResource("14_ico_code")
 
-[node name="HeaderSpacer" type="Control" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
+[node name="HeaderSpacer" type="Control" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ModeChip" type="PanelContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
+[node name="ModeChip" type="PanelContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 
-[node name="ModeBadgeLabel" type="Label" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow/ModeChip"]
+[node name="ModeBadgeLabel" type="Label" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow/ModeChip"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "源码草稿"
 
-[node name="TelemetryPage" type="VBoxContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox"]
+[node name="TelemetryPage" type="VBoxContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="InspectorPanel" type="ScrollContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/TelemetryPage"]
+[node name="InspectorPanel" type="ScrollContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/TelemetryPage"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("15_insp_panel")
 
-[node name="ResourcesPage" type="VBoxContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox"]
+[node name="ResourcesPage" type="VBoxContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="ResourceBrowser" type="VBoxContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/ResourcesPage"]
+[node name="ResourceBrowser" type="VBoxContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/ResourcesPage"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("17_res_browser")
 
-[node name="SourcePage" type="VBoxContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox"]
+[node name="SourcePage" type="VBoxContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="ParseHintBar" type="PanelContainer" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/SourcePage"]
+[node name="ParseHintBar" type="PanelContainer" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/SourcePage"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="ParseHintLabel" type="Label" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/SourcePage/ParseHintBar"]
+[node name="ParseHintLabel" type="Label" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/SourcePage/ParseHintBar"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 
-[node name="CodeEditor" type="CodeEdit" parent="WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/SourcePage"]
+[node name="CodeEditor" type="CodeEdit" parent="WorkspaceBackdrop/WorkspaceRow/MainSplit/RightSidebar/SidebarVBox/SourcePage"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3

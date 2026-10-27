@@ -16,6 +16,7 @@ var _action_registry: Dictionary = {}    ## {StringName: Callable}
 var _condition_registry: Dictionary = {} ## {StringName: Callable}
 var _action_sources: Dictionary = {}     ## {StringName: Dictionary}
 var _condition_sources: Dictionary = {}  ## {StringName: Dictionary}
+var _bypass_sub_cache: bool = false
 #endregion
 
 
@@ -60,7 +61,7 @@ func has_condition(condition_key: StringName) -> bool:
 
 #region AST Compilation
 ## 将 [BTGraphDef] 抽象语法树校验并编译为享元 [BTTree]，返回 `FlowGraphResult.ok(BTTree)`。
-func compile(graph_def: BTGraphDef) -> FlowGraphResult:
+func compile(graph_def: BTGraphDef, bypass_sub_cache: bool = false) -> FlowGraphResult:
 	if graph_def == null:
 		return FlowGraphResult.err_code("BT.NullGraphDef", "Cannot compile null BTGraphDef.")
 	var val_res: FlowGraphResult = graph_def.validate()
@@ -72,7 +73,10 @@ func compile(graph_def: BTGraphDef) -> FlowGraphResult:
 	if not graph_def.resource_path.is_empty():
 		init_visited[graph_def.resource_path] = true
 
+	var prev_bypass: bool = _bypass_sub_cache
+	_bypass_sub_cache = bypass_sub_cache
 	var root_res: FlowGraphResult = _compile_node_recursive(graph_def.root, 0, init_visited)
+	_bypass_sub_cache = prev_bypass
 	if root_res.is_err():
 		return root_res
 
@@ -90,6 +94,8 @@ func _compile_node_recursive(def: BTNodeDef, depth: int = 0, visited_paths: Dict
 
 	var runtime_node: BTNode = null
 	match ntype:
+		&"Root":
+			runtime_node = BTRoot.new(nid, ntitle)
 		&"Selector":
 			var mem: bool = bool(p.get("memory", false))
 			runtime_node = BTSelector.new(nid, ntitle, mem)
@@ -245,7 +251,8 @@ func compile_sub_tree_node(
 			return FlowGraphResult.err_code("BT.SubTreeCycle", "Cyclic SubTree reference detected at '%s'." % sub_path)
 		if not ResourceLoader.exists(sub_path):
 			return FlowGraphResult.err_code("BT.MissingSubTree", "SubTree resource not found: '%s'." % sub_path)
-		sub_graph = load(sub_path) as BTGraphDef
+		var cache_mode: ResourceLoader.CacheMode = ResourceLoader.CACHE_MODE_REPLACE if _bypass_sub_cache else ResourceLoader.CACHE_MODE_REUSE
+		sub_graph = ResourceLoader.load(sub_path, "", cache_mode) as BTGraphDef
 
 	if sub_graph == null:
 		return FlowGraphResult.err_code("BT.InvalidSubTreeResource", "Resource '%s' is not a valid BTGraphDef." % sub_path)

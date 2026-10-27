@@ -16,6 +16,9 @@ static var _initialized: bool = false
 static var _locale: StringName = LOCALE_ZH
 ## `Array[Dictionary]`: `{"ref": WeakRef, "cb": Callable}`
 static var _listeners: Array[Dictionary] = []
+static var _zh_hot_table: Dictionary = {}
+static var _en_hot_table: Dictionary = {}
+static var _checked_missing_keys: Dictionary = {}
 
 
 #region 语言初始化、切换与弱引用订阅
@@ -27,6 +30,10 @@ static func get_locale() -> StringName:
 
 static func is_zh() -> bool:
 	return get_locale() == LOCALE_ZH
+
+
+static func is_english() -> bool:
+	return get_locale() == LOCALE_EN
 
 
 static func set_locale(next_locale: StringName, persist: bool = true) -> void:
@@ -68,8 +75,13 @@ static func unsubscribe(owner: Object) -> void:
 
 static func t(key: StringName, args: Array = []) -> String:
 	_ensure_init()
-	var dict: Dictionary = EnTable.TABLE if _locale == LOCALE_EN else ZhTable.TABLE
-	var tmpl: String = str(dict.get(key, ZhTable.TABLE.get(key, String(key))))
+	var dict: Dictionary = _resolve_table(_locale)
+	if not dict.has(key) and Engine.is_editor_hint() and not _checked_missing_keys.has(key):
+		_checked_missing_keys[key] = true
+		_reload_tables_from_disk()
+		dict = _resolve_table(_locale)
+	var zh_fb: Dictionary = _resolve_table(LOCALE_ZH)
+	var tmpl: String = str(dict.get(key, zh_fb.get(key, String(key))))
 	if args.is_empty():
 		return tmpl
 	return tmpl % args
@@ -78,7 +90,11 @@ static func t(key: StringName, args: Array = []) -> String:
 static func kind_label(kind: String) -> String:
 	var k_name: StringName = StringName("kind.%s" % kind)
 	_ensure_init()
-	var dict: Dictionary = EnTable.TABLE if _locale == LOCALE_EN else ZhTable.TABLE
+	var dict: Dictionary = _resolve_table(_locale)
+	if not dict.has(k_name) and Engine.is_editor_hint() and not _checked_missing_keys.has(k_name):
+		_checked_missing_keys[k_name] = true
+		_reload_tables_from_disk()
+		dict = _resolve_table(_locale)
 	if dict.has(k_name):
 		return str(dict[k_name])
 	return kind
@@ -87,10 +103,25 @@ static func kind_label(kind: String) -> String:
 static func state_label(state_code: String) -> String:
 	var s_name: StringName = StringName("state.%s" % state_code)
 	_ensure_init()
-	var dict: Dictionary = EnTable.TABLE if _locale == LOCALE_EN else ZhTable.TABLE
+	var dict: Dictionary = _resolve_table(_locale)
 	if dict.has(s_name):
 		return str(dict[s_name])
 	return state_code
+
+
+static func _resolve_table(loc: StringName) -> Dictionary:
+	if loc == LOCALE_EN:
+		return _en_hot_table if not _en_hot_table.is_empty() else EnTable.TABLE
+	return _zh_hot_table if not _zh_hot_table.is_empty() else ZhTable.TABLE
+
+
+static func _reload_tables_from_disk() -> void:
+	var zh_scr: Script = ResourceLoader.load(FlowGraphContracts.SCRIPT_I18N_ZH, "", ResourceLoader.CACHE_MODE_REPLACE) as Script
+	if zh_scr != null and ("TABLE" in zh_scr.get_script_constant_map()):
+		_zh_hot_table = zh_scr.get_script_constant_map()["TABLE"] as Dictionary
+	var en_scr: Script = ResourceLoader.load(FlowGraphContracts.SCRIPT_I18N_EN, "", ResourceLoader.CACHE_MODE_REPLACE) as Script
+	if en_scr != null and ("TABLE" in en_scr.get_script_constant_map()):
+		_en_hot_table = en_scr.get_script_constant_map()["TABLE"] as Dictionary
 
 #endregion
 

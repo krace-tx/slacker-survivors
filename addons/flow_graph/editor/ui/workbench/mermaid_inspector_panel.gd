@@ -48,7 +48,10 @@ var _bb_card: InspectorBlackboardCard = InspectorBlackboardCard.new()
 var _root_margin: MarginContainer = null
 var _cards_vbox: VBoxContainer = null
 var _catalog_paths: PackedStringArray = PackedStringArray()
+var _last_store_ref: MermaidSessionStore = null
 var _last_session_sig: String = ""
+var _last_inspected_node_id: String = ""
+var _last_selected_edge_key: String = ""
 var _cards_wired: bool = false
 
 #endregion
@@ -99,11 +102,18 @@ func _wire_card_signals() -> void:
 	_node_card.breakpoint_toggle_requested.connect(func(nid: String) -> void: breakpoint_toggle_requested.emit(nid))
 	_node_card.live_fire_event_requested.connect(func(ev: String) -> void: live_fire_event_requested.emit(ev))
 	_node_card.sub_graph_open_requested.connect(func(sp: String) -> void: sub_graph_open_requested.emit(sp))
+	_node_card.ui_rebuild_requested.connect(_on_local_ui_rebuild_requested)
 
 	_outline_card.node_selected_from_inspector.connect(func(nid: String, c: bool) -> void: node_selected_from_inspector.emit(nid, c))
 	_outline_card.schema_edited.connect(func(sc: Array[Dictionary]) -> void: schema_edited.emit(sc))
+	_outline_card.ui_rebuild_requested.connect(_on_local_ui_rebuild_requested)
 
 	_bb_card.live_var_edit_requested.connect(func(k: String, v: Variant, th: String) -> void: live_var_edit_requested.emit(k, v, th))
+
+
+func _on_local_ui_rebuild_requested() -> void:
+	if _last_store_ref != null:
+		rebuild_inspector(_last_store_ref, _last_inspected_node_id, _last_selected_edge_key)
 
 #endregion
 
@@ -130,15 +140,27 @@ func setup_metrics(ui_scale: float, base_font_size: int) -> void:
 	_cards_vbox.add_theme_constant_override("separation", pad)
 
 
-func rebuild_inspector(store: MermaidSessionStore, selected_node_id: String = "") -> void:
+func rebuild_inspector(store: MermaidSessionStore, selected_node_id: String = "", selected_edge_key: String = "") -> void:
 	_ensure_containers()
 	if _kit.sb_card == null:
 		setup_metrics(1.0, 14)
 
+	_last_store_ref = store
 	var next_sig: String = "%s::%s" % [String(store.active_mode), store.active_key] if store != null else ""
 	var same_session: bool = (next_sig == _last_session_sig)
+	if not same_session:
+		_node_card.reset_session_state()
+	var same_node: bool = same_session and (selected_node_id == _last_inspected_node_id)
 	var saved_scroll: int = scroll_vertical if same_session else 0
+	var restore_edit_idx: int = -1
+	if same_node and get_viewport() != null:
+		var f_owner: Control = get_viewport().gui_get_focus_owner()
+		if f_owner is LineEdit and _cards_vbox.is_ancestor_of(f_owner):
+			var old_edits: Array[Node] = _cards_vbox.find_children("*", "LineEdit", true, false)
+			restore_edit_idx = old_edits.find(f_owner)
 	_last_session_sig = next_sig
+	_last_inspected_node_id = selected_node_id
+	_last_selected_edge_key = selected_edge_key
 
 	_kpi_card.clear_refs()
 	_node_card.clear_refs()
@@ -159,7 +181,7 @@ func rebuild_inspector(store: MermaidSessionStore, selected_node_id: String = ""
 	var frame: Dictionary = store.get_active_display_frame()
 
 	_cards_vbox.add_child(_kpi_card.build(_kit, store, g, frame))
-	_cards_vbox.add_child(_node_card.build(_kit, store, g, interrupt_set, selected_node_id, frame, _catalog_paths))
+	_cards_vbox.add_child(_node_card.build(_kit, store, g, interrupt_set, selected_node_id, selected_edge_key, frame, _catalog_paths))
 
 	if g != null and not g.nodes.is_empty():
 		_cards_vbox.add_child(_outline_card.build_outline_card(_kit, store, g, interrupt_set, selected_node_id, frame))
@@ -174,6 +196,13 @@ func rebuild_inspector(store: MermaidSessionStore, selected_node_id: String = ""
 		set_deferred("scroll_vertical", saved_scroll)
 	else:
 		scroll_vertical = 0
+
+	if restore_edit_idx >= 0:
+		var next_edits: Array[Node] = _cards_vbox.find_children("*", "LineEdit", true, false)
+		if restore_edit_idx < next_edits.size():
+			var next_le: LineEdit = next_edits[restore_edit_idx] as LineEdit
+			next_le.grab_focus()
+			next_le.select_all()
 
 
 func refresh_live_telemetry(store: MermaidSessionStore, frame: Dictionary) -> void:

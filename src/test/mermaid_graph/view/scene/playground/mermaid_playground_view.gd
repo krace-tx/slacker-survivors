@@ -66,20 +66,20 @@ func render_state(state: MermaidTestState) -> void:
 	_status_pill_label.text = state.get_status_pill_text()
 
 	_toggle_enemy_btn.text = (
-		"👁 视野：已发现敌人 (点击脱离)"
+		"视野：已发现敌人 (点击脱离)"
 		if state.guard_enemy_visible
-		else "👁 视野：安全无敌情 (点击索敌)"
+		else "视野：安全无敌情 (点击索敌)"
 	)
 	_revert_state_btn.disabled = state.guard_prev_id.is_empty()
 	_alpha_dist_btn.text = (
-		"📏 史莱姆A：近距 %.0fm (点击拉远)" % state.alpha_enemy_dist
+		"史莱姆A：近距 %.0fm (点击拉远)" % state.alpha_enemy_dist
 		if state.alpha_enemy_dist <= 160.0
-		else "📏 史莱姆A：远距 %.0fm (点击贴近)" % state.alpha_enemy_dist
+		else "史莱姆A：远距 %.0fm (点击贴近)" % state.alpha_enemy_dist
 	)
 	_bravo_mode_btn.text = (
-		"🔁 史莱姆B：残血逃生态 (点击切近战)"
+		"史莱姆B：残血逃生态 (点击切近战)"
 		if state.bravo_hp_ratio <= 0.30
-		else "🔁 史莱姆B：满血近战态 (点击切残血)"
+		else "史莱姆B：满血近战态 (点击切残血)"
 	)
 
 	var prev_str: String = String(state.guard_prev_id) if not state.guard_prev_id.is_empty() else "无"

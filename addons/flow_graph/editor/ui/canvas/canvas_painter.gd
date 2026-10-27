@@ -3,7 +3,7 @@ extends RefCounted
 
 ## 双坐标空间 2D 矢量绘制引擎门面（Dual-Space 2D Vector Painter）。[br]
 ##
-## 负责背景网格、世界空间几何渲染（总线、脉冲彗星、胶囊卡片、断点红点 `●`、子图嵌套角标 `⧉`）；1:1 屏幕像素文字、BT `#1/#2` 优先级角标、防碰撞胶囊与小地图委派至 [`CanvasOverlayPainter`](canvas_overlay_painter.gd)。
+## 负责背景网格、世界空间几何渲染（总线、脉冲彗星、胶囊卡片、断点红点、子图嵌套角标）；1:1 屏幕像素文字、BT `#1/#2` 优先级角标、防碰撞胶囊与小地图委派至 [`CanvasOverlayPainter`](canvas_overlay_painter.gd)。
 
 const CanvasGeometry = preload(FlowGraphContracts.SCRIPT_CANVAS_GEOMETRY)
 const CanvasThemePalette = preload(FlowGraphContracts.SCRIPT_CANVAS_PALETTE)
@@ -91,6 +91,7 @@ static func draw_world_geometry(
 	var is_vertical: bool = bool(ctx.get("is_vertical", false))
 	var is_bt: bool = bool(ctx.get("is_bt", false))
 	var selected_node_id: String = str(ctx["selected_node_id"])
+	var selected_node_set: Dictionary = ctx.get("selected_node_set", {}) as Dictionary
 	var selected_edge_key: String = str(ctx.get("selected_edge_key", ""))
 	var hovered_node_id: String = str(ctx["hovered_node_id"])
 	var hovered_port_node_id: String = str(ctx.get("hovered_port_node_id", ""))
@@ -166,7 +167,7 @@ static func draw_world_geometry(
 	for nid: String in node_order:
 		_draw_node_capsule(
 			canvas, palette, nodes[nid] as Dictionary, active_node_states,
-			selected_node_id, hovered_node_id, hovered_port_node_id,
+			selected_node_id, selected_node_set, hovered_node_id, hovered_port_node_id,
 			conn_from, snap_target_id, snap_target_valid,
 			live_mode, is_vertical, is_bt, pulse_wave, breakpoint_set.has(nid)
 		)
@@ -329,6 +330,7 @@ static func _draw_node_capsule(
 	nd: Dictionary,
 	active_node_states: Dictionary,
 	selected_node_id: String,
+	selected_node_set: Dictionary,
 	hovered_node_id: String,
 	hovered_port_node_id: String,
 	conn_from_id: String,
@@ -347,6 +349,7 @@ static func _draw_node_capsule(
 	var is_interrupt: bool = bool(nd.get("is_interrupt", false))
 	var is_terminal: bool = bool(nd.get("is_terminal", false))
 	var is_selected: bool = (selected_node_id == nid)
+	var is_multi_selected: bool = selected_node_set.has(nid)
 	var is_port_hovered: bool = (hovered_port_node_id == nid)
 	var is_hovered: bool = (hovered_node_id == nid) or is_port_hovered
 	var is_conn_src: bool = (conn_from_id == nid)
@@ -385,6 +388,8 @@ static func _draw_node_capsule(
 		canvas.draw_style_box(snap_sb, rect.grow(2.5))
 	elif is_selected:
 		canvas.draw_style_box(palette.sb_select_ring, rect.grow(2.0))
+	elif is_multi_selected:
+		canvas.draw_style_box(palette.sb_multi_select_ring, rect.grow(2.0))
 
 	var accent_col: Color = palette.resolve_category_color(kind, is_initial, is_interrupt, is_terminal)
 	var icon_tex: Texture2D = CanvasThemePalette.resolve_kind_icon(kind, is_initial, is_interrupt, is_terminal)
@@ -401,7 +406,7 @@ static func _draw_node_capsule(
 
 	var n_params: Dictionary = nd.get("params", {}) as Dictionary
 	var sub_path: String = str(nd.get("sub_graph_path", n_params.get("sub_graph_path", ""))).strip_edges()
-	var has_subgraph: bool = (kind == "SubTree") or (not sub_path.is_empty())
+	var has_subgraph: bool = (kind == "SubTree") or (not sub_path.is_empty()) or bool(n_params.get("submachine", false))
 	if has_subgraph:
 		var sub_x: float = rect.end.x - (29.0 if (live_mode and is_hovered) else 15.0)
 		var sub_y: float = rect.position.y + 4.5
@@ -410,8 +415,8 @@ static func _draw_node_capsule(
 		canvas.draw_rect(Rect2(Vector2(sub_x, sub_y + 2.8), Vector2(6.5, 6.5)), palette.accent, false, 1.3)
 
 	if not live_mode:
-		# 连线拖拽期间，所有候选目标节点显示清晰的入口磁吸插座
-		if not conn_from_id.is_empty() and nid != conn_from_id:
+		# 连线拖拽期间，所有可接收连线的候选目标节点显示清晰的入口磁吸插座
+		if not conn_from_id.is_empty() and nid != conn_from_id and CanvasGeometry.can_node_accept_edge(kind, is_bt):
 			var in_pt: Vector2 = CanvasGeometry.get_input_port_world(rect, is_vertical)
 			if is_snap_dst:
 				var s_col: Color = palette.success.lerp(palette.accent, 0.35) if snap_target_valid else palette.error
@@ -422,8 +427,9 @@ static func _draw_node_capsule(
 				canvas.draw_circle(in_pt, 4.2, palette.handle_bg)
 				canvas.draw_circle(in_pt, 2.4, Color(palette.text_dim, 0.65))
 
-		# 输出连接手柄：选中、悬停或端口悬停时持续显示，移至外半圆绝不消失
-		if CanvasGeometry.can_node_emit_edge(kind, is_bt) and (is_selected or is_hovered or is_conn_src):
+		# 输出连接手柄：单选、悬停或端口悬停时持续显示，移至外半圆绝不消失
+		var show_idle_port: bool = is_selected and selected_node_set.size() <= 1
+		if CanvasGeometry.can_node_emit_edge(kind, is_bt) and (show_idle_port or is_hovered or is_conn_src):
 			var out_pt: Vector2 = CanvasGeometry.get_output_port_world(rect, is_vertical)
 			if is_port_hovered or is_conn_src:
 				canvas.draw_circle(out_pt, 8.2, Color(palette.accent, 0.26))
@@ -441,7 +447,7 @@ static func _draw_node_capsule(
 #endregion
 
 
-#region 1:1 屏幕像素文字层与缩略小地图委派接口
+#region 1:1 屏幕像素文字层、选框与缩略小地图委派接口
 
 static func draw_screen_labels(
 	canvas: Control,
@@ -459,5 +465,13 @@ static func draw_minimap(
 	ctx: Dictionary
 ) -> void:
 	CanvasOverlayPainter.draw_minimap(canvas, palette, world_bounds, ctx)
+
+
+static func draw_marquee_box(
+	canvas: Control,
+	palette: CanvasThemePalette,
+	marquee_screen_rect: Rect2
+) -> void:
+	CanvasOverlayPainter.draw_marquee_box(canvas, palette, marquee_screen_rect)
 
 #endregion

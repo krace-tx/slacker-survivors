@@ -29,6 +29,7 @@ static func stamp_record(rec: Dictionary, path: String) -> void:
 static func build_session_record(rkey: String, res: Resource, rpath: String) -> Dictionary:
 	var g := MermaidGraphModel.new()
 	g.load_from_topology_dict(MermaidResourceBridge.read_ir(res))
+	g.schema_locked = true
 	var rec: Dictionary = {
 		"key": rkey, "resource": res, "path": rpath, "graph": g,
 		"plan": MermaidLayout.apply_layout(g, false), "dirty": false, "external_conflict": false,

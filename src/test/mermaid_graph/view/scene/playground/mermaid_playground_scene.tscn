@@ -118,7 +118,7 @@ text = "FlowGraph 图蓝图 × FSM / BT 标准架构演练场"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.79, 0.45, 1)
 theme_override_font_sizes/font_size = 12
-text = "💡 联调提示：切回编辑器顶部 [FlowGraph] 视图 -> 切换运行实例 / 双击节点强制跳转 / 点「跳转代码」直达 GuardFsmAgent 或 SlimeBtSquad / 按 F8 观察「离线快照」"
+text = "联调提示：切回编辑器顶部 [FlowGraph] 视图 -> 切换运行实例 / 双击节点强制跳转 / 点「跳转代码」直达 GuardFsmAgent 或 SlimeBtSquad / 按 F8 观察「离线快照」"
 autowrap_mode = 3
 
 [node name="RerunVerifyBtn" type="Button" parent="UI/SafeMargin/MainLayout/TopBar"]
@@ -178,19 +178,19 @@ theme_override_constants/v_separation = 8
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
-text = "👁 视野：安全无敌情 (点击索敌)"
+text = "视野：安全无敌情 (点击索敌)"
 
 [node name="TriggerStunBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox/GuardActions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
-text = "⚡ 触发全局重击 (* -> stun)"
+text = "触发全局重击 (* -> stun)"
 
 [node name="RevertStateBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/GuardFsmCard/CardVBox/GuardActions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
-text = "↩ 回退前驱状态"
+text = "回退前驱状态"
 
 [node name="SlimeBtCard" type="PanelContainer" parent="UI/SafeMargin/MainLayout/CardsRow"]
 layout_mode = 2
@@ -226,25 +226,25 @@ theme_override_constants/v_separation = 8
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
-text = "🗡 史莱姆A 扣血 -35%"
+text = "史莱姆A 扣血 -35%"
 
 [node name="AlphaHealBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox/SlimeActions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
-text = "💚 史莱姆A 满血恢复"
+text = "史莱姆A 满血恢复"
 
 [node name="AlphaDistBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox/SlimeActions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
-text = "📏 史莱姆A 切换远/近距离"
+text = "史莱姆A 切换远/近距离"
 
 [node name="BravoModeBtn" type="Button" parent="UI/SafeMargin/MainLayout/CardsRow/SlimeBtCard/CardVBox/SlimeActions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
-text = "🔁 史莱姆B 切换残血/近战"
+text = "史莱姆B 切换残血/近战"
 
 [node name="LogCard" type="PanelContainer" parent="UI/SafeMargin/MainLayout"]
 custom_minimum_size = Vector2(0, 152)

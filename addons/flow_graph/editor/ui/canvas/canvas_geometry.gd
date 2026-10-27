@@ -25,6 +25,12 @@ static func can_node_emit_edge(kind: String, is_bt: bool) -> bool:
 	return true
 
 
+static func can_node_accept_edge(kind: String, is_bt: bool) -> bool:
+	if is_bt and kind == "Root":
+		return false
+	return true
+
+
 static func get_output_port_world(rect: Rect2, is_vertical: bool) -> Vector2:
 	return Vector2(rect.get_center().x, rect.end.y) if is_vertical else Vector2(rect.end.x, rect.get_center().y)
 

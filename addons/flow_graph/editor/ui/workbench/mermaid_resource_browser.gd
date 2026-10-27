@@ -26,6 +26,10 @@ var _marks_sig: String = ""
 var _filter: StringName = FILTER_ALL
 var _query: String = ""
 var _suppress_select: bool = false
+var _in_tree_select_callback: bool = false
+var _rebuild_queued: bool = false
+var _item_by_path: Dictionary = {}  ## {String (path): TreeItem}
+var _shown_entry_by_path: Dictionary = {}  ## {String (path): Dictionary}
 
 var _toolbar_box: HBoxContainer = null
 var _search: LineEdit = null
@@ -47,10 +51,10 @@ func _ready() -> void:
 func set_entries(entries: Array[Dictionary]) -> void:
 	_entries = entries.duplicate()
 	if is_node_ready():
-		_rebuild_tree()
+		_request_rebuild_tree()
 
 
-## 更新会话标记；内容未变化时不重建列表。
+## 更新会话标记；优先原位刷新已有 `TreeItem` 状态列与高亮，避免在 `Tree` 鼠标选中事件栈内触发 `clear()`，同时保留目录折叠与滚动位置。
 func set_session_marks(open_paths: Dictionary, live_paths: Dictionary, active_path: String) -> void:
 	var sig: String = "%s#%s#%s" % [str(open_paths), str(live_paths.keys()), active_path]
 	if sig == _marks_sig:
@@ -60,7 +64,7 @@ func set_session_marks(open_paths: Dictionary, live_paths: Dictionary, active_pa
 	_live_paths = live_paths.duplicate()
 	_active_path = active_path
 	if is_node_ready():
-		_rebuild_tree()
+		_refresh_marks_in_place()
 
 
 func get_visible_paths() -> PackedStringArray:
@@ -80,7 +84,7 @@ func set_filter(filter_id: StringName) -> void:
 	_filter = filter_id
 	for k: Variant in _filter_btns.keys():
 		(_filter_btns[k] as Button).set_pressed_no_signal(StringName(str(k)) == filter_id)
-	_rebuild_tree()
+	_request_rebuild_tree()
 
 
 func apply_metrics(ui_scale: float, base_font_size: int) -> void:
@@ -143,7 +147,7 @@ func apply_theme(t: MermaidThemeTokens) -> void:
 	if _empty_lbl != null:
 		_empty_lbl.add_theme_color_override(&"font_color", t.font_dim)
 	if is_node_ready():
-		_rebuild_tree()
+		_request_rebuild_tree()
 
 #endregion
 
@@ -237,7 +241,7 @@ func apply_locale() -> void:
 		_empty_lbl.text = FlowEditorI18n.t(&"browser.empty")
 	_marks_sig = ""
 	if is_node_ready():
-		_rebuild_tree()
+		_request_rebuild_tree()
 
 
 func _filtered_entries() -> Array[Dictionary]:
@@ -257,8 +261,33 @@ func _filtered_entries() -> Array[Dictionary]:
 	return out
 
 
+func _request_rebuild_tree() -> void:
+	if _tree == null:
+		return
+	if _in_tree_select_callback:
+		_queue_deferred_rebuild()
+		return
+	_rebuild_tree()
+
+
+func _queue_deferred_rebuild() -> void:
+	if _rebuild_queued:
+		return
+	_rebuild_queued = true
+	_flush_deferred_rebuild.call_deferred()
+
+
+func _flush_deferred_rebuild() -> void:
+	_rebuild_queued = false
+	if is_inside_tree():
+		_rebuild_tree()
+
+
 func _rebuild_tree() -> void:
 	if _tree == null:
+		return
+	if _in_tree_select_callback:
+		_queue_deferred_rebuild()
 		return
 	var t: MermaidThemeTokens = MermaidThemeService.tokens()
 	var shown: Array[Dictionary] = _filtered_entries()
@@ -267,8 +296,15 @@ func _rebuild_tree() -> void:
 	_tree.visible = not _entries.is_empty()
 
 	_suppress_select = true
+	_item_by_path.clear()
+	_shown_entry_by_path.clear()
 	_tree.clear()
 	var root: TreeItem = _tree.create_item()
+	if root == null:
+		# Godot C++ Tree 在鼠标事件栈内 (blocked > 0) 禁止 clear/create_item：自动延后至本帧末尾安全重建
+		_suppress_select = false
+		_queue_deferred_rebuild()
+		return
 	var dir_items: Dictionary = {}
 	var to_select: TreeItem = null
 	for e: Dictionary in shown:
@@ -276,12 +312,20 @@ func _rebuild_tree() -> void:
 		var dir_s: String = str(e["dir"])
 		if not dir_items.has(dir_s):
 			var d_item: TreeItem = _tree.create_item(root)
+			if d_item == null:
+				_suppress_select = false
+				_queue_deferred_rebuild()
+				return
 			d_item.set_text(0, dir_s.trim_prefix("res://") if dir_s != "res://" else "res://")
 			d_item.set_custom_color(0, t.font_dim)
 			d_item.set_selectable(0, false)
 			d_item.set_selectable(1, false)
 			dir_items[dir_s] = d_item
 		var item: TreeItem = _tree.create_item(dir_items[dir_s] as TreeItem)
+		if item == null:
+			_suppress_select = false
+			_queue_deferred_rebuild()
+			return
 		item.set_text(0, str(e["file"]))
 		item.set_metadata(0, path)
 		item.set_tooltip_text(0, FlowEditorI18n.t(&"browser.item_tip", [path, str(e["class"])]))
@@ -289,6 +333,8 @@ func _rebuild_tree() -> void:
 		item.set_text_alignment(1, HORIZONTAL_ALIGNMENT_RIGHT)
 		item.set_custom_color(1, _status_color(e, t))
 		item.set_selectable(1, false)
+		_item_by_path[path] = item
+		_shown_entry_by_path[path] = e
 		if path == _active_path:
 			item.set_custom_color(0, t.accent)
 			to_select = item
@@ -296,6 +342,40 @@ func _rebuild_tree() -> void:
 		to_select.select(0)
 		_tree.scroll_to_item(to_select)
 	_suppress_select = false
+
+
+func _refresh_marks_in_place() -> void:
+	if _tree == null or _rebuild_queued:
+		return
+	var shown: Array[Dictionary] = _filtered_entries()
+	if _item_by_path.size() != shown.size():
+		_request_rebuild_tree()
+		return
+	var t: MermaidThemeTokens = MermaidThemeService.tokens()
+	var to_select: TreeItem = null
+	for path_v: Variant in _item_by_path.keys():
+		var path: String = str(path_v)
+		var item: TreeItem = _item_by_path[path] as TreeItem
+		if item == null or not is_instance_valid(item):
+			_request_rebuild_tree()
+			return
+		var e: Dictionary = _shown_entry_by_path.get(path, {}) as Dictionary
+		item.set_text(1, _status_text(e))
+		item.set_custom_color(1, _status_color(e, t))
+		if path == _active_path:
+			item.set_custom_color(0, t.accent)
+			to_select = item
+		else:
+			item.clear_custom_color(0)
+	if not _in_tree_select_callback:
+		_suppress_select = true
+		if to_select != null:
+			if _tree.get_selected() != to_select:
+				to_select.select(0)
+				_tree.scroll_to_item(to_select)
+		else:
+			_tree.deselect_all()
+		_suppress_select = false
 
 
 func _status_text(e: Dictionary) -> String:
@@ -338,17 +418,26 @@ func _status_color(e: Dictionary, t: MermaidThemeTokens) -> Color:
 
 func _on_query_changed(text: String) -> void:
 	_query = text
-	_rebuild_tree()
+	_request_rebuild_tree()
 
 
 func _on_tree_item_selected() -> void:
 	if _suppress_select:
 		return
+	_in_tree_select_callback = true
 	var item: TreeItem = _tree.get_selected()
-	if item == null:
-		return
-	var meta: Variant = item.get_metadata(0)
-	if meta is String and not str(meta).is_empty():
-		resource_open_requested.emit(str(meta))
+	var target_path: String = ""
+	if item != null:
+		var meta: Variant = item.get_metadata(0)
+		if meta is String:
+			target_path = str(meta)
+	_in_tree_select_callback = false
+	if not target_path.is_empty():
+		_emit_open_requested_deferred.call_deferred(target_path)
+
+
+func _emit_open_requested_deferred(path: String) -> void:
+	if not path.is_empty():
+		resource_open_requested.emit(path)
 
 #endregion

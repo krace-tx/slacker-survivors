@@ -133,8 +133,6 @@ func _on_focus_exited() -> void:
 
 
 func _on_edit_gui_input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		var ke: InputEventKey = event as InputEventKey
-		if ke.pressed and ke.keycode == KEY_ESCAPE:
-			_edit.accept_event()
-			cancel_and_close()
+	if FlowEditorInput.resolve_modal_action(event, false) == FlowEditorInput.MODAL_CANCEL:
+		_edit.accept_event()
+		cancel_and_close()

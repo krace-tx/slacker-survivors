@@ -61,6 +61,8 @@ func apply_locale() -> void:
 func _apply_workbench_controls_locale() -> void:
 	if _host_node == null:
 		return
+	_set_btn_copy("%ToggleDrawerBtn", &"toolbar.drawer_text", &"toolbar.drawer_tip")
+	_set_btn_copy("%ExpandDrawerBtn", &"drawer.expand_btn", &"drawer.expand_tip")
 	_set_btn_copy("%LangToggleBtn", &"lang.toggle_text", &"lang.toggle_tip")
 	_set_ctrl_tip("%InstanceSelect", &"toolbar.session_tip")
 	_set_btn_copy("%OpenResBtn", &"toolbar.open_res", &"toolbar.open_res_tip")

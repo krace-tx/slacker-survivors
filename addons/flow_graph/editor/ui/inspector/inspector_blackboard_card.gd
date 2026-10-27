@@ -4,7 +4,7 @@ extends RefCounted
 ## 检视器卡片 5：实时黑板原位热改与 60 帧历史回放只读快照表（Inspector Live & Scrubbable Blackboard Card）。[br]
 ##
 ## - `LIVE` 实时跟随态：`bool` 提供开关直切，`int / float / String` 提供带焦点保护（输入中跳过 60ms 覆盖）的紧凑输入框，回车/失焦发射 [signal live_var_edit_requested]；[br]
-## - 历史帧回放态（`_is_scrubbing == true`）或 `SNAPSHOT` 定格态：顶部醒目琥珀色徽章提示 `⏪ 历史帧 #X/Y 快照`，并以斑马纹只读展示。
+## - 历史帧回放态（`_is_scrubbing == true`）或 `SNAPSHOT` 定格态：顶部醒目琥珀色徽章提示 `历史帧 #X/Y 快照`，并以斑马纹只读展示。
 
 const MermaidSessionStore = preload(FlowGraphContracts.SCRIPT_SESSION_STORE)
 const MermaidThemeService = preload(FlowGraphContracts.SCRIPT_THEME_SERVICE)
@@ -45,10 +45,21 @@ func build(kit: InspectorStyleKit, store: MermaidSessionStore, frame: Dictionary
 	var vbox: VBoxContainer = kit.make_vbox(7.0)
 	card.add_child(vbox)
 
+	var hdr_panel := PanelContainer.new()
+	hdr_panel.add_theme_stylebox_override("panel", kit.sb_section_hdr)
 	var hdr_row: HBoxContainer = kit.make_hbox(6.0)
-	vbox.add_child(hdr_row)
-	var hdr_lbl: Label = kit.make_label("", kit.fs_body, t.success)
+	hdr_panel.add_child(hdr_row)
+	vbox.add_child(hdr_panel)
+
+	var bar := ColorRect.new()
+	bar.custom_minimum_size = Vector2(maxf(2.5, roundf(3.0 * kit.s)), roundf(13.0 * kit.s))
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.color = t.success
+	hdr_row.add_child(bar)
+
+	var hdr_lbl: Label = kit.make_label("", kit.fs_sub, t.success)
 	hdr_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hdr_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	hdr_row.add_child(hdr_lbl)
 	_hdr_lbl = hdr_lbl
 
@@ -156,7 +167,9 @@ func _sync_rows_in_place(vdict: Dictionary, editable_live: bool) -> void:
 		child.free()
 
 	if keys_arr.is_empty():
-		_vars_list_vbox.add_child(kit.make_label(FlowEditorI18n.t(&"insp.bb_empty"), kit.fs_sub, t.font_faint))
+		var empty_lbl: Label = kit.make_label(FlowEditorI18n.t(&"insp.bb_empty"), kit.fs_sub, t.font_faint)
+		empty_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_vars_list_vbox.add_child(empty_lbl)
 		return
 
 	for i: int in range(keys_arr.size()):

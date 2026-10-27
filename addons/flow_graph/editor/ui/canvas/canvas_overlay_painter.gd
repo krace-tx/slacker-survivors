@@ -330,3 +330,14 @@ static func draw_minimap(
 	vr = vr.intersection(map_rect.grow(-2.0 * ui_s))
 	if vr.size.x > 2.0 and vr.size.y > 2.0:
 		canvas.draw_rect(vr, Color(palette.accent, 0.6), false, maxf(1.0, roundf(1.2 * ui_s)))
+
+
+static func draw_marquee_box(
+	canvas: Control,
+	palette: CanvasThemePalette,
+	marquee_screen_rect: Rect2
+) -> void:
+	if marquee_screen_rect.size.x < 1.0 and marquee_screen_rect.size.y < 1.0:
+		return
+	var r := Rect2(marquee_screen_rect.position.round(), marquee_screen_rect.size.round().max(Vector2(2.0, 2.0)))
+	canvas.draw_style_box(palette.sb_marquee, r)

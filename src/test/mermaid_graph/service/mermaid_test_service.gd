@@ -81,7 +81,7 @@ func cleanup_on_exit() -> void:
 func toggle_guard_enemy_sight() -> void:
 	var now_visible: bool = _guard_agent.toggle_enemy_sight()
 	_state.append_log(
-		"👁 [守卫输入] 切换视野 -> [b][color=%s]enemy_in_sight = %s[/color][/b]" % [
+		"[守卫输入] 切换视野 -> [b][color=%s]enemy_in_sight = %s[/color][/b]" % [
 			"#fc8181" if now_visible else "#a0aec0",
 			str(now_visible),
 		]
@@ -91,37 +91,37 @@ func toggle_guard_enemy_sight() -> void:
 
 func trigger_guard_hit_stun() -> void:
 	_guard_agent.request_hit_stun()
-	_state.append_log("⚡ [守卫输入] 注入全局重击打断信号 [b]* -> stun[/b]")
+	_state.append_log("[守卫输入] 注入全局重击打断信号 [b]* -> stun[/b]")
 
 
 func revert_guard_previous_state() -> void:
 	if _guard_agent.revert_previous_state():
-		_state.append_log("↩ [守卫输入] 调用 [b]revert_to_previous()[/b] 回退至前驱状态")
+		_state.append_log("[守卫输入] 调用 [b]revert_to_previous()[/b] 回退至前驱状态")
 		sync_live_state()
 
 
 func damage_slime_alpha() -> void:
 	var hp: float = _slime_squad.damage_alpha(0.35)
-	_state.append_log("🗡 [史莱姆A] 受到伤害 -> [b]hp_ratio = %.2f[/b]" % hp)
+	_state.append_log("[史莱姆A] 受到伤害 -> [b]hp_ratio = %.2f[/b]" % hp)
 	sync_live_state()
 
 
 func heal_slime_alpha() -> void:
 	var hp: float = _slime_squad.heal_alpha_full()
-	_state.append_log("💚 [史莱姆A] 恢复生命 -> [b]hp_ratio = %.2f[/b]" % hp)
+	_state.append_log("[史莱姆A] 恢复生命 -> [b]hp_ratio = %.2f[/b]" % hp)
 	sync_live_state()
 
 
 func toggle_slime_alpha_distance() -> void:
 	var dist: float = _slime_squad.toggle_alpha_distance()
-	_state.append_log("📏 [史莱姆A] 调整敌距 -> [b]enemy_dist = %.0fm[/b]" % dist)
+	_state.append_log("[史莱姆A] 调整敌距 -> [b]enemy_dist = %.0fm[/b]" % dist)
 	sync_live_state()
 
 
 func toggle_slime_bravo_profile() -> void:
 	var is_melee_now: bool = _slime_squad.toggle_bravo_profile()
 	_state.append_log(
-		"🔁 [史莱姆B] 切换战术档案 -> [b]%s[/b]" % (
+		"[史莱姆B] 切换战术档案 -> [b]%s[/b]" % (
 			"满血近战态 (HP=95%, 敌距=120m)" if is_melee_now else "残血逃生态 (HP=22%, 敌距=240m)"
 		)
 	)
@@ -181,6 +181,9 @@ func run_verification_suite(reset_profiles: bool = false) -> bool:
 	)
 	_record_assertion(case_5_ok, "CASE 5: 黑板声明式条件分流准确 (残血 Bravo 自动命中『反向逃跑回血』分支)")
 
+	var case_6_ok: bool = _verify_case_6_debug_bridge_and_breakpoints()
+	_record_assertion(case_6_ok, "CASE 6: GraphDebugBridge 零分配断点快筛、单步清零与 dispose() 零信号残留")
+
 	var summary: String = "=== 自检完成：%d 项通过，%d 项失败 ===" % [_state.passed_cases, _state.failed_cases]
 	if _state.failed_cases == 0:
 		_state.append_log("[b][color=#68d391]%s[/color][/b]" % summary)
@@ -219,6 +222,73 @@ func sync_live_state() -> void:
 	_state.notify_changed()
 
 
+func _verify_case_6_debug_bridge_and_breakpoints() -> bool:
+	var need_local_sim: bool = not GraphDebugBridge.is_debugger_connected()
+	if need_local_sim:
+		GraphDebugBridge.set_headless_test_mode(true)
+
+	# 1. 创建独立临时 FSM 验证断点命中、单步清零与 unregister 彻底断开信号
+	var temp_fsm := StateMachine.new()
+	temp_fsm.add_callable(&"s_idle")
+	temp_fsm.add_callable(&"s_alert")
+	temp_fsm.add_callable(&"s_patrol")
+	temp_fsm.start(&"s_idle")
+	var base_conns: int = temp_fsm.state_changed.get_connections().size()
+
+	var fsm_dbg_id: int = GraphDebugBridge.register(temp_fsm, null, "TempFsmVerify")
+	var binding: GraphDebugBinding = GraphDebugBridge.get_binding(fsm_dbg_id)
+	var connected_ok: bool = (
+		binding != null
+		and temp_fsm.state_changed.get_connections().size() == base_conns + 1
+	)
+
+	var bp_cmd_ok: bool = (
+		binding != null
+		and binding.execute_command(GraphDebugCommandExecutor.CMD_SET_BREAKPOINT, {"node_id": "s_alert", "enabled": true})
+	)
+	temp_fsm.change_state(&"s_alert")
+	var hit_paused_ok: bool = (
+		binding != null
+		and binding.is_paused
+		and binding.last_hit_breakpoint == "s_alert"
+		and GraphDebugBridge.should_suspend_tick(fsm_dbg_id)
+	)
+
+	# 单步放行一次并切往无断点状态，验证 last_hit_breakpoint 自动清零不误报
+	var step_ok: bool = false
+	if binding != null:
+		binding.execute_command(GraphDebugCommandExecutor.CMD_STEP_ONCE, {})
+		var allowed_one_tick: bool = not GraphDebugBridge.should_suspend_tick(fsm_dbg_id)
+		temp_fsm.change_state(&"s_patrol")
+		var suspended_next_tick: bool = GraphDebugBridge.should_suspend_tick(fsm_dbg_id)
+		step_ok = allowed_one_tick and suspended_next_tick and binding.last_hit_breakpoint.is_empty()
+
+	GraphDebugBridge.unregister(fsm_dbg_id)
+	var disconnected_ok: bool = (
+		GraphDebugBridge.get_binding(fsm_dbg_id) == null
+		and temp_fsm.state_changed.get_connections().size() == base_conns
+	)
+
+	# 2. 创建独立临时 BT Context 验证 $O(B)$ probe_breakpoints_fast 快筛
+	var shared_tree: BTTree = _slime_squad.get_shared_tree()
+	var bt_probe_ok: bool = false
+	if shared_tree != null:
+		var temp_ctx := BTContext.new(null, {"hp_ratio": 0.90, "enemy_dist": 240.0})
+		var bt_dbg_id: int = GraphDebugBridge.register_bt(shared_tree, temp_ctx, null, "TempBtVerify")
+		var bt_binding: GraphDebugBinding = GraphDebugBridge.get_binding(bt_dbg_id)
+		if bt_binding != null:
+			# 第 1 帧正常推送写入节流时间戳；紧接着在 60ms 节流窗口内挂载 n1 断点并执行第 2 帧，验证快筛穿透节流命中挂起
+			shared_tree.tick(temp_ctx, 0.016)
+			bt_binding.set_breakpoint("n1", true)
+			shared_tree.tick(temp_ctx, 0.016)
+			bt_probe_ok = bt_binding.is_paused and bt_binding.last_hit_breakpoint == "n1"
+		GraphDebugBridge.unregister(bt_dbg_id)
+
+	if need_local_sim:
+		GraphDebugBridge.set_headless_test_mode(false)
+	return connected_ok and bp_cmd_ok and hit_paused_ok and step_ok and disconnected_ok and bt_probe_ok
+
+
 func _record_assertion(condition: bool, title: String) -> void:
 	if condition:
 		_state.passed_cases += 1
@@ -232,10 +302,10 @@ func _record_assertion(condition: bool, title: String) -> void:
 
 func _on_guard_transition_occurred(from_state: StringName, to_state: StringName) -> void:
 	var from_str: String = String(from_state) if not from_state.is_empty() else "[*]"
-	_state.append_log("🛡 [守卫FSM] 状态跃迁：[color=#90cdf4]%s[/color] -> [color=#fbd38d]%s[/color]" % [from_str, String(to_state)])
+	_state.append_log("[守卫FSM] 状态跃迁：[color=#90cdf4]%s[/color] -> [color=#fbd38d]%s[/color]" % [from_str, String(to_state)])
 
 
 func _on_slime_action_executed(unit_tag: String, summary: String) -> void:
-	_state.append_log("🟢 [史莱姆%s] 触发关键技能：[color=#6ee7b7]%s[/color]" % [unit_tag, summary])
+	_state.append_log("[史莱姆%s] 触发关键技能：[color=#6ee7b7]%s[/color]" % [unit_tag, summary])
 
 #endregion

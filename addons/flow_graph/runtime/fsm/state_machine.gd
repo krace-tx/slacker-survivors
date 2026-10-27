@@ -214,11 +214,13 @@ func update(delta: float) -> void:
 		return
 	_state_time += maxf(0.0, delta)
 
+	var transitioned: bool = false
 	for entry: Dictionary in _runtime_transitions:
 		if _evaluate_transition_entry(entry):
 			var tr_def: FsmTransitionDef = entry["def"] as FsmTransitionDef
 			var ev_msg: Dictionary = _pending_events[tr_def.trigger_event] as Dictionary if (not tr_def.trigger_event.is_empty() and _pending_events.has(tr_def.trigger_event)) else {}
 			if change_state(tr_def.to_state, ev_msg):
+				transitioned = true
 				break
 	_pending_events.clear()
 
@@ -227,7 +229,7 @@ func update(delta: float) -> void:
 		cur_state._on_update(delta)
 		if cur_state.sub_machine is StateMachine:
 			(cur_state.sub_machine as StateMachine).update(delta)
-	GraphDebugBridge.push_frame(self_id)
+	GraphDebugBridge.push_frame(self_id, transitioned)
 
 
 func physics_update(delta: float) -> void:
@@ -323,7 +325,21 @@ func has_state(state_id: StringName) -> bool: return _states.has(state_id)
 func get_current_state_id() -> StringName: return _current_id
 func get_previous_state_id() -> StringName: return _previous_id
 func get_state_time() -> float: return _state_time
+func get_total_transitions() -> int: return _total_transitions
 func get_ast() -> FsmGraphDef: return _ast
+
+
+## 递归获取嵌套子状态机的当前激活路径（如 `"combat/combo_2"`；无激活子状态机时返回空字符串）。
+func get_active_sub_state_path() -> String:
+	var cur_st: BaseFsmState = _states.get(_current_id, null) as BaseFsmState
+	if cur_st == null or not (cur_st.sub_machine is StateMachine):
+		return ""
+	var sub_fsm: StateMachine = cur_st.sub_machine as StateMachine
+	var sub_cur: String = String(sub_fsm.get_current_state_id())
+	if sub_cur.is_empty():
+		return ""
+	var deeper: String = sub_fsm.get_active_sub_state_path()
+	return sub_cur if deeper.is_empty() else ("%s/%s" % [sub_cur, deeper])
 
 
 func clear() -> void:

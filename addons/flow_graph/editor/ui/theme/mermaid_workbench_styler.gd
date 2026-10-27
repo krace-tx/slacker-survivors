@@ -10,18 +10,20 @@ const MermaidThemeTokens = preload(FlowGraphContracts.SCRIPT_THEME_TOKENS)
 
 const P_TOOLBAR: String = "ToolbarPanel"
 const P_BACKDROP: String = "WorkspaceBackdrop"
-const P_ZOOM_POD: String = "WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod"
-const P_DOCK_HEADER: String = "WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader"
-const P_MODE_CHIP: String = "WorkspaceBackdrop/MainSplit/RightSidebar/SidebarVBox/DockHeader/HeaderRow/ModeChip"
+const P_EXPAND_DRAWER_POD: String = "%ExpandDrawerPod"
+const P_ZOOM_POD: String = "%ZoomPod"
+const P_DOCK_HEADER: String = "%DockHeader"
+const P_MODE_CHIP: String = "%ModeChip"
 const SEPARATOR_PATHS: Array[String] = [
-	"ToolbarPanel/ToolbarHBox/TransportBox/Sep1",
-	"ToolbarPanel/ToolbarHBox/Sep2",
-	"ToolbarPanel/ToolbarHBox/Sep3",
-	"WorkspaceBackdrop/MainSplit/CanvasStage/ZoomPod/ZoomRow/ZoomSep",
+	"%Sep0",
+	"%Sep1",
+	"%Sep2",
+	"%Sep3",
+	"%ZoomSep",
 ]
-const FLAT_ACTION_BUTTONS: Array[String] = ["%OpenResBtn", "%DirToggleBtn", "%AutoLayoutBtn", "%PauseBtn"]
+const FLAT_ACTION_BUTTONS: Array[String] = ["%ToggleDrawerBtn", "%OpenResBtn", "%DirToggleBtn", "%AutoLayoutBtn", "%PauseBtn"]
 const FLAT_ICON_BUTTONS: Array[String] = ["%StepBtn", "%SnapToggleBtn", "%LabelsToggleBtn", "%MinimapToggleBtn", "%WindowMenuBtn", "%ToggleSidebarBtn"]
-const ZOOM_BUTTONS: Array[String] = ["%ZoomOutBtn", "%ZoomResetBtn", "%ZoomInBtn", "%FitViewBtn"]
+const ZOOM_BUTTONS: Array[String] = ["%ExpandDrawerBtn", "%ZoomOutBtn", "%ZoomResetBtn", "%ZoomInBtn", "%FitViewBtn"]
 const DOCK_TABS: Array[String] = ["%TabTelemetryBtn", "%TabResourcesBtn", "%TabSourceBtn"]
 
 
@@ -31,6 +33,7 @@ static func apply(root: Control, t: MermaidThemeTokens) -> void:
 
 	_panel(root, P_TOOLBAR, MermaidThemeTokens.bar(t.base, t.dark3, SIDE_BOTTOM, Vector4(6, 3, 6, 3)))
 	_panel(root, P_BACKDROP, MermaidThemeTokens.flat(t.dark3, 0))
+	_panel(root, P_EXPAND_DRAWER_POD, MermaidThemeTokens.flat(Color(t.base, 0.94), MermaidThemeTokens.RADIUS_UI, Color(t.border, 0.65), 1, Vector4(2, 2, 2, 2)))
 	_panel(root, P_ZOOM_POD, MermaidThemeTokens.flat(Color(t.base, 0.92), MermaidThemeTokens.RADIUS_UI, Color(0, 0, 0, 0), 0, Vector4(2, 2, 2, 2)))
 	_panel(root, "%RightSidebar", MermaidThemeTokens.flat(t.base, 0))
 	_panel(root, P_DOCK_HEADER, MermaidThemeTokens.bar(t.base, t.dark3, SIDE_BOTTOM, Vector4(4, 3, 6, 3)))

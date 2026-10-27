@@ -13,7 +13,6 @@ const MermaidWorkbench = preload(FlowGraphContracts.SCRIPT_WORKBENCH)
 const MermaidFloatingHost = preload(FlowGraphContracts.SCRIPT_FLOATING_HOST)
 const MermaidEditorDebugger = preload(FlowGraphContracts.SCRIPT_EDITOR_DEBUGGER)
 const MermaidResourceBridge = preload(FlowGraphContracts.SCRIPT_RESOURCE_BRIDGE)
-const MainIconTex: Texture2D = FlowGraphIcons.PLUGIN_MAIN
 
 const SETTING_GAME_EMBED_MODE: String = FlowGraphContracts.SETTING_GAME_EMBED_MODE
 
@@ -44,10 +43,19 @@ func _enter_tree() -> void:
 	_workbench.bind_debugger(_debugger)
 	_workbench.standalone_window_toggled.connect(_apply_standalone_game_window_mode)
 
+	var ed_settings: EditorSettings = EditorInterface.get_editor_settings()
+	if ed_settings != null and not ed_settings.settings_changed.is_connected(_on_editor_settings_changed):
+		ed_settings.settings_changed.connect(_on_editor_settings_changed)
+
 	_cache_and_enable_standalone_window()
+	call_deferred(&"_sync_main_screen_button_icon")
 
 
 func _exit_tree() -> void:
+	var ed_settings: EditorSettings = EditorInterface.get_editor_settings()
+	if ed_settings != null and ed_settings.settings_changed.is_connected(_on_editor_settings_changed):
+		ed_settings.settings_changed.disconnect(_on_editor_settings_changed)
+
 	_restore_embed_mode_if_needed()
 
 	if _floating_host != null:
@@ -72,7 +80,7 @@ func _get_plugin_name() -> String:
 
 
 func _get_plugin_icon() -> Texture2D:
-	return MainIconTex
+	return FlowGraphIcons.create_main_screen_icon()
 
 
 func _make_visible(visible: bool) -> void:
@@ -122,5 +130,13 @@ func _restore_embed_mode_if_needed() -> void:
 	var ed_settings: EditorSettings = EditorInterface.get_editor_settings()
 	if ed_settings != null and ed_settings.has_setting(SETTING_GAME_EMBED_MODE):
 		ed_settings.set_setting(SETTING_GAME_EMBED_MODE, _prev_embed_mode)
+
+
+func _on_editor_settings_changed() -> void:
+	_sync_main_screen_button_icon()
+
+
+func _sync_main_screen_button_icon() -> void:
+	FlowGraphIcons.sync_editor_main_screen_button(_get_plugin_name())
 
 #endregion
