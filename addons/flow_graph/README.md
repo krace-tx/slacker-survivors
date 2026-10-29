@@ -60,8 +60,9 @@ addons/flow_graph/
 	│   └── flow_editor_input.gd                     #   FlowEditorInput：工作台/画布/弹窗三层作用域解析、修饰键与手势统一服务
 	├── model/
 	│   └── mermaid_graph_model.gd                   # Canonical Graph IR、完备节点/边 CRUD、BT 坐标重排与快照克隆
-	├── codec/
-	│   └── mermaid_codec.gd                         # Mermaid (stateDiagram-v2 / flowchart) + @mg_bb/@mg/@mg_edge 无损互转
+	├── codec/                                       # 受控可逆 Mermaid 编译与 .tres 转换约束 (_doc_codec.md)：
+	│   ├── _doc_codec.md                            #   可逆 Mermaid 语法子集、FSM/BT 拓扑门禁与 @mg_* 指令契约规范
+	│   └── mermaid_codec.gd                         #   Mermaid (stateDiagram-v2 / flowchart) + @mg_bb/@mg/@mg_edge 无损互转
 	├── command/
 	│   └── flow_undo_stack.gd                       # 按会话物理隔离的 64 步签名去重 Undo / Redo 历史栈
 	├── lint/

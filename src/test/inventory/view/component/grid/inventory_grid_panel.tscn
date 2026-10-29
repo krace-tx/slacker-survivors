@@ -1,0 +1,230 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://src/test/inventory/view/component/grid/inventory_grid_panel.gd" id="1_grid_panel"]
+[ext_resource type="Script" path="res://src/test/inventory/view/component/grid/inventory_grid_board.gd" id="2_grid_board"]
+[ext_resource type="PackedScene" path="res://src/test/inventory/view/component/art/inventory_drag_badge.tscn" id="3_drag_badge"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
+bg_color = Color(0.068, 0.094, 0.145, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.137, 0.188, 0.275, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.32)
+shadow_size = 18
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.095, 0.135, 0.21, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.185, 0.25, 0.36, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.13, 0.18, 0.275, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.37, 0.51, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.075, 0.105, 0.165, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.3, 0.42, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_disabled"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.065, 0.088, 0.135, 0.65)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.16, 0.23, 0.65)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cell"]
+bg_color = Color(0.052, 0.075, 0.118, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.125, 0.172, 0.252, 0.9)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tile_normal"]
+bg_color = Color(0.086, 0.122, 0.19, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.25, 0.36, 0.95)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tile_hover"]
+bg_color = Color(0.116, 0.162, 0.248, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.43, 0.6, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tile_selected"]
+bg_color = Color(0.095, 0.148, 0.235, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.745, 0.973, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tile_neighbor"]
+bg_color = Color(0.082, 0.145, 0.195, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.204, 0.855, 0.725, 0.95)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_preview_valid"]
+bg_color = Color(0.204, 0.827, 0.6, 0.16)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.204, 0.827, 0.6, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_preview_reject"]
+bg_color = Color(0.973, 0.443, 0.443, 0.16)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.973, 0.443, 0.443, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[node name="InventoryGridPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(542, 512)
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+script = ExtResource("1_grid_panel")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.945, 0.965, 0.99, 1)
+theme_override_font_sizes/font_size = 16
+text = "战术箱"
+
+[node name="UsedCellsLabel" type="Label" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.455, 0.535, 0.655, 1)
+theme_override_font_sizes/font_size = 13
+text = "12 / 30"
+
+[node name="Spacer" type="Control" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RotateButton" type="Button" parent="VBox/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(78, 28)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.84, 0.9, 0.98, 1)
+theme_override_colors/font_pressed_color = Color(0.86, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.32, 0.38, 0.48, 0.8)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "旋转 [R]"
+
+[node name="BoardCenter" type="CenterContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GridBoard" type="Control" parent="VBox/BoardCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(492, 410)
+layout_mode = 2
+script = ExtResource("2_grid_board")
+cell_style = SubResource("StyleBoxFlat_cell")
+tile_normal_style = SubResource("StyleBoxFlat_tile_normal")
+tile_hover_style = SubResource("StyleBoxFlat_tile_hover")
+tile_selected_style = SubResource("StyleBoxFlat_tile_selected")
+tile_neighbor_style = SubResource("StyleBoxFlat_tile_neighbor")
+preview_valid_style = SubResource("StyleBoxFlat_preview_valid")
+preview_reject_style = SubResource("StyleBoxFlat_preview_reject")
+drag_badge_scene = ExtResource("3_drag_badge")

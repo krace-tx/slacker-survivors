@@ -90,6 +90,12 @@ func resolve_node(path: String) -> Node:
 	elif clean_path.begins_with("/"):
 		clean_path = clean_path.substr(1)
 
+	# 支持场景唯一名称 (%UniqueName) 快捷寻址
+	if clean_path.begins_with("%"):
+		var by_unique := root.get_node_or_null(clean_path)
+		if by_unique != null:
+			return by_unique
+
 	# 尝试直接相对当前根节点查找
 	var target := root.get_node_or_null(clean_path)
 	if target != null:
@@ -158,6 +164,56 @@ func set_property_undoable(node: Node, property: String, new_val: Variant, actio
 		node.set(property, new_val)
 
 	mark_scene_unsaved()
+
+
+## 基于目标对象属性元数据的强类型安全解析（自动处理 res:// 资源加载、#Hex 颜色与 StringName/NodePath）
+func parse_property_value_for(target: Object, property: String, val: Variant) -> Variant:
+	if typeof(val) == TYPE_DICTIONARY:
+		var d_raw: Dictionary = val
+		if d_raw.has("$resource"):
+			var rpath := String(d_raw.get("$resource", "")).strip_edges()
+			return ResourceLoader.load(rpath) if not rpath.is_empty() else null
+		if d_raw.has("$color"):
+			var hex := String(d_raw.get("$color", "")).strip_edges()
+			return Color.html(hex) if Color.html_is_valid(hex) else Color.WHITE
+
+	var expected_type: int = TYPE_NIL
+	if target != null:
+		for prop in target.get_property_list():
+			if String(prop.get("name", "")) == property:
+				expected_type = int(prop.get("type", TYPE_NIL))
+				break
+
+	if expected_type == TYPE_OBJECT:
+		if val == null:
+			return null
+		if typeof(val) == TYPE_STRING:
+			var spath := String(val).strip_edges()
+			if spath.is_empty():
+				return null
+			if spath.begins_with("res://"):
+				return ResourceLoader.load(spath)
+
+	if expected_type == TYPE_COLOR and typeof(val) == TYPE_STRING:
+		var shex := String(val).strip_edges()
+		if Color.html_is_valid(shex):
+			return Color.html(shex)
+
+	if expected_type == TYPE_STRING_NAME and typeof(val) == TYPE_STRING:
+		return StringName(val)
+
+	if expected_type == TYPE_NODE_PATH and typeof(val) == TYPE_STRING:
+		return NodePath(val)
+
+	if expected_type == TYPE_VECTOR2I:
+		if typeof(val) == TYPE_DICTIONARY and val.has("x") and val.has("y"):
+			return Vector2i(int(val.x), int(val.y))
+		if typeof(val) == TYPE_STRING and String(val).contains(","):
+			var vparts := String(val).split(",")
+			if vparts.size() == 2:
+				return Vector2i(int(vparts[0]), int(vparts[1]))
+
+	return parse_property_value(val)
 
 
 ## 属性值解析转换（支持将 JSON 字符串或标量转换为 Godot 原生类型如 Vector2/Color 等）

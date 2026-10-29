@@ -22,9 +22,9 @@
 
 ```mermaid
 flowchart LR
-    Enter["BootstrapScene 移交<br/>_on_enter(SplashEnterParams)"] --> Legal["阶段 1: 合规/光敏警告<br/>(首次强制读秒)"]
-    Legal --> Brand["阶段 2: 品牌 Logo / App.video<br/>(支持任意键 Skip)"]
-    Brand --> Route["阶段 3: 组装冷启动加载参数<br/>App.scene.replace(LOADING, params)"]
+	Enter["BootstrapScene 移交<br/>_on_enter(SplashEnterParams)"] --> Legal["阶段 1: 合规/光敏警告<br/>(首次强制读秒)"]
+	Legal --> Brand["阶段 2: 品牌 Logo / App.video<br/>(支持任意键 Skip)"]
+	Brand --> Route["阶段 3: 组装冷启动加载参数<br/>App.scene.replace(LOADING, params)"]
 ```
 
 ---
@@ -40,9 +40,9 @@ flowchart LR
 
 - **目录落点**：`src/game/features/splash/`
   - `model/`：
-    - `SplashEnterParams` (`BaseParams`)：可选携带 `override_target_scene` 直达覆盖路由。
-    - `SplashSequenceConfig` (`Resource`)：声明闪屏节点序列（类型、资产路径、持续时长、可否跳过）。
-    - `SplashState` (`RefCounted`)：当前播放阶段索引与可跳过状态。
+	- `SplashEnterParams` (`BaseParams`)：可选携带 `override_target_scene` 直达覆盖路由。
+	- `SplashSequenceConfig` (`Resource`)：声明闪屏节点序列（类型、资产路径、持续时长、可否跳过）。
+	- `SplashState` (`RefCounted`)：当前播放阶段索引与可跳过状态。
   - `service/`：`SplashService`（管理序列步进计时、读取是否首次启动标记、`App.video` 启停编排）。
   - `presenter/`：`SplashPresenter`（绑定跳过输入 `App.input`、驱动视图淡入淡出、结束时跳转 `GameScenes.Scene.LOADING`）。
   - `view/`：`scene/splash/`（`SplashScene` + `SplashView`）与 `component/`（Logo 卡片 / 视频画布单元）。

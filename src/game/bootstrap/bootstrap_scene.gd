@@ -53,15 +53,20 @@ func _boot_kernel_and_handover() -> void:
 			push_error("[BootstrapScene] %s" % err_msg)
 		return
 
-	# 2. 将当前空启动场景注册为 SceneRouter 的初始受管根节点
+	# 2. 注册并激活当前环境策略（一次性配置全局核心存档硬件指纹加密、网关地址等）
+	var env_res := GameEnvService.setup_and_activate()
+	if env_res.is_err() and App.logger != null:
+		App.logger.warn(_LOG_TAG, "Environment profile setup degraded: %s" % env_res.error_message())
+
+	# 3. 将当前空启动场景注册为 SceneRouter 的初始受管根节点
 	var self_path := scene_file_path if not scene_file_path.is_empty() else GameScenes.Scene.BOOTSTRAP
 	if App.scene != null and App.scene.is_empty():
 		await App.scene.bind(self_path, self)
 
-	# 3. 抢在首帧任何 UI 渲染前，加载并应用设备窗口、分辨率、画质抗锯齿、多语言与音频总线偏好
+	# 4. 抢在首帧任何 UI 渲染前，加载并应用设备窗口、分辨率、画质抗锯齿、多语言与音频总线偏好
 	await GameSettingsService.load_and_apply()
 
-	# 4. 构造强类型入参并无感移交至 features/splash 闪屏加载模块
+	# 5. 构造强类型入参并无感移交至 features/splash 闪屏加载模块
 	var next_scene := handover_scene_path if not handover_scene_path.is_empty() else GameScenes.Scene.SPLASH
 	if App.logger != null:
 		App.logger.info(

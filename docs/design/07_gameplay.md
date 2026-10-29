@@ -8,23 +8,23 @@
 
 ```mermaid
 flowchart TD
-    subgraph Shell ["局内通用容器外壳: features/gameplay/ (MSVP)"]
-        Scene["GameplayScene (BaseScene)<br/>生命周期 / 输入上下文切换 / 战场世界根节点"]
-        HUD["GameplayView & HUD (BaseView)<br/>血条 / 波次计时 / 资源栏 / 交互提示"]
-        Dialogs["局内模态弹窗 (POPUP 层)<br/>PauseDialog (暂停) / SettlementDialog (结算)"]
-        SessionSvc["GameplaySessionService<br/>单局状态机 / 快照读写 / 结算上报 / 同步帧收发"]
-    end
+	subgraph Shell ["局内通用容器外壳: features/gameplay/ (MSVP)"]
+		Scene["GameplayScene (BaseScene)<br/>生命周期 / 输入上下文切换 / 战场世界根节点"]
+		HUD["GameplayView & HUD (BaseView)<br/>血条 / 波次计时 / 资源栏 / 交互提示"]
+		Dialogs["局内模态弹窗 (POPUP 层)<br/>PauseDialog (暂停) / SettlementDialog (结算)"]
+		SessionSvc["GameplaySessionService<br/>单局状态机 / 快照读写 / 结算上报 / 同步帧收发"]
+	end
 
-    subgraph Core ["具体玩法算法子域: features/<combat_or_rule>/ (MES)"]
-        Engine["*Engine (RefCounted · 纯逻辑零 UI/零 I/O)<br/>固定时间步 Tick 推演 + 受控确定性 RNG"]
-        RunState["*State / *Context<br/>单局实体内存态与演算上下文"]
-    end
+	subgraph Core ["具体玩法算法子域: features/<combat_or_rule>/ (MES)"]
+		Engine["*Engine (RefCounted · 纯逻辑零 UI/零 I/O)<br/>固定时间步 Tick 推演 + 受控确定性 RNG"]
+		RunState["*State / *Context<br/>单局实体内存态与演算上下文"]
+	end
 
-    Scene --> SessionSvc
-    SessionSvc -- "每 Tick 喂入指令帧 (CommandFrame)" --> Engine
-    Engine --> RunState
-    SessionSvc -- "状态变更信号 / Bus" --> HUD
-    SessionSvc --> Dialogs
+	Scene --> SessionSvc
+	SessionSvc -- "每 Tick 喂入指令帧 (CommandFrame)" --> Engine
+	Engine --> RunState
+	SessionSvc -- "状态变更信号 / Bus" --> HUD
+	SessionSvc --> Dialogs
 ```
 
 ---
@@ -58,10 +58,10 @@ flowchart TD
 
 - **目录落点**：`src/game/features/gameplay/`（通用容器，MSVP）
   - `model/`：
-    - `GameplayEnterParams` (`BaseParams`)：进局标准契约（`stage_id`、`difficulty`、`modifiers`、`seed`、`is_multiplayer`、`resume_snapshot`）。
-    - `GameplaySessionState` (`RefCounted`)：单局阶段枚举、存活时长、击杀/得分统计。
-    - `RunSnapshotModel` (`BaseParams`)：单机中途恢复快照，绑定 `StorageItem.for_save(&"gameplay", "run_snapshot", 1, "sav").with_compression(true)`（落盘 `user://saves/gameplay/run_snapshot.sav`）。
-    - `SettlementResultData` (`BaseParams`)：结算展示与奖励明细载体。
+	- `GameplayEnterParams` (`BaseParams`)：进局标准契约（`stage_id`、`difficulty`、`modifiers`、`seed`、`is_multiplayer`、`resume_snapshot`）。
+	- `GameplaySessionState` (`RefCounted`)：单局阶段枚举、存活时长、击杀/得分统计。
+	- `RunSnapshotModel` (`BaseParams`)：单机中途恢复快照，绑定 `StorageItem.for_save(&"gameplay", "run_snapshot", 1, "sav").with_compression(true)`（落盘 `user://saves/gameplay/run_snapshot.sav`）。
+	- `SettlementResultData` (`BaseParams`)：结算展示与奖励明细载体。
   - `service/`：`GameplaySessionService`（状态机总控、快照检查点编排、结算落盘与 Steam 成就桥接）。
   - `presenter/`：`GameplayPresenter`（同步 HUD 状态、调度暂停与结算弹窗、跳转重开或回大厅）。
   - `view/`：`scene/gameplay/`（`GameplayScene` + `GameplayView`）与 `component/hud/`、`component/pause_dialog/`、`component/settlement_dialog/`。

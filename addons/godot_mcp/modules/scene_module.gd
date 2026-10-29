@@ -8,10 +8,13 @@ func register_commands(registry: CommandRegistry) -> void:
 	# 1. scene.create
 	registry.register_command(
 		"scene.create",
-		"Create a new empty scene with specified root node type and save to disk",
+		"Create a new scene (from root node type or inherited base scene) and save to disk",
 		{
 			"path": {"type": "string", "required": true, "description": "Scene file path (e.g. res://scenes/main.tscn)"},
 			"root_node_type": {"type": "string", "default": "Node", "description": "Root node type (e.g. Node2D, Control, Node3D)"},
+			"root_node_name": {"type": "string", "default": "", "description": "Optional explicit root node name"},
+			"base_scene_path": {"type": "string", "default": "", "description": "Optional base .tscn path for scene inheritance"},
+			"root_script": {"type": "string", "default": "", "description": "Optional .gd script path to attach to root node"},
 		},
 		_create_scene
 	)
@@ -69,12 +72,38 @@ func _create_scene(p: Dictionary) -> Variant:
 	if not path.ends_with(".tscn"):
 		path += ".tscn"
 
-	var root_type: String = p.root_node_type
-	if not ClassDB.can_instantiate(root_type):
-		return RpcError.invalid_params("Cannot instantiate root node type: %s" % root_type)
+	var base_scene_path: String = str(p.get("base_scene_path", "")).strip_edges()
+	var root_type: String = str(p.get("root_node_type", "Node")).strip_edges()
+	var root_name: String = str(p.get("root_node_name", "")).strip_edges()
+	var root_script_path: String = str(p.get("root_script", "")).strip_edges()
 
-	var root: Node = ClassDB.instantiate(root_type)
-	root.name = path.get_file().get_basename().capitalize().replace(" ", "")
+	var root: Node = null
+	if not base_scene_path.is_empty():
+		if not base_scene_path.begins_with("res://"):
+			base_scene_path = "res://" + base_scene_path
+		var base_packed := ResourceLoader.load(base_scene_path, "PackedScene") as PackedScene
+		if base_packed == null:
+			return RpcError.not_found("Base scene not found: %s" % base_scene_path)
+		root = base_packed.instantiate(PackedScene.GEN_EDIT_STATE_MAIN_INHERITED)
+		root_type = root.get_class()
+	else:
+		if not ClassDB.can_instantiate(root_type):
+			return RpcError.invalid_params("Cannot instantiate root node type: %s" % root_type)
+		root = ClassDB.instantiate(root_type)
+
+	if not root_name.is_empty():
+		root.name = root_name
+	elif base_scene_path.is_empty():
+		root.name = path.get_file().get_basename().capitalize().replace(" ", "")
+
+	if not root_script_path.is_empty():
+		if not root_script_path.begins_with("res://"):
+			root_script_path = "res://" + root_script_path
+		var scr := ResourceLoader.load(root_script_path, "Script", ResourceLoader.CACHE_MODE_REPLACE)
+		if scr == null:
+			root.free()
+			return RpcError.not_found("Root script not found: %s" % root_script_path)
+		root.set_script(scr)
 
 	var dir := path.get_base_dir()
 	if not DirAccess.dir_exists_absolute(dir):
@@ -93,7 +122,7 @@ func _create_scene(p: Dictionary) -> Variant:
 
 	# 切换至新创建的场景
 	ctx.open_scene(path)
-	return {"scene_path": path, "root_node_type": root_type}
+	return {"scene_path": path, "root_node_type": root_type, "root_node_name": root_name}
 
 
 func _save_scene(p: Dictionary) -> Variant:
@@ -166,7 +195,7 @@ func _create_resource(p: Dictionary) -> Variant:
 		return RpcError.invalid_params("Type %s is not a Resource" % res_type)
 
 	for k in props.keys():
-		res.set(k, ctx.parse_property_value(props[k]))
+		res.set(k, ctx.parse_property_value_for(res, k, props[k]))
 
 	var dir := res_path.get_base_dir()
 	if not DirAccess.dir_exists_absolute(dir):

@@ -58,6 +58,18 @@ func register_commands(registry: CommandRegistry) -> void:
 	)
 	registry.register_alias("create_script_template", "script.template")
 
+	# 5. script.attach
+	registry.register_command(
+		"script.attach",
+		"Attach an existing GDScript file to a node (or detach if script_path is empty) without modifying the file",
+		{
+			"node_path": {"type": "string", "required": true, "description": "Target node path"},
+			"script_path": {"type": "string", "default": "", "description": "Existing .gd path (e.g. res://.../card.gd), empty to detach"},
+		},
+		_attach_script
+	)
+	registry.register_alias("attach_script", "script.attach")
+
 
 func _create_script(p: Dictionary) -> Variant:
 	var path: String = p.script_path
@@ -157,3 +169,27 @@ func _create_template(p: Dictionary) -> Variant:
 		out += "func _input(event: InputEvent) -> void:\n\tpass\n\n"
 
 	return {"template": out.strip_edges()}
+
+
+func _attach_script(p: Dictionary) -> Variant:
+	var node := ctx.resolve_node(p.node_path)
+	if node == null:
+		return RpcError.not_found("Node not found: %s" % p.node_path)
+
+	var raw_path: String = str(p.get("script_path", "")).strip_edges()
+	if raw_path.is_empty():
+		ctx.set_property_undoable(node, "script", null, "MCP: Detach Script %s" % node.name)
+		return {"node_path": p.node_path, "script_path": ""}
+
+	if not raw_path.begins_with("res://"):
+		raw_path = "res://" + raw_path
+	if not FileAccess.file_exists(raw_path):
+		return RpcError.not_found("Script file does not exist: %s" % raw_path)
+
+	ctx.reimport_files(PackedStringArray([raw_path]))
+	var script_res := ResourceLoader.load(raw_path, "Script", ResourceLoader.CACHE_MODE_REPLACE)
+	if script_res == null:
+		return RpcError.execution_error("Failed to load script resource: %s" % raw_path)
+
+	ctx.set_property_undoable(node, "script", script_res, "MCP: Attach Script %s" % node.name)
+	return {"node_path": p.node_path, "script_path": raw_path}

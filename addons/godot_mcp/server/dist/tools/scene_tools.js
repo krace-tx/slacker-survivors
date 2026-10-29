@@ -1,231 +1,245 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 import { z } from 'zod';
 import { getGodotConnection } from '../utils/godot_connection.js';
-/**
- * Definition for scene tools - operations that manipulate Godot scenes
- */
-export var sceneTools = [
-    {
-        name: 'create_scene',
-        description: 'Create a new empty scene with optional root node type',
-        parameters: z.object({
-            path: z.string()
-                .describe('Path where the new scene will be saved (e.g. "res://scenes/new_scene.tscn")'),
-            root_node_type: z.string().optional()
-                .describe('Type of root node to create (e.g. "Node2D", "Node3D", "Control"). Defaults to "Node" if not specified'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, error_1;
-            var path = _b.path, _c = _b.root_node_type, root_node_type = _c === void 0 ? "Node" : _c;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _d.label = 1;
-                    case 1:
-                        _d.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('create_scene', { path: path, root_node_type: root_node_type })];
-                    case 2:
-                        result = _d.sent();
-                        return [2 /*return*/, "Created new scene at ".concat(result.scene_path, " with root node type ").concat(result.root_node_type)];
-                    case 3:
-                        error_1 = _d.sent();
-                        throw new Error("Failed to create scene: ".concat(error_1.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+
+export const sceneTools = [
+  {
+    name: 'create_scene',
+    description: 'Create a new scene (from root node type or inherited base scene) and save to disk',
+    parameters: z.object({
+      path: z.string()
+        .describe('Path where the new scene will be saved (e.g. "res://scenes/new_scene.tscn")'),
+      root_node_type: z.string().optional()
+        .describe('Type of root node to create (e.g. "Node2D", "Node3D", "Control"). Defaults to "Node" if not specified'),
+      root_node_name: z.string().optional()
+        .describe('Optional explicit root node name'),
+      base_scene_path: z.string().optional()
+        .describe('Optional base .tscn path for scene inheritance'),
+      root_script: z.string().optional()
+        .describe('Optional .gd script path to attach to root node'),
+    }),
+    execute: async ({ path, root_node_type = 'Node', root_node_name = '', base_scene_path = '', root_script = '' }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('create_scene', {
+          path,
+          root_node_type,
+          root_node_name,
+          base_scene_path,
+          root_script,
+        });
+        return `Created new scene at ${result.scene_path} with root node type ${result.root_node_type}`;
+      } catch (error) {
+        throw new Error(`Failed to create scene: ${error.message}`);
+      }
     },
-    {
-        name: 'save_scene',
-        description: 'Save the current scene to disk',
-        parameters: z.object({
-            path: z.string().optional()
-                .describe('Path where the scene will be saved (e.g. "res://scenes/main.tscn"). If not provided, uses current scene path.'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, error_2;
-            var path = _b.path;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('save_scene', { path: path })];
-                    case 2:
-                        result = _c.sent();
-                        return [2 /*return*/, "Saved scene to ".concat(result.scene_path)];
-                    case 3:
-                        error_2 = _c.sent();
-                        throw new Error("Failed to save scene: ".concat(error_2.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'save_scene',
+    description: 'Save the current scene to disk',
+    parameters: z.object({
+      path: z.string().optional()
+        .describe('Path where the scene will be saved (e.g. "res://scenes/main.tscn"). If not provided, uses current scene path.'),
+    }),
+    execute: async ({ path }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('save_scene', { path });
+        return `Saved scene to ${result.scene_path}`;
+      } catch (error) {
+        throw new Error(`Failed to save scene: ${error.message}`);
+      }
     },
-    {
-        name: 'open_scene',
-        description: 'Open a scene in the editor',
-        parameters: z.object({
-            path: z.string()
-                .describe('Path to the scene file to open (e.g. "res://scenes/main.tscn")'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, error_3;
-            var path = _b.path;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('open_scene', { path: path })];
-                    case 2:
-                        result = _c.sent();
-                        return [2 /*return*/, "Opened scene at ".concat(result.scene_path)];
-                    case 3:
-                        error_3 = _c.sent();
-                        throw new Error("Failed to open scene: ".concat(error_3.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'open_scene',
+    description: 'Open a scene in the editor',
+    parameters: z.object({
+      path: z.string()
+        .describe('Path to the scene file to open (e.g. "res://scenes/main.tscn")'),
+    }),
+    execute: async ({ path }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('open_scene', { path });
+        return `Opened scene at ${result.scene_path}`;
+      } catch (error) {
+        throw new Error(`Failed to open scene: ${error.message}`);
+      }
     },
-    {
-        name: 'get_current_scene',
-        description: 'Get information about the currently open scene',
-        parameters: z.object({}),
-        execute: function () { return __awaiter(void 0, void 0, void 0, function () {
-            var godot, result, error_4;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('get_current_scene', {})];
-                    case 2:
-                        result = _a.sent();
-                        return [2 /*return*/, "Current scene: ".concat(result.scene_path, "\nRoot node: ").concat(result.root_node_name, " (").concat(result.root_node_type, ")")];
-                    case 3:
-                        error_4 = _a.sent();
-                        throw new Error("Failed to get current scene: ".concat(error_4.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'get_current_scene',
+    description: 'Get information about the currently open scene',
+    parameters: z.object({}),
+    execute: async () => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('get_current_scene', {});
+        return `Current scene: ${result.scene_path}\nRoot node: ${result.root_node_name} (${result.root_node_type})`;
+      } catch (error) {
+        throw new Error(`Failed to get current scene: ${error.message}`);
+      }
     },
-    {
-        name: 'get_project_info',
-        description: 'Get information about the current Godot project',
-        parameters: z.object({}),
-        execute: function () { return __awaiter(void 0, void 0, void 0, function () {
-            var godot, result, godotVersion, output, error_5;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('get_project_info', {})];
-                    case 2:
-                        result = _a.sent();
-                        godotVersion = "".concat(result.godot_version.major, ".").concat(result.godot_version.minor, ".").concat(result.godot_version.patch);
-                        output = "Project Name: ".concat(result.project_name, "\n");
-                        output += "Project Version: ".concat(result.project_version, "\n");
-                        output += "Project Path: ".concat(result.project_path, "\n");
-                        output += "Godot Version: ".concat(godotVersion, "\n");
-                        if (result.current_scene) {
-                            output += "Current Scene: ".concat(result.current_scene);
-                        }
-                        else {
-                            output += "No scene is currently open";
-                        }
-                        return [2 /*return*/, output];
-                    case 3:
-                        error_5 = _a.sent();
-                        throw new Error("Failed to get project info: ".concat(error_5.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'get_project_info',
+    description: 'Get information about the current Godot project',
+    parameters: z.object({}),
+    execute: async () => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('get_project_info', {});
+        const godotVersion = `${result.godot_version.major}.${result.godot_version.minor}.${result.godot_version.patch}`;
+        let output = `Project Name: ${result.project_name}\n`;
+        output += `Project Version: ${result.project_version}\n`;
+        output += `Project Path: ${result.project_path}\n`;
+        output += `Godot Version: ${godotVersion}\n`;
+        output += result.current_scene ? `Current Scene: ${result.current_scene}` : 'No scene is currently open';
+        return output;
+      } catch (error) {
+        throw new Error(`Failed to get project info: ${error.message}`);
+      }
     },
-    {
-        name: 'create_resource',
-        description: 'Create a new resource in the project',
-        parameters: z.object({
-            resource_type: z.string()
-                .describe('Type of resource to create (e.g. "ImageTexture", "AudioStreamMP3", "StyleBoxFlat")'),
-            resource_path: z.string()
-                .describe('Path where the resource will be saved (e.g. "res://resources/style.tres")'),
-            properties: z.record(z.any()).optional()
-                .describe('Dictionary of property values to set on the resource'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, error_6;
-            var resource_type = _b.resource_type, resource_path = _b.resource_path, _c = _b.properties, properties = _c === void 0 ? {} : _c;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _d.label = 1;
-                    case 1:
-                        _d.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('create_resource', {
-                                resource_type: resource_type,
-                                resource_path: resource_path,
-                                properties: properties,
-                            })];
-                    case 2:
-                        result = _d.sent();
-                        return [2 /*return*/, "Created ".concat(resource_type, " resource at ").concat(result.resource_path)];
-                    case 3:
-                        error_6 = _d.sent();
-                        throw new Error("Failed to create resource: ".concat(error_6.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'create_resource',
+    description: 'Create a new resource in the project',
+    parameters: z.object({
+      resource_type: z.string()
+        .describe('Type of resource to create (e.g. "ImageTexture", "AudioStreamMP3", "StyleBoxFlat")'),
+      resource_path: z.string()
+        .describe('Path where the resource will be saved (e.g. "res://resources/style.tres")'),
+      properties: z.record(z.any()).optional()
+        .describe('Dictionary of property values to set on the resource'),
+    }),
+    execute: async ({ resource_type, resource_path, properties = {} }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('create_resource', {
+          resource_type,
+          resource_path,
+          properties,
+        });
+        return `Created ${resource_type} resource at ${result.resource_path}`;
+      } catch (error) {
+        throw new Error(`Failed to create resource: ${error.message}`);
+      }
     },
+  },
+  {
+    name: 'capture_viewport_2d',
+    description: 'Capture a screenshot of the 2D editor viewport as base64 or save to path',
+    parameters: z.object({
+      save_path: z.string().optional().describe('Optional file path to save PNG (e.g. res://screenshot.png)'),
+      return_base64: z.boolean().default(true).describe('Whether to return base64 PNG data'),
+    }),
+    execute: async ({ save_path = '', return_base64 = true }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('capture_viewport_2d', { save_path, return_base64 });
+        let out = `Captured 2D viewport (${result.width}x${result.height})`;
+        if (result.save_path) out += ` saved to ${result.save_path}`;
+        if (result.base64_png) out += `\nBase64 PNG length: ${result.base64_png.length} chars`;
+        return out;
+      } catch (error) {
+        throw new Error(`Failed to capture 2D viewport: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'capture_node',
+    description: 'Capture screenshot of a specific 2D/Control node from the viewport',
+    parameters: z.object({
+      node_path: z.string().describe('Target CanvasItem / Control node path'),
+      save_path: z.string().optional().describe('Optional file path to save PNG'),
+      return_base64: z.boolean().default(true).describe('Whether to return base64 PNG data'),
+    }),
+    execute: async ({ node_path, save_path = '', return_base64 = true }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('capture_node', { node_path, save_path, return_base64 });
+        let out = `Captured node ${node_path} (${result.width}x${result.height})`;
+        if (result.save_path) out += ` saved to ${result.save_path}`;
+        return out;
+      } catch (error) {
+        throw new Error(`Failed to capture node: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'capture_viewport_3d',
+    description: 'Capture a screenshot of the 3D editor viewport as base64 or save to path',
+    parameters: z.object({
+      viewport_index: z.number().default(0).describe('3D editor viewport index (0-3)'),
+      save_path: z.string().optional().describe('Optional file path to save PNG'),
+      return_base64: z.boolean().default(true).describe('Whether to return base64 PNG data'),
+    }),
+    execute: async ({ viewport_index = 0, save_path = '', return_base64 = true }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('capture_viewport_3d', { viewport_index, save_path, return_base64 });
+        let out = `Captured 3D viewport #${viewport_index} (${result.width}x${result.height})`;
+        if (result.save_path) out += ` saved to ${result.save_path}`;
+        return out;
+      } catch (error) {
+        throw new Error(`Failed to capture 3D viewport: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'play_current_scene',
+    description: 'Play the currently open edited scene in the Godot editor',
+    parameters: z.object({}),
+    execute: async () => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('play_current_scene', {});
+        return `Started playing current scene: ${result.playing_scene || 'active'}`;
+      } catch (error) {
+        throw new Error(`Failed to play current scene: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'play_main_scene',
+    description: 'Play the main scene of the Godot project',
+    parameters: z.object({}),
+    execute: async () => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('play_main_scene', {});
+        return `Started playing main scene: ${result.playing_scene || 'main'}`;
+      } catch (error) {
+        throw new Error(`Failed to play main scene: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'stop_game',
+    description: 'Stop the currently running game in the editor',
+    parameters: z.object({}),
+    execute: async () => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('stop_game', {});
+        return `Game stopped: ${result.status}`;
+      } catch (error) {
+        throw new Error(`Failed to stop game: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'get_game_status',
+    description: 'Check whether a game instance is currently running in the editor',
+    parameters: z.object({}),
+    execute: async () => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('get_game_status', {});
+        return `Game status: is_playing=${result.is_playing}, scene=${result.playing_scene || 'none'}`;
+      } catch (error) {
+        throw new Error(`Failed to get game status: ${error.message}`);
+      }
+    },
+  },
 ];
-//# sourceMappingURL=scene_tools.js.map

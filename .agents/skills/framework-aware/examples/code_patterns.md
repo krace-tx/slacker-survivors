@@ -151,11 +151,9 @@ const SCHEMA_VERSION: int = 1
 var unlocked_ids: Array[int] = []
 
 
-## 语义工厂自动映射至 user://saves/talent/tree.sav
+## 语义工厂自动映射至 user://saves/talent/tree.sav（自动继承启动期注册的全局存档加密与压缩策略）
 static func storage_item() -> StorageItem:
-	return StorageItem.for_save(STORAGE_DOMAIN, STORAGE_SUBJECT, SCHEMA_VERSION) \
-		.with_compression(FileAccess.COMPRESSION_ZSTD) \
-		.with_device_encryption("slacker.talent.v1")
+	return StorageItem.for_save(STORAGE_DOMAIN, STORAGE_SUBJECT, SCHEMA_VERSION)
 
 
 # 2. 在 Service 层通过 App.storage 异步读写

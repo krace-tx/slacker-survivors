@@ -1,0 +1,201 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/test/inventory/view/component/slot/inventory_slot_card.gd" id="1_slot"]
+[ext_resource type="Script" path="res://src/test/inventory/view/component/art/inventory_mini_icon.gd" id="2_icon"]
+[ext_resource type="PackedScene" path="res://src/test/inventory/view/component/art/inventory_drag_badge.tscn" id="3_drag_badge"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_empty"]
+bg_color = Color(0.055, 0.078, 0.122, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.145, 0.196, 0.282, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_occupied"]
+bg_color = Color(0.082, 0.114, 0.176, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.165, 0.225, 0.32, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
+bg_color = Color(0.11, 0.152, 0.232, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.275, 0.365, 0.505, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selected"]
+bg_color = Color(0.095, 0.148, 0.235, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.745, 0.973, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_valid"]
+bg_color = Color(0.07, 0.175, 0.155, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.204, 0.827, 0.6, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_reject"]
+bg_color = Color(0.195, 0.095, 0.125, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.973, 0.443, 0.443, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tint"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dot"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 99
+corner_radius_top_right = 99
+corner_radius_bottom_right = 99
+corner_radius_bottom_left = 99
+
+[node name="InventorySlotCard" type="PanelContainer"]
+custom_minimum_size = Vector2(96, 96)
+theme_override_styles/panel = SubResource("StyleBoxFlat_empty")
+script = ExtResource("1_slot")
+style_empty = SubResource("StyleBoxFlat_empty")
+style_occupied = SubResource("StyleBoxFlat_occupied")
+style_hover = SubResource("StyleBoxFlat_hover")
+style_selected = SubResource("StyleBoxFlat_selected")
+style_valid = SubResource("StyleBoxFlat_valid")
+style_reject = SubResource("StyleBoxFlat_reject")
+drag_badge_scene = ExtResource("3_drag_badge")
+
+[node name="Body" type="Control" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RarityTint" type="Panel" parent="Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tint")
+
+[node name="TopAccentBar" type="ColorRect" parent="Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 14.0
+offset_top = 2.0
+offset_right = -14.0
+offset_bottom = 4.5
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.22, 0.745, 0.973, 0.9)
+
+[node name="IconView" type="Control" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -17.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_icon")
+
+[node name="MetaDot" type="Panel" parent="Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 14.5
+offset_bottom = 14.5
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dot")
+
+[node name="RoleLabel" type="Label" parent="Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -22.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.45, 0.53, 0.65, 0.75)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="CountLabel" type="Label" parent="Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -23.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.94, 0.97, 1, 0.96)
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 2
+vertical_alignment = 2

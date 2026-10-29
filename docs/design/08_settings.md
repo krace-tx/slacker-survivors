@@ -40,5 +40,5 @@
   - `model/`：`SettingsDialogParams` (`BaseParams`，如指定初始激活页签、是否处于局内受限上下文 `is_in_gameplay`)。
   - `presenter/`：`SettingsPresenter`（绑定五大页签控件事件 ➔ 调用 `GameSettingsService` / `App.input` API；处理 15 秒切屏回滚确认框状态）。
   - `view/`：
-    - `component/settings_dialog/`：`SettingsDialog` (`extends BaseDialog`) 主框架与页签导航。
-    - `component/tabs/`：按职责拆分的五个子面板预制体（`DisplayTabPanel`、`GraphicsTabPanel`、`AudioTabPanel`、`ControlTabPanel`、`GeneralTabPanel`）及 `DisplayConfirmDialog`（15 秒回滚确认小弹窗）。
+	- `component/settings_dialog/`：`SettingsDialog` (`extends BaseDialog`) 主框架与页签导航。
+	- `component/tabs/`：按职责拆分的五个子面板预制体（`DisplayTabPanel`、`GraphicsTabPanel`、`AudioTabPanel`、`ControlTabPanel`、`GeneralTabPanel`）及 `DisplayConfirmDialog`（15 秒回滚确认小弹窗）。

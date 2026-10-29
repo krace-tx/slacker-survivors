@@ -1,0 +1,100 @@
+[gd_scene format=3 uid="uid://d0703bcfbcunv"]
+
+[ext_resource type="Script" uid="uid://dae3ajloagfxm" path="res://src/test/storage/view/scene/playground/storage_playground_scene.gd" id="1_3nyug"]
+[ext_resource type="Script" uid="uid://6mtnlv842730" path="res://src/test/storage/view/scene/playground/storage_playground_view.gd" id="2_0cwlf"]
+[ext_resource type="PackedScene" uid="uid://clrpnjash8nog" path="res://src/test/storage/view/component/header/storage_header_bar.tscn" id="3_ter1d"]
+[ext_resource type="PackedScene" uid="uid://cagguy5mltpdf" path="res://src/test/storage/view/component/control/storage_control_panel.tscn" id="4_1epjm"]
+[ext_resource type="PackedScene" uid="uid://cwv88b6fge1k1" path="res://src/test/storage/view/component/inspector/storage_inspector_panel.tscn" id="5_540vv"]
+[ext_resource type="PackedScene" uid="uid://b12h48s334kug" path="res://src/test/storage/view/component/report/storage_report_panel.tscn" id="6_tfukk"]
+
+[node name="StoragePlaygroundScene" type="Node" unique_id=1059594600]
+script = ExtResource("1_3nyug")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1865537964]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1920.0
+offset_bottom = -1080.0
+mouse_filter = 2
+color = Color(0.043137256, 0.05882353, 0.09019608, 1)
+
+[node name="UI" type="Control" parent="." unique_id=2018855289]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1920.0
+offset_bottom = -1080.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_0cwlf")
+
+[node name="StageMargin" type="MarginContainer" parent="UI" unique_id=2083847171]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 44
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 44
+theme_override_constants/margin_bottom = 24
+
+[node name="MainVBox" type="VBoxContainer" parent="UI/StageMargin" unique_id=373128576]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderBar" parent="UI/StageMargin/MainVBox" unique_id=1489418525 instance=ExtResource("3_ter1d")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ColumnsHBox" type="HBoxContainer" parent="UI/StageMargin/MainVBox" unique_id=1774060622]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+
+[node name="ControlPanel" parent="UI/StageMargin/MainVBox/ColumnsHBox" unique_id=245891033 instance=ExtResource("4_1epjm")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="InspectorPanel" parent="UI/StageMargin/MainVBox/ColumnsHBox" unique_id=1551809796 instance=ExtResource("5_540vv")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ReportPanel" parent="UI/StageMargin/MainVBox/ColumnsHBox" unique_id=1777364343 instance=ExtResource("6_tfukk")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FooterHints" type="HBoxContainer" parent="UI/StageMargin/MainVBox" unique_id=1271771722]
+layout_mode = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="Hint1" type="Label" parent="UI/StageMargin/MainVBox/FooterHints" unique_id=1130558597]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "F6 一键运行验证"
+
+[node name="Dot1" type="Label" parent="UI/StageMargin/MainVBox/FooterHints" unique_id=2077993774]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "·"
+
+[node name="Hint2" type="Label" parent="UI/StageMargin/MainVBox/FooterHints" unique_id=834499249]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "业务层仅调 StorageItem.for_save() 即可自动继承全局硬件指纹加密"
+
+[node name="Dot2" type="Label" parent="UI/StageMargin/MainVBox/FooterHints" unique_id=287776382]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "·"
+
+[node name="Hint3" type="Label" parent="UI/StageMargin/MainVBox/FooterHints" unique_id=1770629354]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "环境开关位于 res://src/resources/envs/env_*.tres"

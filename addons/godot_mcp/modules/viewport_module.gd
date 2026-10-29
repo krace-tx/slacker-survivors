@@ -31,6 +31,19 @@ func register_commands(registry: CommandRegistry) -> void:
 	)
 	registry.register_alias("capture_node", "viewport.capture_node")
 
+	# 3. viewport.capture_3d
+	registry.register_command(
+		"viewport.capture_3d",
+		"Capture the current 3D editor viewport screenshot as base64 or save to path",
+		{
+			"viewport_index": {"type": "int", "default": 0, "description": "3D editor viewport index (0-3)"},
+			"save_path": {"type": "string", "default": "", "description": "Optional file path to save PNG"},
+			"return_base64": {"type": "bool", "default": true, "description": "Whether to return image base64 data string"},
+		},
+		_capture_viewport_3d
+	)
+	registry.register_alias("capture_viewport_3d", "viewport.capture_3d")
+
 
 func _capture_viewport_2d(p: Dictionary) -> Variant:
 	var iface := ctx.get_interface()
@@ -97,6 +110,27 @@ func _capture_node(p: Dictionary) -> Variant:
 		target_image = image.get_region(crop_rect)
 
 	return _process_image(target_image, p)
+
+
+func _capture_viewport_3d(p: Dictionary) -> Variant:
+	var iface := ctx.get_interface()
+	if iface == null:
+		return RpcError.execution_error("EditorInterface unavailable")
+
+	var idx: int = clampi(int(p.get("viewport_index", 0)), 0, 3)
+	var vp: SubViewport = iface.get_editor_viewport_3d(idx)
+	if vp == null:
+		return RpcError.execution_error("3D editor viewport %d unavailable" % idx)
+
+	var tex := vp.get_texture()
+	if tex == null:
+		return RpcError.execution_error("3D viewport texture is null")
+
+	var image := tex.get_image()
+	if image == null or image.is_empty():
+		return RpcError.execution_error("Failed to capture 3D viewport image")
+
+	return _process_image(image, p)
 
 
 func _process_image(image: Image, p: Dictionary) -> Variant:

@@ -16,6 +16,9 @@ interface OpenSceneParams {
 interface CreateSceneParams {
   path: string;
   root_node_type?: string;
+  root_node_name?: string;
+  base_scene_path?: string;
+  root_script?: string;
 }
 
 interface CreateResourceParams {
@@ -30,18 +33,30 @@ interface CreateResourceParams {
 export const sceneTools: MCPTool[] = [
   {
     name: 'create_scene',
-    description: 'Create a new empty scene with optional root node type',
+    description: 'Create a new scene (from root node type or inherited base scene) and save to disk',
     parameters: z.object({
       path: z.string()
         .describe('Path where the new scene will be saved (e.g. "res://scenes/new_scene.tscn")'),
       root_node_type: z.string().optional()
         .describe('Type of root node to create (e.g. "Node2D", "Node3D", "Control"). Defaults to "Node" if not specified'),
+      root_node_name: z.string().optional()
+        .describe('Optional explicit root node name'),
+      base_scene_path: z.string().optional()
+        .describe('Optional base .tscn path for scene inheritance'),
+      root_script: z.string().optional()
+        .describe('Optional .gd script path to attach to root node'),
     }),
-    execute: async ({ path, root_node_type = "Node" }: CreateSceneParams): Promise<string> => {
+    execute: async ({ path, root_node_type = "Node", root_node_name = "", base_scene_path = "", root_script = "" }: CreateSceneParams): Promise<string> => {
       const godot = getGodotConnection();
       
       try {
-        const result = await godot.sendCommand<CommandResult>('create_scene', { path, root_node_type });
+        const result = await godot.sendCommand<CommandResult>('create_scene', {
+          path,
+          root_node_type,
+          root_node_name,
+          base_scene_path,
+          root_script,
+        });
         return `Created new scene at ${result.scene_path} with root node type ${result.root_node_type}`;
       } catch (error) {
         throw new Error(`Failed to create scene: ${(error as Error).message}`);
@@ -200,6 +215,27 @@ export const sceneTools: MCPTool[] = [
         return out;
       } catch (error) {
         throw new Error(`Failed to capture node: ${(error as Error).message}`);
+      }
+    },
+  },
+
+  {
+    name: 'capture_viewport_3d',
+    description: 'Capture a screenshot of the 3D editor viewport as base64 or save to path',
+    parameters: z.object({
+      viewport_index: z.number().default(0).describe('3D editor viewport index (0-3)'),
+      save_path: z.string().optional().describe('Optional file path to save PNG'),
+      return_base64: z.boolean().default(true).describe('Whether to return base64 PNG data'),
+    }),
+    execute: async ({ viewport_index = 0, save_path = '', return_base64 = true }: any): Promise<string> => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('capture_viewport_3d', { viewport_index, save_path, return_base64 });
+        let out = `Captured 3D viewport #${viewport_index} (${result.width}x${result.height})`;
+        if (result.save_path) out += ` saved to ${result.save_path}`;
+        return out;
+      } catch (error) {
+        throw new Error(`Failed to capture 3D viewport: ${(error as Error).message}`);
       }
     },
   },

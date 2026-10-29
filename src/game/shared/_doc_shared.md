@@ -15,7 +15,7 @@ src/game/shared/
 ├── model/                                    # [支柱 1 · M] 共享数据模型层（纯数据结构 + 内聚枚举/Key + 序列化/自愈校验）
 │   ├── save/                                 # 子域 A：持久化存档聚合根模型 (*Model，继承 BaseParams，内聚 STORAGE_DOMAIN = &"shared" 与 storage_item() 对接 App.storage)
 │   │   ├── game_settings_model.gd            # 游戏全局偏好设置存档聚合根 (GameSettingsModel -> user://config/shared/game_settings.json)
-│   │   └── player_profile_model.gd           # 玩家全局持久化基础档案模型 (PlayerProfileModel -> user://saves/shared/player_profile.json)
+│   │   └── player_profile_model.gd           # 玩家全局持久化基础档案模型 (PlayerProfileModel -> user://saves/shared/player_profile.sav)
 │   ├── data/                                 # 子域 B：内嵌子数据块与跨模块通用条目 (*Data / *Params / *Req / *Resp，内聚所属业务枚举)
 │   │   ├── display_settings_data.gd          # 显示与窗口设置子数据块 (DisplaySettingsData)
 │   │   ├── graphics_settings_data.gd         # 画质与视口渲染子数据块 (GraphicsSettingsData: 内聚 QualityPreset / ShadowQuality)
@@ -23,13 +23,17 @@ src/game/shared/
 │   │   ├── control_settings_data.gd          # 操作、震动与改键子数据块 (ControlSettingsData: 内聚 VirtualJoystickMode)
 │   │   └── general_settings_data.gd          # 语言与通用偏好子数据块 (GeneralSettingsData)
 │   └── config/                               # 子域 C：跨模块静态配置表与路由配置 (*Config / GameScenes)
+│       ├── game_env_config.gd                # 多环境部署参数与核心存档加密开关配置表 (GameEnvConfig -> res://src/resources/envs/env_*.tres)
 │       ├── game_scenes.gd                    # [插件自动注入 · 严禁手改] 路由级场景配置表 (GameScenes: Scene / Dialog / Component)
 │       └── shader_warmup_config.gd           # 编辑器可视化 Shader 与特效预热清单配置表 (ShaderWarmupConfig)
 │
 ├── service/                                  # [支柱 2 · S] 共享业务服务层（跨模块状态协调、底层硬件/存档编排与领域事件 EVENT_* 发布）
-│   ├── settings/                             # 子域 A：全局游戏设置服务
+│   ├── env/                                  # 子域 A：全局多环境配置与安全策略注入服务
+│   │   ├── game_env_profile.gd               # 多环境策略适配器 (GameEnvProfile extends BaseEnvProfile，统一注入 App.storage 全局存档加密与 App.net 网关配置)
+│   │   └── game_env_service.gd               # 多环境策略幂等激活与查询入口 (GameEnvService)
+│   ├── settings/                             # 子域 B：全局游戏设置服务
 │   │   └── game_settings_service.gd          # 协调 GameSettingsModel <-> App.*，广播 EVENT_SETTINGS_CHANGED / EVENT_QUALITY_PRESET_CHANGED
-│   └── profile/                              # 子域 B：玩家全局档案服务
+│   └── profile/                              # 子域 C：玩家全局档案服务
 │       └── player_profile_service.gd         # 协调 PlayerProfileModel 读写、会话登录记录与 EVENT_PROFILE_UPDATED 广播
 │
 └── component/                                # [支柱 3 · V] 跨模块通用 UI 组件与容器调度（无特定业务流）
@@ -81,16 +85,16 @@ flowchart LR
 
 - **数据层 [`GameSettingsModel`](model/save/game_settings_model.gd) + 五大独立 `*Data` 文件**：
   - 采用顶层聚合根 `GameSettingsModel` + 五个独立拆分的 [`BaseParams`](../../framework/infra/param/base_params.gd) 子数据块（[`DisplaySettingsData`](model/data/display_settings_data.gd)、[`GraphicsSettingsData`](model/data/graphics_settings_data.gd)、[`AudioSettingsData`](model/data/audio_settings_data.gd)、[`ControlSettingsData`](model/data/control_settings_data.gd)、[`GeneralSettingsData`](model/data/general_settings_data.gd)）正交建模，每个子块均支持独立的 `sanitize()`、`reset()` 与 `clone()`：
-    1. `display`（`DisplaySettingsData`）：显示器索引、窗口模式、分辨率、VSync、前台帧率上限、后台失焦降帧（`background_max_fps`）、全局 HUD 安全区比例（`safe_area_scale`）、设计宽高比锁定（`lock_design_aspect`）与亮度；
-    2. `graphics`（`GraphicsSettingsData`）：画质预设档位（`LOW/MEDIUM/HIGH/ULTRA/CUSTOM`）、3D 渲染缩放、MSAA 2D/3D、FXAA/SMAA、2D 纹理过滤、特效粒子密度与阴影质量；
-    3. `audio`（`AudioSettingsData`）：主音量/BGM/SFX/语音/环境音五通道音量、正交静音开关与后台失焦自动静音（`mute_in_background`）；
-    4. `control`（`ControlSettingsData`）：物理震动开关与强度、手柄死区、鼠标灵敏度、移动端虚拟摇杆模式与自定义改键映射补丁（`input_bindings`）；
-    5. `general`（`GeneralSettingsData`）：多语言区域标识（支持首次启动自动匹配 OS 系统语言）。
+	1. `display`（`DisplaySettingsData`）：显示器索引、窗口模式、分辨率、VSync、前台帧率上限、后台失焦降帧（`background_max_fps`）、全局 HUD 安全区比例（`safe_area_scale`）、设计宽高比锁定（`lock_design_aspect`）与亮度；
+	2. `graphics`（`GraphicsSettingsData`）：画质预设档位（`LOW/MEDIUM/HIGH/ULTRA/CUSTOM`）、3D 渲染缩放、MSAA 2D/3D、FXAA/SMAA、2D 纹理过滤、特效粒子密度与阴影质量；
+	3. `audio`（`AudioSettingsData`）：主音量/BGM/SFX/语音/环境音五通道音量、正交静音开关与后台失焦自动静音（`mute_in_background`）；
+	4. `control`（`ControlSettingsData`）：物理震动开关与强度、手柄死区、鼠标灵敏度、移动端虚拟摇杆模式与自定义改键映射补丁（`input_bindings`）；
+	5. `general`（`GeneralSettingsData`）：多语言区域标识（支持首次启动自动匹配 OS 系统语言）。
 - **服务内核 [`GameSettingsService`](service/settings/game_settings_service.gd)**：
   - **启动与持久化**：启动期由 [`BootstrapScene`](../bootstrap/bootstrap_scene.gd) 在渲染首帧前调用 `await GameSettingsService.load_and_apply()` 一键完成磁盘读取、边界钳制与全系统硬件同步；
   - **切屏事务与 15 秒回滚内核**：内置 `begin_display_transaction()` / `commit_display_transaction()` / `rollback_display_transaction()`，任何项目的切屏确认框只需调这三个方法即可完成安全回滚；
   - **全维度原子级设置 API**：
-    - 显示：`set_window_mode()`、`set_resolution()`、`toggle_fullscreen()`、`set_vsync()`、`set_max_fps()`、`set_safe_area_scale()`、`set_lock_design_aspect()`；
-    - 画质：`set_quality_preset()`（自动展开预设）与 `set_msaa()` / `set_screen_space_aa()` / `set_render_scale()`（单项微调自动切入 `CUSTOM`）；
-    - 音频：`set_volumes(..., auto_save=false)`（滑块拖动实时听音）+ `save_async()`（松手落盘）、`set_master_muted()` / `set_music_enabled()` / `set_sfx_enabled()` / `set_mute_in_background()`；
-    - 多语言与输入：`set_locale()`、`set_haptic_enabled()`、`set_joy_deadzone()`、`sync_input_bindings_from_system()`。
+	- 显示：`set_window_mode()`、`set_resolution()`、`toggle_fullscreen()`、`set_vsync()`、`set_max_fps()`、`set_safe_area_scale()`、`set_lock_design_aspect()`；
+	- 画质：`set_quality_preset()`（自动展开预设）与 `set_msaa()` / `set_screen_space_aa()` / `set_render_scale()`（单项微调自动切入 `CUSTOM`）；
+	- 音频：`set_volumes(..., auto_save=false)`（滑块拖动实时听音）+ `save_async()`（松手落盘）、`set_master_muted()` / `set_music_enabled()` / `set_sfx_enabled()` / `set_mute_in_background()`；
+	- 多语言与输入：`set_locale()`、`set_haptic_enabled()`、`set_joy_deadzone()`、`sync_input_bindings_from_system()`。

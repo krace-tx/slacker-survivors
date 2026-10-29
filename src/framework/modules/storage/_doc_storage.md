@@ -36,7 +36,9 @@ src/framework/modules/storage/
 3. **L2 磁盘 `.tmp/.bak` 双写容灾自愈与正交压缩/加密 (Atomic Save & Self-Healing)**：
    - **写入事务流**：先写入 `<path>.tmp` ➔ 将旧主文件安全备份至 `<path>.bak` ➔ 将 `.tmp` 原子重命名提升为主文件。
    - **损坏自愈流**：读取时若主文件缺失、JSON 损坏、解密失败（`StorageError.DECRYPT_FAILED`）或 MD5 不匹配，自动降级读取 `.bak` 并自愈恢复主文件。
-   - **正交压缩与加密管线**：`StorageItem` 支持同时开启 `with_compression(true)`（内存 `FWKZ` ZSTD 帧压缩）与 `with_encryption(key)` / `with_device_encryption(secret)`（AES-256 加密及硬件指纹绑定防跨机器拷档），写入时自动按「先 ZSTD 压缩 ➔ 再 AES-256 加密」流水线执行。
+   - **正交压缩与加密管线（支持启动期全局一次注册）**：
+     - **全局零配置策略**：在启动期调用一次 `App.storage.set_save_encryption(secret, bind_device, auto_compress, allow_plaintext_fallback)`，后续所有通过 [`StorageItem.for_save(...)`](types/storage_item.gd#L81) 构造的核心存档将自动按各自 `key_id` 领域盐值（及 `OS.get_unique_id()` 硬件指纹）派生独立 AES-256 密钥并按「先 ZSTD 压缩 ➔ 再 AES-256 认证加密」落盘；通过 [`StorageItem.for_config(...)`](types/storage_item.gd#L60) 构造的设备配置自动豁免保持明文 JSON。
+     - **单项细粒度覆盖**：支持通过 `with_encryption(key)` / `with_device_encryption(secret)` 指定单项专属密钥，或通过 `without_encryption()` 显式豁免加密。
 4. **同 `key_id` 并发写串行化与退出落盘追踪 (Concurrency & Graceful Flush)**：
    - 针对同一 `key_id` 的并发 `write_async` 自动进入 FIFO 互斥锁队列串行执行，防止并发协程踩踏 `.tmp` 或发生旧数据覆盖新数据（Lost Update）。
    - `LOCAL_FIRST` 策略下的后台非阻塞远端同步同样纳入 `_inflight_writes` 计数追踪，应用退出时通过 `flush_async()` / `shutdown_async()` 确保本地与云端写入全部收尾。
@@ -63,9 +65,9 @@ user://
 │   │   └── game_settings.json
 │   └── <feature>/                            # [二级：业务架构域] 对应 src/game/features/<feature>/model/
 │
-├── saves/                                    # [一级：玩家核心存档区] 核心资产，纳入 .tmp/.bak 自愈与云存档同步
+├── saves/                                    # [一级：玩家核心存档区] 核心资产，自动继承全局压缩/加密、.tmp/.bak 自愈与云存档同步
 │   ├── shared/                               # [二级：业务架构域] 跨 2+ 模块共享存档 (Rule of 2+)
-│   │   └── player_profile.json
+│   │   └── player_profile.sav
 │   └── <feature>/                            # [二级：业务架构域] 垂直模块私有存档 (与 Feature 目录名逐字一致)
 │       └── run_snapshot.sav                  #   如 user://saves/battle/run_snapshot.sav
 │
@@ -98,9 +100,12 @@ user://
 
 ## 三、 使用范式
 
-### 1. 标准模型绑定、版本迁移与三级异步读写（含 Steam Cloud & HTTP 云存档双通道）
+### 1. 启动期全局加密注册 + 业务零配置模型绑定（含 Steam Cloud & HTTP 云存档双通道）
 ```gdscript
-# 1. 通过语义工厂构造并绑定 StorageItem（自动映射至 user://saves/shared/player_profile.json）
+# 0. [启动阶段一次性执行] 注册全局核心存档加密策略（绑定硬件指纹 + ZSTD 压缩，for_config 设备配置不受影响）
+App.storage.set_save_encryption("app_save_master_secret_v1", true, true, false)
+
+# 1. [业务模型层] 无需逐个配置加密：for_save 默认映射至 user://saves/shared/player_profile.sav 并自动继承全局加密策略
 #    - .with_steam_cloud() 开启 Steam Cloud (ISteamRemoteStorage) 自动同步与回退
 #    - .with_remote("/v1/cloud_save/player", "POST") 开启自建 HTTP 后端云存档（支持与 Steam Cloud 双写镜像）
 var item := StorageItem.for_save(&"shared", "player_profile", 2) \

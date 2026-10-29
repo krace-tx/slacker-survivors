@@ -34,6 +34,7 @@ static func load_or_create_async() -> Result:
 	if App == null or App.storage == null:
 		return Result.err_code(_ERR_STORAGE_MISSING, "Storage service is not available.")
 
+	GameEnvService.setup_and_activate()
 	var item := PlayerProfileModel.storage_item()
 	App.storage.bind(item)
 
@@ -67,6 +68,7 @@ static func load_or_create_async() -> Result:
 static func save_async() -> Result:
 	if App == null or App.storage == null:
 		return Result.err_code(_ERR_STORAGE_MISSING, "Storage service is not available.")
+	GameEnvService.setup_and_activate()
 	var item := PlayerProfileModel.storage_item()
 	App.storage.bind(item)
 	var profile := get_current().sanitize()

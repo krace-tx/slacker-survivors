@@ -257,4 +257,98 @@ export const nodeTools: MCPTool[] = [
       }
     },
   },
+
+  {
+    name: 'instantiate_scene',
+    description: 'Instantiate an existing .tscn or .glb PackedScene prefab as a child node',
+    parameters: z.object({
+      parent_path: z.string().default('/root').describe('Parent node path'),
+      scene_path: z.string().describe('PackedScene resource path (e.g. "res://src/.../slot_card.tscn")'),
+      node_name: z.string().optional().describe('Optional explicit name for the instanced node'),
+    }),
+    execute: async ({ parent_path = '/root', scene_path, node_name = '' }: any): Promise<string> => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('instantiate_scene', { parent_path, scene_path, node_name });
+        return `Instantiated ${scene_path} as "${result.node_name}" at ${result.node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to instantiate scene: ${(error as Error).message}`);
+      }
+    },
+  },
+
+  {
+    name: 'set_unique_name',
+    description: 'Enable or disable scene-unique name (%NodeName) on a node',
+    parameters: z.object({
+      node_path: z.string().describe('Target node path'),
+      enabled: z.boolean().default(true).describe('Whether unique_name_in_owner is enabled'),
+    }),
+    execute: async ({ node_path, enabled = true }: any): Promise<string> => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('set_unique_name', { node_path, enabled });
+        return `Set unique_name_in_owner=${enabled} on ${result.node_path} (${result.unique_name})`;
+      } catch (error) {
+        throw new Error(`Failed to set unique name: ${(error as Error).message}`);
+      }
+    },
+  },
+
+  {
+    name: 'move_node',
+    description: 'Reorder child index or reparent a node within the edited scene tree',
+    parameters: z.object({
+      node_path: z.string().describe('Target node path'),
+      new_parent_path: z.string().optional().describe('Optional new parent node path'),
+      index: z.number().default(-1).describe('Target child index (-1 appends or keeps current)'),
+    }),
+    execute: async ({ node_path, new_parent_path = '', index = -1 }: any): Promise<string> => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('move_node', { node_path, new_parent_path, index });
+        return `Moved node to ${result.node_path} (index=${result.index})`;
+      } catch (error) {
+        throw new Error(`Failed to move node: ${(error as Error).message}`);
+      }
+    },
+  },
+
+  {
+    name: 'get_scene_tree',
+    description: 'Get recursive scene tree hierarchy snapshot with script, prefab, and layout info',
+    parameters: z.object({
+      root_path: z.string().default('/root').describe('Subtree root path'),
+      max_depth: z.number().default(8).describe('Maximum recursion depth'),
+    }),
+    execute: async ({ root_path = '/root', max_depth = 8 }: any): Promise<string> => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('get_scene_tree', { root_path, max_depth });
+        return JSON.stringify(result, null, 2);
+      } catch (error) {
+        throw new Error(`Failed to get scene tree: ${(error as Error).message}`);
+      }
+    },
+  },
+
+  {
+    name: 'set_theme_override',
+    description: 'Set Control theme override (constant, color, font_size, or stylebox from res:// / StyleBoxFlat dict)',
+    parameters: z.object({
+      node_path: z.string().describe('Target Control node path'),
+      override_type: z.enum(['constant', 'color', 'font_size', 'stylebox']).describe('Override category'),
+      name: z.string().describe('Theme item name (e.g. separation, margin_left, font_color, panel)'),
+      value: z.any().describe('Override value (int, #hex/{r,g,b,a}, res://...tres, or StyleBoxFlat dict)'),
+    }),
+    execute: async ({ node_path, override_type, name, value }: any): Promise<string> => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('set_theme_override', { node_path, override_type, name, value });
+        return `Applied ${result.property} on ${result.node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to set theme override: ${(error as Error).message}`);
+      }
+    },
+  },
 ];

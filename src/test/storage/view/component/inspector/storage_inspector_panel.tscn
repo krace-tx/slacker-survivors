@@ -1,0 +1,186 @@
+[gd_scene format=3 uid="uid://cwv88b6fge1k1"]
+
+[ext_resource type="Script" uid="uid://nnt2g2q6txxr" path="res://src/test/storage/view/component/inspector/storage_inspector_panel.gd" id="1_46geg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_46geg"]
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+bg_color = Color(0.06666667, 0.09411765, 0.15294118, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12156863, 0.16078432, 0.21568628, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f0ysl"]
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 16.0
+content_margin_bottom = 14.0
+bg_color = Color(0.050980393, 0.07450981, 0.1254902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.11764706, 0.16078432, 0.23137255, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bnfs3"]
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 16.0
+content_margin_bottom = 14.0
+bg_color = Color(0.050980393, 0.07450981, 0.1254902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.11764706, 0.16078432, 0.23137255, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="StorageInspectorPanel" type="PanelContainer" unique_id=1551809796]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.25
+theme_override_styles/panel = SubResource("StyleBoxFlat_46geg")
+script = ExtResource("1_46geg")
+
+[node name="InspectorVBox" type="VBoxContainer" parent="." unique_id=590223924]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="SectionTitle" type="Label" parent="InspectorVBox" unique_id=1687961961]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94509804, 0.9607843, 0.9764706, 1)
+theme_override_font_sizes/font_size = 15
+text = "磁盘物理字节实时透视镜 (user:// 沙盒直读)"
+
+[node name="SaveCard" type="PanelContainer" parent="InspectorVBox" unique_id=1933285237]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.35
+theme_override_styles/panel = SubResource("StyleBoxFlat_f0ysl")
+
+[node name="SaveBox" type="VBoxContainer" parent="InspectorVBox/SaveCard" unique_id=805420551]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveTopRow" type="HBoxContainer" parent="InspectorVBox/SaveCard/SaveBox" unique_id=1187279294]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveTag" type="Label" parent="InspectorVBox/SaveCard/SaveBox/SaveTopRow" unique_id=722076982]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94509804, 0.9607843, 0.9764706, 1)
+theme_override_font_sizes/font_size = 13
+text = "核心存档 · StorageItem.for_save()"
+
+[node name="Sp1" type="Control" parent="InspectorVBox/SaveCard/SaveBox/SaveTopRow" unique_id=1352608701]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="SaveBadgeLabel" type="Label" parent="InspectorVBox/SaveCard/SaveBox/SaveTopRow" unique_id=774177224]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.20392157, 0.827451, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "FWKE · AES-256 + 指纹绑定 + ZSTD"
+
+[node name="SavePathLabel" type="Label" parent="InspectorVBox/SaveCard/SaveBox" unique_id=1741706143]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "user://saves/storage/hero_slot.sav (0 B)"
+autowrap_mode = 1
+
+[node name="SaveHexLabel" type="Label" parent="InspectorVBox/SaveCard/SaveBox" unique_id=624133941]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5803922, 0.6392157, 0.72156864, 1)
+theme_override_font_sizes/font_size = 12
+text = "HEX: 46 57 4B 45 ..."
+autowrap_mode = 3
+
+[node name="SaveAsciiLabel" type="Label" parent="InspectorVBox/SaveCard/SaveBox" unique_id=2142157517]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.79607844, 0.8352941, 0.88235295, 1)
+theme_override_font_sizes/font_size = 12
+text = "RAW: FWKE············"
+autowrap_mode = 1
+
+[node name="SaveSep" type="HSeparator" parent="InspectorVBox/SaveCard/SaveBox" unique_id=1479916661]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="SaveModelLabel" type="Label" parent="InspectorVBox/SaveCard/SaveBox" unique_id=1386321337]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.21960784, 0.7411765, 0.972549, 1)
+theme_override_font_sizes/font_size = 13
+text = "角色: 摸鱼实习生   |   等级: Lv.12   |   金币: 2500 G"
+autowrap_mode = 3
+
+[node name="ConfigCard" type="PanelContainer" parent="InspectorVBox" unique_id=966013673]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.85
+theme_override_styles/panel = SubResource("StyleBoxFlat_bnfs3")
+
+[node name="CfgBox" type="VBoxContainer" parent="InspectorVBox/ConfigCard" unique_id=61235343]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CfgTopRow" type="HBoxContainer" parent="InspectorVBox/ConfigCard/CfgBox" unique_id=363284395]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CfgTag" type="Label" parent="InspectorVBox/ConfigCard/CfgBox/CfgTopRow" unique_id=982125971]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94509804, 0.9607843, 0.9764706, 1)
+theme_override_font_sizes/font_size = 13
+text = "设备偏好 · StorageItem.for_config()"
+
+[node name="Sp2" type="Control" parent="InspectorVBox/ConfigCard/CfgBox/CfgTopRow" unique_id=166500593]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CfgBadgeLabel" type="Label" parent="InspectorVBox/ConfigCard/CfgBox/CfgTopRow" unique_id=245377997]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.21960784, 0.7411765, 0.972549, 1)
+theme_override_font_sizes/font_size = 12
+text = "JSON · 自动豁免加密"
+
+[node name="CfgPathLabel" type="Label" parent="InspectorVBox/ConfigCard/CfgBox" unique_id=1706257021]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "user://config/storage/device_prefs.json (0 B)"
+autowrap_mode = 1
+
+[node name="CfgRawLabel" type="Label" parent="InspectorVBox/ConfigCard/CfgBox" unique_id=1615991010]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.79607844, 0.8352941, 0.88235295, 1)
+theme_override_font_sizes/font_size = 12
+text = "{ \"_schema_version\": 1.0, \"master_volume\": 0.8, \"quality_tag\": \"HIGH\", \"vsync_enabled\": true }"
+autowrap_mode = 1
