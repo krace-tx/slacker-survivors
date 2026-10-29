@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="GameEnvConfig" format=3]
+[gd_resource type="Resource" script_class="GameEnvConfig" format=3 uid="uid://i4ak61ik0p07"]
 
-[ext_resource type="Script" path="res://src/game/shared/model/config/game_env_config.gd" id="1_h6kd7"]
+[ext_resource type="Script" uid="uid://l52nlvrp3yya" path="res://src/game/shared/model/config/game_env_config.gd" id="1_h6kd7"]
 
 [resource]
 script = ExtResource("1_h6kd7")
