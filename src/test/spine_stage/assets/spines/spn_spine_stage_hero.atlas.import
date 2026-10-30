@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://ccs3hiq5we80c"
+path="res://.godot/imported/spn_spine_stage_hero.atlas-455ed08b01448e898154bd017557c62b.spatlas"
+
+[deps]
+
+source_file="res://src/test/spine_stage/assets/spines/spn_spine_stage_hero.atlas"
+dest_files=["res://.godot/imported/spn_spine_stage_hero.atlas-455ed08b01448e898154bd017557c62b.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

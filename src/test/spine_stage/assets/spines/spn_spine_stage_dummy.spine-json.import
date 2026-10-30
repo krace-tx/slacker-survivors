@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://n6jijisacdgb"
+path="res://.godot/imported/spn_spine_stage_dummy.spine-json-a468bc54c272966518d562b0c290b542.spjson"
+
+[deps]
+
+source_file="res://src/test/spine_stage/assets/spines/spn_spine_stage_dummy.spine-json"
+dest_files=["res://.godot/imported/spn_spine_stage_dummy.spine-json-a468bc54c272966518d562b0c290b542.spjson"]
+
+[params]
+

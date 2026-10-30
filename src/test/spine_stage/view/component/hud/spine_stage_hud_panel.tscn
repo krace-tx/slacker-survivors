@@ -1,0 +1,178 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/spine_stage/view/component/hud/spine_stage_hud_panel.gd" id="1_vodtm"]
+[ext_resource type="PackedScene" path="res://src/test/spine_stage/view/component/pill/spine_loadout_slot_button.tscn" id="2_6bhsn"]
+
+[node name="SpineStageHudPanel" type="MarginContainer" unique_id=1459285034]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 18
+script = ExtResource("1_vodtm")
+
+[node name="RootVBox" type="VBoxContainer" parent="." unique_id=669391297]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="TopBarCard" type="PanelContainer" parent="RootVBox" unique_id=863947188]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TopBarHBox" type="HBoxContainer" parent="RootVBox/TopBarCard" unique_id=1435847671]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="RootVBox/TopBarCard/TopBarHBox" unique_id=781424423]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.972549, 0.98039216, 0.9882353, 1)
+text = "2.5D 方案 B · Rev2D + Spine + 3D 实时投射阴影"
+
+[node name="TopSpacer" type="Control" parent="RootVBox/TopBarCard/TopBarHBox" unique_id=755392104]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="ActionBadge" type="PanelContainer" parent="RootVBox/TopBarCard/TopBarHBox" unique_id=1730706314]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ActionLabel" type="Label" parent="RootVBox/TopBarCard/TopBarHBox/ActionBadge" unique_id=1193840013]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.21960784, 0.7411765, 0.972549, 1)
+text = "IDLE · 待机呼吸"
+
+[node name="CombatBadge" type="PanelContainer" parent="RootVBox/TopBarCard/TopBarHBox" unique_id=1454176172]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CombatStatLabel" type="Label" parent="RootVBox/TopBarCard/TopBarHBox/CombatBadge" unique_id=921511525]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.9843137, 0.7490196, 0.14117648, 1)
+text = "命中 0  ·  总伤 0"
+
+[node name="LightingButton" type="Button" parent="RootVBox/TopBarCard/TopBarHBox" unique_id=1123761100]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(208, 34)
+layout_mode = 2
+text = "光影: 黄昏斜阳 + 火盆补光 [L]"
+
+[node name="ViewportSpacer" type="Control" parent="RootVBox" unique_id=452184483]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="BottomDockVBox" type="VBoxContainer" parent="RootVBox" unique_id=608231180]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="LoadoutRow" type="HBoxContainer" parent="RootVBox/BottomDockVBox" unique_id=1253715062]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="WeaponGroupCard" type="PanelContainer" parent="RootVBox/BottomDockVBox/LoadoutRow" unique_id=464771678]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="WeaponGroupVBox" type="VBoxContainer" parent="RootVBox/BottomDockVBox/LoadoutRow/WeaponGroupCard" unique_id=1878733662]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="WeaponSubtitleLabel" type="Label" parent="RootVBox/BottomDockVBox/LoadoutRow/WeaponGroupCard/WeaponGroupVBox" unique_id=1115319193]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.5803922, 0.6392157, 0.72156864, 1)
+text = "武器热切 [1-3]  ·  均衡连斩 · ATK 115"
+
+[node name="WeaponSlotsHBox" type="HBoxContainer" parent="RootVBox/BottomDockVBox/LoadoutRow/WeaponGroupCard/WeaponGroupVBox" unique_id=576903275]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="WeaponSlot0" parent="RootVBox/BottomDockVBox/LoadoutRow/WeaponGroupCard/WeaponGroupVBox/WeaponSlotsHBox" unique_id=1284746020 instance=ExtResource("2_6bhsn")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="WeaponSlot1" parent="RootVBox/BottomDockVBox/LoadoutRow/WeaponGroupCard/WeaponGroupVBox/WeaponSlotsHBox" unique_id=316545490 instance=ExtResource("2_6bhsn")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "[2] 猩红死神镰"
+slot_index = 1
+
+[node name="WeaponSlot2" parent="RootVBox/BottomDockVBox/LoadoutRow/WeaponGroupCard/WeaponGroupVBox/WeaponSlotsHBox" unique_id=762429169 instance=ExtResource("2_6bhsn")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "[3] 雷霆符文锤"
+slot_index = 2
+
+[node name="OutfitGroupCard" type="PanelContainer" parent="RootVBox/BottomDockVBox/LoadoutRow" unique_id=1614497789]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="OutfitGroupVBox" type="VBoxContainer" parent="RootVBox/BottomDockVBox/LoadoutRow/OutfitGroupCard" unique_id=513263642]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="OutfitSubtitleLabel" type="Label" parent="RootVBox/BottomDockVBox/LoadoutRow/OutfitGroupCard/OutfitGroupVBox" unique_id=1928358305]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.5803922, 0.6392157, 0.72156864, 1)
+text = "披风/头饰 [Q/E]  ·  王室金冠 · 标准均衡"
+
+[node name="OutfitSlotsHBox" type="HBoxContainer" parent="RootVBox/BottomDockVBox/LoadoutRow/OutfitGroupCard/OutfitGroupVBox" unique_id=1100523527]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="OutfitSlot0" parent="RootVBox/BottomDockVBox/LoadoutRow/OutfitGroupCard/OutfitGroupVBox/OutfitSlotsHBox" unique_id=1842516487 instance=ExtResource("2_6bhsn")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "[4] 翡翠游侠装"
+
+[node name="OutfitSlot1" parent="RootVBox/BottomDockVBox/LoadoutRow/OutfitGroupCard/OutfitGroupVBox/OutfitSlotsHBox" unique_id=1117978892 instance=ExtResource("2_6bhsn")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "[5] 暗金铁卫铠"
+slot_index = 1
+
+[node name="OutfitSlot2" parent="RootVBox/BottomDockVBox/LoadoutRow/OutfitGroupCard/OutfitGroupVBox/OutfitSlotsHBox" unique_id=1672086786 instance=ExtResource("2_6bhsn")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "[6] 深渊狂猎甲"
+slot_index = 2
+
+[node name="HintCard" type="PanelContainer" parent="RootVBox/BottomDockVBox" unique_id=136161171]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+
+[node name="ControlHintLabel" type="Label" parent="RootVBox/BottomDockVBox/HintCard" unique_id=2143110319]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.79607844, 0.8352941, 0.88235295, 1)
+text = "WASD 3D 走位  ·  Space 跳跃登台(观察长影分离)  ·  J / 左键 二段连斩  ·  1-3 热切武器  ·  Q/E 热切披风头饰  ·  L 切换日夜火光"

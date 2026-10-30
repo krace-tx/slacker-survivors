@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://cstef3mvhqrbc"]
+
+[ext_resource type="Script" uid="uid://bglqgcidfvjg4" path="res://src/test/spine_stage/view/component/pill/spine_loadout_slot_button.gd" id="1_fbpxn"]
+
+[node name="SpineLoadoutSlotButton" type="Button" unique_id=1284746020]
+custom_minimum_size = Vector2(132, 38)
+theme_override_colors/font_color = Color(0.972549, 0.98039216, 0.9882353, 1)
+theme_override_font_sizes/font_size = 13
+text = "[1] 圣银骑士剑"
+script = ExtResource("1_fbpxn")

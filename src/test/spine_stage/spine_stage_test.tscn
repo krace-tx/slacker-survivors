@@ -1,0 +1,64 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/spine_stage/view/scene/courtyard/spine_stage_scene.gd" id="1_53ek1"]
+[ext_resource type="SpineSkeletonDataResource" path="res://src/test/spine_stage/assets/spines/spn_spine_stage_hero_data.tres" id="2_7src7"]
+[ext_resource type="PackedScene" path="res://src/test/spine_stage/view/component/stage/spine_courtyard_stage_3d.tscn" id="2_meu00"]
+[ext_resource type="PackedScene" path="res://src/test/spine_stage/view/component/camera/spine_camera_rig_3d.tscn" id="3_1s6i3"]
+[ext_resource type="SpineSkeletonDataResource" path="res://src/test/spine_stage/assets/spines/spn_spine_stage_dummy_data.tres" id="3_062b8"]
+[ext_resource type="PackedScene" path="res://src/test/spine_stage/view/component/actor/spine_actor_3d.tscn" id="4_7src7"]
+[ext_resource type="Script" path="res://src/test/spine_stage/view/scene/courtyard/spine_stage_view.gd" id="5_062b8"]
+[ext_resource type="PackedScene" path="res://src/test/spine_stage/view/component/hud/spine_stage_hud_panel.tscn" id="6_6rmru"]
+
+[node name="SpineStageTest" type="Node" unique_id=645629055]
+script = ExtResource("1_53ek1")
+hero_skeleton_data = ExtResource("2_7src7")
+dummy_skeleton_data = ExtResource("3_062b8")
+
+[node name="World3D" type="Node3D" parent="." unique_id=957296981]
+
+[node name="CourtyardStage3D" parent="World3D" unique_id=483860897 instance=ExtResource("2_meu00")]
+unique_name_in_owner = true
+
+[node name="CameraRig3D" parent="World3D" unique_id=969610535 instance=ExtResource("3_1s6i3")]
+unique_name_in_owner = true
+
+[node name="Actors" type="Node3D" parent="World3D" unique_id=2142859909]
+
+[node name="PlayerActor" parent="World3D/Actors" unique_id=1208415544 instance=ExtResource("4_7src7")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0, 1.15)
+
+[node name="DummyLeftActor" parent="World3D/Actors" unique_id=484557685 instance=ExtResource("4_7src7")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.85, 0, -0.85)
+skeleton_data = ExtResource("3_062b8")
+viewport_size = Vector2i(384, 384)
+ground_offset_y = 160.0
+is_dummy_actor = true
+
+[node name="DummyRightActor" parent="World3D/Actors" unique_id=1229568347 instance=ExtResource("4_7src7")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35, 0, 0.45)
+skeleton_data = ExtResource("3_062b8")
+viewport_size = Vector2i(384, 384)
+ground_offset_y = 160.0
+initial_facing_right = false
+is_dummy_actor = true
+
+[node name="HudLayer" type="CanvasLayer" parent="." unique_id=339114013]
+layer = 10
+
+[node name="UI" type="Control" parent="HudLayer" unique_id=218934494]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_062b8")
+
+[node name="HudPanel" parent="HudLayer/UI" unique_id=1459285034 instance=ExtResource("6_6rmru")]
+unique_name_in_owner = true
+layout_mode = 0

@@ -1,0 +1,9 @@
+[gd_resource type="SpineSkeletonDataResource" format=3]
+
+[ext_resource type="SpineAtlasResource" path="res://src/test/spine_stage/assets/spines/spn_spine_stage_dummy.atlas" id="1_maso0"]
+[ext_resource type="SpineSkeletonFileResource" path="res://src/test/spine_stage/assets/spines/spn_spine_stage_dummy.spine-json" id="2_nmeur"]
+
+[resource]
+atlas_res = ExtResource("1_maso0")
+skeleton_file_res = ExtResource("2_nmeur")
+default_mix = 0.08

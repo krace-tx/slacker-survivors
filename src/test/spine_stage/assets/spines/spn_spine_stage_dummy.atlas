@@ -1,0 +1,27 @@
+spn_spine_stage_dummy.png
+	size: 256, 256
+	filter: Linear, Linear
+postBase
+	bounds: 154, 84, 84, 28
+woodenPost
+	bounds: 118, 83, 34, 114
+crossbarL
+	bounds: 154, 114, 74, 26
+crossbarR
+	bounds: 154, 142, 74, 26
+lanternBody
+	bounds: 2, 199, 42, 53
+burlapTorso
+	bounds: 2, 83, 114, 111
+targetBullseyeOuter
+	bounds: 154, 170, 60, 60
+targetBullseyeInner
+	bounds: 216, 170, 31, 30
+pumpkinHead
+	bounds: 154, 2, 92, 80
+golemEyeL
+	bounds: 216, 202, 26, 23
+golemEyeR
+	bounds: 216, 227, 26, 23
+witchHat
+	bounds: 2, 2, 138, 79

@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/spine_stage/view/component/actor/spine_actor_3d.gd" id="1_ndlj7"]
+[ext_resource type="SpineSkeletonDataResource" path="res://src/test/spine_stage/assets/spines/spn_spine_stage_hero_data.tres" id="2_81ekf"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_tivvw"]
+radius = 0.32
+height = 1.6
+
+[node name="SpineActor3D" type="CharacterBody3D" unique_id=1208415544]
+collision_layer = 2
+floor_max_angle = 0.85
+floor_snap_length = 0.28
+script = ExtResource("1_ndlj7")
+skeleton_data = ExtResource("2_81ekf")
+
+[node name="BodyCollider" type="CollisionShape3D" parent="." unique_id=1341746123]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("CapsuleShape3D_tivvw")
+
+[node name="SpineViewport" type="SubViewport" parent="." unique_id=898033757]
+unique_name_in_owner = true
+transparent_bg = true
+render_target_update_mode = 4
+
+[node name="SpineRoot" type="Node2D" parent="SpineViewport" unique_id=345092543]
+unique_name_in_owner = true
+
+[node name="EditorPreviewSpine" type="SpineSprite" parent="SpineViewport/SpineRoot" unique_id=1426252139]
+skeleton_data_res = ExtResource("2_81ekf")
+preview_skin = "default"
+preview_animation = "idle"
+preview_frame = false
+preview_time = 0.0
+
+[node name="VisualPivot" type="Node3D" parent="." unique_id=380124630]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.95105654, 0.309017, 0, -0.309017, 0.95105654, 0, 0, 0)
+
+[node name="CharacterSprite3D" type="Sprite3D" parent="VisualPivot" unique_id=1191339902]
+unique_name_in_owner = true
+cast_shadow = 2
+offset = Vector2(0, 212)
+pixel_size = 0.0052
+shaded = true
+alpha_cut = 1
+alpha_scissor_threshold = 0.42
+
+[node name="ContactShadow" type="MeshInstance3D" parent="." unique_id=1367672508]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+cast_shadow = 0

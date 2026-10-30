@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://dj6xfr102jtdc"]
+
+[ext_resource type="Script" uid="uid://b6aujag0l8l13" path="res://src/test/spine_stage/view/component/camera/spine_camera_rig_3d.gd" id="1_vk7bq"]
+
+[node name="SpineCameraRig3D" type="Node3D" unique_id=969610535]
+script = ExtResource("1_vk7bq")
+
+[node name="MainCamera3D" type="Camera3D" parent="." unique_id=89039256]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.8571673, 0.5150381, 0, -0.5150381, 0.8571673, 0, 5.25, 7.65)
+current = true
+fov = 42.0

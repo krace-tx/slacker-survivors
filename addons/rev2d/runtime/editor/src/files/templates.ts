@@ -1,0 +1,78 @@
+/**
+ * Presentation of the model templates (GET /api/templates lists them with descriptions): thumbnails
+ * and friendly titles. Unknown templates (a newer server, a custom examples folder) still work; they
+ * get a generic tile.
+ *
+ * Thumbnails are renders of the templates made with the CLI, fitting 320x240, e.g.
+ *   rev2d render examples/hana/hana.r2d.json -o editor/src/assets/templates/hana.png --scale 0.375 --anim idle --time 0.6
+ * (blank: a `rev2d new` model; empty has none, being an empty canvas).
+ */
+import blankPng from '../assets/templates/blank.png';
+import hanaPng from '../assets/templates/hana.png';
+import minimalPng from '../assets/templates/minimal.png';
+import robotArmPng from '../assets/templates/robot-arm.png';
+import slimePng from '../assets/templates/slime.png';
+import texturedPng from '../assets/templates/textured.png';
+import { t, type MessageKey } from '../i18n/index.js';
+
+const THUMBNAILS: Record<string, string> = {
+  blank: blankPng,
+  hana: hanaPng,
+  minimal: minimalPng,
+  'robot-arm': robotArmPng,
+  slime: slimePng,
+  textured: texturedPng,
+};
+
+/** The shipped examples keep their names in every language; the two generated starters are described. */
+const TITLES: Record<string, string> = {
+  hana: 'Hana',
+  minimal: 'Minimal',
+  'robot-arm': 'Robot arm',
+  slime: 'Slime',
+  textured: 'Textured',
+};
+
+/** One-line summaries of the templates this editor knows, in the interface language. */
+const SUMMARIES: Record<string, MessageKey> = {
+  blank: 'files.template.desc.blank',
+  empty: 'files.template.desc.empty',
+  hana: 'files.template.desc.hana',
+  minimal: 'files.template.desc.minimal',
+  'robot-arm': 'files.template.desc.robotArm',
+  slime: 'files.template.desc.slime',
+  textured: 'files.template.desc.textured',
+};
+
+/** Templates generated in code: the only ones whose canvas size can be chosen. */
+export const SIZED_TEMPLATES = new Set(['blank', 'empty']);
+
+/** Example models shown on the start screen, in this order (those the server lists). */
+export const EXAMPLE_ORDER = ['hana', 'robot-arm', 'slime', 'textured', 'minimal'];
+
+export function templateThumbnail(name: string): string | null {
+  return THUMBNAILS[name] ?? null;
+}
+
+export function templateTitle(name: string): string {
+  if (name === 'blank') return t('files.template.blank');
+  if (name === 'empty') return t('files.template.empty');
+  return TITLES[name] ?? name.replace(/[-_]+/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+}
+
+/**
+ * A short description for a template card: the editor's own summary of the templates it knows (in
+ * the interface language), else the first sentence of the server's description.
+ */
+export function templateSummary(name: string, description: string, max = 110): string {
+  const key = SUMMARIES[name];
+  return key ? t(key) : shortDescription(description, max);
+}
+
+/** First sentence of a description, for compact cards. */
+export function shortDescription(text: string, max = 110): string {
+  const t = text.trim();
+  const dot = t.search(/[.!?](\s|$)/);
+  const first = dot >= 0 ? t.slice(0, dot + 1) : t;
+  return first.length > max ? `${first.slice(0, max - 1).trimEnd()}…` : first;
+}

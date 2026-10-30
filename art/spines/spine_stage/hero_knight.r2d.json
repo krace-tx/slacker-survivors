@@ -1,0 +1,3046 @@
+{
+  "format": "rev2d",
+  "version": 1,
+  "meta": {
+    "name": "hero_knight",
+    "width": 512,
+    "height": 512,
+    "background": "rgba(0,0,0,0)",
+    "fps": 30,
+    "author": "Slacker Survivors Rev2D Pipeline",
+    "description": "2.5D HD-2D Action Hero with dual-leg IK, 3-segment pendulum cape & plume physics, 5 combat animations, 3 weapons and 3 armor outfits."
+  },
+  "parameters": [
+    {
+      "id": "BodyBobY",
+      "min": -40,
+      "max": 40,
+      "default": 0,
+      "group": "Body",
+      "description": "Vertical hip offset (+ = down crouch, - = up leap)."
+    },
+    {
+      "id": "BodyLean",
+      "min": -35,
+      "max": 35,
+      "default": 0,
+      "group": "Body",
+      "description": "Torso forward/back tilt in degrees (+ = forward clockwise)."
+    },
+    {
+      "id": "HeadNod",
+      "min": -25,
+      "max": 25,
+      "default": 0,
+      "group": "Head",
+      "description": "Head pitch in degrees."
+    },
+    {
+      "id": "EyeBlink",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "group": "Head",
+      "description": "0 = open, 1 = closed."
+    },
+    {
+      "id": "FootFX",
+      "min": -80,
+      "max": 80,
+      "default": 0,
+      "group": "LegIK",
+      "description": "Front foot horizontal stride offset."
+    },
+    {
+      "id": "FootFY",
+      "min": -70,
+      "max": 20,
+      "default": 0,
+      "group": "LegIK",
+      "description": "Front foot vertical lift (- = up)."
+    },
+    {
+      "id": "FootBX",
+      "min": -80,
+      "max": 80,
+      "default": 0,
+      "group": "LegIK",
+      "description": "Back foot horizontal stride offset."
+    },
+    {
+      "id": "FootBY",
+      "min": -70,
+      "max": 20,
+      "default": 0,
+      "group": "LegIK",
+      "description": "Back foot vertical lift (- = up)."
+    },
+    {
+      "id": "ArmBackRot",
+      "min": -90,
+      "max": 90,
+      "default": 0,
+      "group": "Arms",
+      "description": "Back arm swing delta."
+    },
+    {
+      "id": "ArmFrontShoulder",
+      "min": -130,
+      "max": 120,
+      "default": 0,
+      "group": "Arms",
+      "description": "Weapon shoulder swing delta."
+    },
+    {
+      "id": "ArmFrontElbow",
+      "min": -90,
+      "max": 90,
+      "default": 0,
+      "group": "Arms",
+      "description": "Weapon elbow bend delta."
+    },
+    {
+      "id": "WeaponWrist",
+      "min": -120,
+      "max": 140,
+      "default": 0,
+      "group": "Arms",
+      "description": "Weapon wrist rotation delta."
+    },
+    {
+      "id": "SlashAlpha",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "group": "VFX",
+      "description": "Downward slash crescent opacity."
+    },
+    {
+      "id": "SlashUpAlpha",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "group": "VFX",
+      "description": "Uppercut slash crescent opacity."
+    },
+    {
+      "id": "Cape1",
+      "min": -55,
+      "max": 55,
+      "default": 0,
+      "group": "Physics",
+      "description": "Cape segment 1 pendulum angle."
+    },
+    {
+      "id": "Cape2",
+      "min": -55,
+      "max": 55,
+      "default": 0,
+      "group": "Physics",
+      "description": "Cape segment 2 pendulum angle."
+    },
+    {
+      "id": "Cape3",
+      "min": -55,
+      "max": 55,
+      "default": 0,
+      "group": "Physics",
+      "description": "Cape segment 3 pendulum angle."
+    },
+    {
+      "id": "Plume1",
+      "min": -50,
+      "max": 50,
+      "default": 0,
+      "group": "Physics",
+      "description": "Helm plume segment 1 pendulum angle."
+    },
+    {
+      "id": "Plume2",
+      "min": -50,
+      "max": 50,
+      "default": 0,
+      "group": "Physics",
+      "description": "Helm plume segment 2 pendulum angle."
+    }
+  ],
+  "bones": [
+    {
+      "id": "ground",
+      "x": 256,
+      "y": 468,
+      "length": 0,
+      "description": "Ground contact anchor (y=0 in 3D)."
+    },
+    {
+      "id": "hip",
+      "parent": "ground",
+      "x": 0,
+      "y": -86,
+      "length": 0,
+      "description": "Pelvis center (256, 382)."
+    },
+    {
+      "id": "torso",
+      "parent": "hip",
+      "x": 0,
+      "y": -64,
+      "length": 0,
+      "description": "Chest pivot (256, 318)."
+    },
+    {
+      "id": "head",
+      "parent": "torso",
+      "x": 4,
+      "y": -28,
+      "length": 0,
+      "description": "Neck/head pivot (260, 290)."
+    },
+    {
+      "id": "cape1",
+      "parent": "torso",
+      "x": -20,
+      "y": -14,
+      "rotation": 118,
+      "length": 48
+    },
+    {
+      "id": "cape2",
+      "parent": "cape1",
+      "x": 48,
+      "y": 0,
+      "rotation": -8,
+      "length": 48
+    },
+    {
+      "id": "cape3",
+      "parent": "cape2",
+      "x": 48,
+      "y": 0,
+      "rotation": -8,
+      "length": 46
+    },
+    {
+      "id": "plume1",
+      "parent": "head",
+      "x": -20,
+      "y": -90,
+      "rotation": 148,
+      "length": 34
+    },
+    {
+      "id": "plume2",
+      "parent": "plume1",
+      "x": 34,
+      "y": 0,
+      "rotation": -14,
+      "length": 30
+    },
+    {
+      "id": "thighBack",
+      "parent": "hip",
+      "x": -10,
+      "y": 6,
+      "rotation": 72,
+      "length": 48
+    },
+    {
+      "id": "shinBack",
+      "parent": "thighBack",
+      "x": 48,
+      "y": 0,
+      "rotation": 28,
+      "length": 46
+    },
+    {
+      "id": "footBackTarget",
+      "parent": "ground",
+      "x": -18,
+      "y": 0,
+      "length": 0
+    },
+    {
+      "id": "thighFront",
+      "parent": "hip",
+      "x": 10,
+      "y": 6,
+      "rotation": 62,
+      "length": 48
+    },
+    {
+      "id": "shinFront",
+      "parent": "thighFront",
+      "x": 48,
+      "y": 0,
+      "rotation": 30,
+      "length": 46
+    },
+    {
+      "id": "footFrontTarget",
+      "parent": "ground",
+      "x": 20,
+      "y": 0,
+      "length": 0
+    },
+    {
+      "id": "armBack",
+      "parent": "torso",
+      "x": 22,
+      "y": -8,
+      "rotation": 48,
+      "length": 48
+    },
+    {
+      "id": "upperArmFront",
+      "parent": "torso",
+      "x": -16,
+      "y": -8,
+      "rotation": 62,
+      "length": 38
+    },
+    {
+      "id": "foreArmFront",
+      "parent": "upperArmFront",
+      "x": 38,
+      "y": 0,
+      "rotation": -46,
+      "length": 38
+    },
+    {
+      "id": "weaponGrip",
+      "parent": "foreArmFront",
+      "x": 36,
+      "y": 0,
+      "rotation": -66,
+      "length": 110
+    },
+    {
+      "id": "slashOrigin",
+      "parent": "torso",
+      "x": 28,
+      "y": -10,
+      "length": 0
+    }
+  ],
+  "parts": [
+    {
+      "id": "cloakRanger",
+      "skin": {
+        "bones": [
+          "torso",
+          "cape1",
+          "cape2",
+          "cape3"
+        ],
+        "weights": "auto",
+        "falloff": 2.2
+      },
+      "shape": {
+        "type": "polygon",
+        "points": [
+          248,
+          294,
+          224,
+          304,
+          198,
+          338,
+          178,
+          384,
+          166,
+          434,
+          198,
+          444,
+          228,
+          436,
+          250,
+          404,
+          258,
+          356,
+          258,
+          304
+        ],
+        "detail": 6
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          248,
+          294
+        ],
+        "to": [
+          176,
+          438
+        ],
+        "stops": [
+          [
+            0,
+            "#1f6f54"
+          ],
+          [
+            0.6,
+            "#14533d"
+          ],
+          [
+            1,
+            "#0d3628"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.5
+      },
+      "z": 4
+    },
+    {
+      "id": "cloakRoyal",
+      "skin": {
+        "bones": [
+          "torso",
+          "cape1",
+          "cape2",
+          "cape3"
+        ],
+        "weights": "auto",
+        "falloff": 2.2
+      },
+      "shape": {
+        "type": "polygon",
+        "points": [
+          250,
+          292,
+          222,
+          302,
+          192,
+          336,
+          170,
+          386,
+          158,
+          442,
+          194,
+          452,
+          232,
+          442,
+          252,
+          408,
+          260,
+          356,
+          260,
+          304
+        ],
+        "detail": 6
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          250,
+          292
+        ],
+        "to": [
+          168,
+          446
+        ],
+        "stops": [
+          [
+            0,
+            "#b91c1c"
+          ],
+          [
+            0.65,
+            "#7f1d1d"
+          ],
+          [
+            1,
+            "#450a0a"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#f59e0b",
+        "width": 3.5
+      },
+      "z": 4.1
+    },
+    {
+      "id": "cloakAbyss",
+      "skin": {
+        "bones": [
+          "torso",
+          "cape1",
+          "cape2",
+          "cape3"
+        ],
+        "weights": "auto",
+        "falloff": 2.2
+      },
+      "shape": {
+        "type": "polygon",
+        "points": [
+          248,
+          292,
+          220,
+          302,
+          188,
+          340,
+          164,
+          392,
+          152,
+          448,
+          182,
+          430,
+          198,
+          454,
+          222,
+          428,
+          244,
+          444,
+          256,
+          388,
+          260,
+          304
+        ],
+        "detail": 6
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          248,
+          292
+        ],
+        "to": [
+          160,
+          448
+        ],
+        "stops": [
+          [
+            0,
+            "#4c1d95"
+          ],
+          [
+            0.55,
+            "#2e1065"
+          ],
+          [
+            1,
+            "#090d16"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#38bdf8",
+        "width": 3
+      },
+      "z": 4.2
+    },
+    {
+      "id": "armBackSleeve",
+      "parent": "armBack",
+      "shape": {
+        "type": "rect",
+        "x": 268,
+        "y": 298,
+        "w": 22,
+        "h": 46,
+        "radius": 10
+      },
+      "fill": "#334155",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 8
+    },
+    {
+      "id": "armBackGauntlet",
+      "parent": "armBack",
+      "shape": {
+        "type": "ellipse",
+        "cx": 296,
+        "cy": 342,
+        "rx": 11,
+        "ry": 11,
+        "detail": 4
+      },
+      "fill": "#94a3b8",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 9
+    },
+    {
+      "id": "legBackThigh",
+      "parent": "thighBack",
+      "shape": {
+        "type": "rect",
+        "x": 235,
+        "y": 384,
+        "w": 22,
+        "h": 48,
+        "radius": 9
+      },
+      "fill": "#1e293b",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 12
+    },
+    {
+      "id": "legBackShin",
+      "parent": "shinBack",
+      "shape": {
+        "type": "path",
+        "d": "M 232 426 L 254 426 L 258 466 L 228 466 Q 228 450 232 426 Z",
+        "detail": 6
+      },
+      "fill": "#334155",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 13
+    },
+    {
+      "id": "legFrontThigh",
+      "parent": "thighFront",
+      "shape": {
+        "type": "rect",
+        "x": 256,
+        "y": 384,
+        "w": 24,
+        "h": 48,
+        "radius": 10
+      },
+      "fill": "#334155",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 16
+    },
+    {
+      "id": "legFrontBoot",
+      "parent": "shinFront",
+      "shape": {
+        "type": "path",
+        "d": "M 258 424 L 282 424 L 292 466 L 254 466 Z",
+        "detail": 6
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          258,
+          424
+        ],
+        "to": [
+          288,
+          466
+        ],
+        "stops": [
+          [
+            0,
+            "#64748b"
+          ],
+          [
+            1,
+            "#334155"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.5
+      },
+      "z": 18
+    },
+    {
+      "id": "torsoArmor",
+      "parent": "torso",
+      "shape": {
+        "type": "path",
+        "d": "M 226 294 Q 256 284 288 294 L 294 388 Q 258 398 222 388 Z",
+        "detail": 8
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          226,
+          290
+        ],
+        "to": [
+          290,
+          392
+        ],
+        "stops": [
+          [
+            0,
+            "#94a3b8"
+          ],
+          [
+            0.45,
+            "#64748b"
+          ],
+          [
+            1,
+            "#334155"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.8
+      },
+      "z": 22
+    },
+    {
+      "id": "torsoTabard",
+      "parent": "torso",
+      "shape": {
+        "type": "path",
+        "d": "M 244 304 L 276 304 L 280 404 L 260 418 L 240 404 Z",
+        "detail": 6
+      },
+      "fill": "#e2e8f0",
+      "stroke": {
+        "color": "#111622",
+        "width": 3
+      },
+      "z": 24
+    },
+    {
+      "id": "torsoBelt",
+      "parent": "torso",
+      "shape": {
+        "type": "rect",
+        "x": 223,
+        "y": 368,
+        "w": 70,
+        "h": 15,
+        "radius": 4
+      },
+      "fill": "#78350f",
+      "stroke": {
+        "color": "#111622",
+        "width": 3
+      },
+      "z": 25
+    },
+    {
+      "id": "torsoBuckle",
+      "parent": "torso",
+      "shape": {
+        "type": "rect",
+        "x": 252,
+        "y": 365,
+        "w": 18,
+        "h": 20,
+        "radius": 4
+      },
+      "fill": "#fbbf24",
+      "stroke": {
+        "color": "#111622",
+        "width": 2.8
+      },
+      "z": 26
+    },
+    {
+      "id": "headBase",
+      "parent": "head",
+      "shape": {
+        "type": "ellipse",
+        "cx": 262,
+        "cy": 244,
+        "rx": 44,
+        "ry": 42,
+        "detail": 10
+      },
+      "fill": {
+        "type": "radial",
+        "center": [
+          272,
+          234
+        ],
+        "radius": 52,
+        "stops": [
+          [
+            0,
+            "#fde68a"
+          ],
+          [
+            0.55,
+            "#fcd34d"
+          ],
+          [
+            1,
+            "#d97706"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.8
+      },
+      "z": 32
+    },
+    {
+      "id": "faceVisorShadow",
+      "parent": "head",
+      "shape": {
+        "type": "ellipse",
+        "cx": 272,
+        "cy": 246,
+        "rx": 32,
+        "ry": 24,
+        "detail": 8
+      },
+      "fill": "#1e293b",
+      "stroke": {
+        "color": "#0f172a",
+        "width": 2.5
+      },
+      "z": 34
+    },
+    {
+      "id": "eyeLeft",
+      "parent": "head",
+      "shape": {
+        "type": "ellipse",
+        "cx": 264,
+        "cy": 246,
+        "rx": 5.5,
+        "ry": 9.5,
+        "detail": 5
+      },
+      "fill": "#f8fafc",
+      "z": 36
+    },
+    {
+      "id": "eyeRight",
+      "parent": "head",
+      "shape": {
+        "type": "ellipse",
+        "cx": 288,
+        "cy": 246,
+        "rx": 5,
+        "ry": 9,
+        "detail": 5
+      },
+      "fill": "#f8fafc",
+      "z": 36
+    },
+    {
+      "id": "scarfNeck",
+      "parent": "torso",
+      "shape": {
+        "type": "rect",
+        "x": 230,
+        "y": 280,
+        "w": 62,
+        "h": 22,
+        "radius": 10
+      },
+      "fill": "#dc2626",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 38
+    },
+    {
+      "id": "plumeRanger",
+      "skin": {
+        "bones": [
+          "head",
+          "plume1",
+          "plume2"
+        ],
+        "weights": "auto",
+        "falloff": 2
+      },
+      "shape": {
+        "type": "polygon",
+        "points": [
+          242,
+          200,
+          212,
+          178,
+          184,
+          174,
+          198,
+          198,
+          226,
+          212
+        ],
+        "detail": 5
+      },
+      "fill": "#34d399",
+      "stroke": {
+        "color": "#111622",
+        "width": 3
+      },
+      "z": 41
+    },
+    {
+      "id": "hoodRanger",
+      "parent": "head",
+      "shape": {
+        "type": "path",
+        "d": "M 212 258 C 210 206 244 186 286 196 C 304 202 312 218 308 232 C 288 220 250 222 232 258 Z",
+        "detail": 10
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          216,
+          192
+        ],
+        "to": [
+          304,
+          256
+        ],
+        "stops": [
+          [
+            0,
+            "#10b981"
+          ],
+          [
+            1,
+            "#065f46"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 43
+    },
+    {
+      "id": "plumeRoyal",
+      "skin": {
+        "bones": [
+          "head",
+          "plume1",
+          "plume2"
+        ],
+        "weights": "auto",
+        "falloff": 2
+      },
+      "shape": {
+        "type": "polygon",
+        "points": [
+          250,
+          194,
+          214,
+          162,
+          176,
+          168,
+          188,
+          202,
+          224,
+          214
+        ],
+        "detail": 5
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          250,
+          170
+        ],
+        "to": [
+          176,
+          204
+        ],
+        "stops": [
+          [
+            0,
+            "#ef4444"
+          ],
+          [
+            1,
+            "#991b1b"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 41.2
+    },
+    {
+      "id": "crownRoyal",
+      "parent": "head",
+      "shape": {
+        "type": "path",
+        "d": "M 214 238 L 220 194 L 244 212 L 266 182 L 286 210 L 308 192 L 308 236 Q 262 224 214 238 Z",
+        "detail": 8
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          214,
+          184
+        ],
+        "to": [
+          308,
+          238
+        ],
+        "stops": [
+          [
+            0,
+            "#fde047"
+          ],
+          [
+            0.5,
+            "#f59e0b"
+          ],
+          [
+            1,
+            "#b45309"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 44
+    },
+    {
+      "id": "plumeAbyss",
+      "skin": {
+        "bones": [
+          "head",
+          "plume1",
+          "plume2"
+        ],
+        "weights": "auto",
+        "falloff": 2
+      },
+      "shape": {
+        "type": "polygon",
+        "points": [
+          244,
+          198,
+          206,
+          170,
+          172,
+          182,
+          192,
+          210,
+          228,
+          216
+        ],
+        "detail": 5
+      },
+      "fill": "#38bdf8",
+      "stroke": {
+        "color": "#0f172a",
+        "width": 3
+      },
+      "z": 41.4
+    },
+    {
+      "id": "hornsAbyss",
+      "parent": "head",
+      "shape": {
+        "type": "path",
+        "d": "M 216 244 C 204 202 222 162 246 154 C 238 184 242 204 256 212 L 280 212 C 292 200 298 180 292 154 C 316 166 322 206 308 240 Q 262 224 216 244 Z",
+        "detail": 10
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          216,
+          154
+        ],
+        "to": [
+          312,
+          244
+        ],
+        "stops": [
+          [
+            0,
+            "#e2e8f0"
+          ],
+          [
+            0.45,
+            "#64748b"
+          ],
+          [
+            1,
+            "#1e1b4b"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 45
+    },
+    {
+      "id": "wpnSwordBlade",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          296,
+          340,
+          384,
+          234,
+          408,
+          216,
+          398,
+          246,
+          310,
+          352
+        ],
+        "detail": 4
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          296,
+          346
+        ],
+        "to": [
+          408,
+          216
+        ],
+        "stops": [
+          [
+            0,
+            "#94a3b8"
+          ],
+          [
+            0.45,
+            "#f8fafc"
+          ],
+          [
+            1,
+            "#bae6fd"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.8
+      },
+      "z": 52
+    },
+    {
+      "id": "wpnSwordGuard",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          278,
+          332,
+          326,
+          366,
+          318,
+          376,
+          270,
+          342
+        ],
+        "detail": 2
+      },
+      "fill": "#fbbf24",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 54
+    },
+    {
+      "id": "wpnSwordPommel",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          292,
+          352,
+          274,
+          376,
+          284,
+          384,
+          302,
+          360
+        ],
+        "detail": 2
+      },
+      "fill": "#38bdf8",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 53
+    },
+    {
+      "id": "wpnScytheShaft",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          264,
+          388,
+          392,
+          232,
+          402,
+          240,
+          274,
+          396
+        ],
+        "detail": 3
+      },
+      "fill": "#3f3f46",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 52.2
+    },
+    {
+      "id": "wpnScytheBlade",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "path",
+        "d": "M 378 242 C 414 218 458 242 474 298 C 442 268 408 262 368 264 Z",
+        "detail": 10
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          374,
+          242
+        ],
+        "to": [
+          474,
+          298
+        ],
+        "stops": [
+          [
+            0,
+            "#fca5a5"
+          ],
+          [
+            0.35,
+            "#ef4444"
+          ],
+          [
+            1,
+            "#7f1d1d"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.8
+      },
+      "z": 53.2
+    },
+    {
+      "id": "wpnScytheCore",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "ellipse",
+        "cx": 390,
+        "cy": 244,
+        "rx": 10,
+        "ry": 10,
+        "detail": 4
+      },
+      "fill": "#fef08a",
+      "stroke": {
+        "color": "#111622",
+        "width": 3
+      },
+      "z": 54.2
+    },
+    {
+      "id": "wpnHammerShaft",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          270,
+          382,
+          376,
+          252,
+          388,
+          262,
+          282,
+          392
+        ],
+        "detail": 3
+      },
+      "fill": "#78350f",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 52.4
+    },
+    {
+      "id": "wpnHammerHead",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          344,
+          232,
+          386,
+          198,
+          434,
+          254,
+          392,
+          288
+        ],
+        "detail": 4
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          344,
+          212
+        ],
+        "to": [
+          432,
+          274
+        ],
+        "stops": [
+          [
+            0,
+            "#cbd5e1"
+          ],
+          [
+            0.5,
+            "#64748b"
+          ],
+          [
+            1,
+            "#1e293b"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 4
+      },
+      "z": 53.4
+    },
+    {
+      "id": "wpnHammerRune",
+      "parent": "weaponGrip",
+      "shape": {
+        "type": "ellipse",
+        "cx": 389,
+        "cy": 243,
+        "rx": 13,
+        "ry": 13,
+        "detail": 5
+      },
+      "fill": "#38bdf8",
+      "stroke": {
+        "color": "#0f172a",
+        "width": 3
+      },
+      "z": 54.4
+    },
+    {
+      "id": "armFrontUpper",
+      "parent": "upperArmFront",
+      "shape": {
+        "type": "rect",
+        "x": 232,
+        "y": 306,
+        "w": 24,
+        "h": 44,
+        "radius": 10
+      },
+      "fill": "#475569",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 60
+    },
+    {
+      "id": "armFrontFore",
+      "parent": "foreArmFront",
+      "shape": {
+        "type": "rect",
+        "x": 254,
+        "y": 336,
+        "w": 42,
+        "h": 22,
+        "radius": 9
+      },
+      "fill": "#94a3b8",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 62
+    },
+    {
+      "id": "handFront",
+      "parent": "foreArmFront",
+      "shape": {
+        "type": "ellipse",
+        "cx": 294,
+        "cy": 352,
+        "rx": 11,
+        "ry": 11,
+        "detail": 4
+      },
+      "fill": "#fcd34d",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 63
+    },
+    {
+      "id": "pauldronRanger",
+      "parent": "upperArmFront",
+      "shape": {
+        "type": "ellipse",
+        "cx": 242,
+        "cy": 312,
+        "rx": 20,
+        "ry": 16,
+        "detail": 6
+      },
+      "fill": "#059669",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 66
+    },
+    {
+      "id": "pauldronRoyal",
+      "parent": "upperArmFront",
+      "shape": {
+        "type": "path",
+        "d": "M 220 318 C 220 294 246 288 264 306 L 258 328 Q 238 330 220 318 Z",
+        "detail": 6
+      },
+      "fill": "#f59e0b",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 66.2
+    },
+    {
+      "id": "pauldronAbyss",
+      "parent": "upperArmFront",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          218,
+          320,
+          212,
+          290,
+          238,
+          300,
+          254,
+          286,
+          264,
+          316,
+          240,
+          328
+        ],
+        "detail": 4
+      },
+      "fill": "#7c3aed",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 66.4
+    },
+    {
+      "id": "slashArcDown",
+      "parent": "slashOrigin",
+      "shape": {
+        "type": "path",
+        "d": "M 290 198 C 398 206 472 288 462 406 C 430 326 368 258 282 232 Z",
+        "detail": 12
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          290,
+          198
+        ],
+        "to": [
+          462,
+          406
+        ],
+        "stops": [
+          [
+            0,
+            "#fef08a"
+          ],
+          [
+            0.5,
+            "#38bdf8"
+          ],
+          [
+            1,
+            "#818cf8"
+          ]
+        ]
+      },
+      "opacity": 0,
+      "z": 75
+    },
+    {
+      "id": "slashArcUp",
+      "parent": "slashOrigin",
+      "shape": {
+        "type": "path",
+        "d": "M 286 432 C 398 424 474 338 460 212 C 426 300 366 376 280 398 Z",
+        "detail": 12
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          286,
+          432
+        ],
+        "to": [
+          460,
+          212
+        ],
+        "stops": [
+          [
+            0,
+            "#fca5a5"
+          ],
+          [
+            0.5,
+            "#fbbf24"
+          ],
+          [
+            1,
+            "#fef9c3"
+          ]
+        ]
+      },
+      "opacity": 0,
+      "z": 76
+    }
+  ],
+  "bindings": [
+    {
+      "target": "bone:hip.y",
+      "params": [
+        "BodyBobY"
+      ],
+      "keys": [
+        {
+          "at": [
+            -40
+          ],
+          "value": -126
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -86
+        },
+        {
+          "at": [
+            40
+          ],
+          "value": -46
+        }
+      ]
+    },
+    {
+      "target": "bone:torso.rotation",
+      "params": [
+        "BodyLean"
+      ],
+      "keys": [
+        {
+          "at": [
+            -35
+          ],
+          "value": -35
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            35
+          ],
+          "value": 35
+        }
+      ]
+    },
+    {
+      "target": "bone:head.rotation",
+      "params": [
+        "HeadNod"
+      ],
+      "keys": [
+        {
+          "at": [
+            -25
+          ],
+          "value": -25
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            25
+          ],
+          "value": 25
+        }
+      ]
+    },
+    {
+      "target": "part:eyeLeft.shape.ry",
+      "params": [
+        "EyeBlink"
+      ],
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 9.5
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 1.2
+        }
+      ]
+    },
+    {
+      "target": "part:eyeRight.shape.ry",
+      "params": [
+        "EyeBlink"
+      ],
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 9
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 1.2
+        }
+      ]
+    },
+    {
+      "target": "bone:footFrontTarget.x",
+      "params": [
+        "FootFX"
+      ],
+      "keys": [
+        {
+          "at": [
+            -80
+          ],
+          "value": -60
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 20
+        },
+        {
+          "at": [
+            80
+          ],
+          "value": 100
+        }
+      ]
+    },
+    {
+      "target": "bone:footFrontTarget.y",
+      "params": [
+        "FootFY"
+      ],
+      "keys": [
+        {
+          "at": [
+            -70
+          ],
+          "value": -70
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            20
+          ],
+          "value": 20
+        }
+      ]
+    },
+    {
+      "target": "bone:footBackTarget.x",
+      "params": [
+        "FootBX"
+      ],
+      "keys": [
+        {
+          "at": [
+            -80
+          ],
+          "value": -98
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -18
+        },
+        {
+          "at": [
+            80
+          ],
+          "value": 62
+        }
+      ]
+    },
+    {
+      "target": "bone:footBackTarget.y",
+      "params": [
+        "FootBY"
+      ],
+      "keys": [
+        {
+          "at": [
+            -70
+          ],
+          "value": -70
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            20
+          ],
+          "value": 20
+        }
+      ]
+    },
+    {
+      "target": "bone:armBack.rotation",
+      "params": [
+        "ArmBackRot"
+      ],
+      "keys": [
+        {
+          "at": [
+            -90
+          ],
+          "value": -42
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 48
+        },
+        {
+          "at": [
+            90
+          ],
+          "value": 138
+        }
+      ]
+    },
+    {
+      "target": "bone:upperArmFront.rotation",
+      "params": [
+        "ArmFrontShoulder"
+      ],
+      "keys": [
+        {
+          "at": [
+            -130
+          ],
+          "value": -68
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 62
+        },
+        {
+          "at": [
+            120
+          ],
+          "value": 182
+        }
+      ]
+    },
+    {
+      "target": "bone:foreArmFront.rotation",
+      "params": [
+        "ArmFrontElbow"
+      ],
+      "keys": [
+        {
+          "at": [
+            -90
+          ],
+          "value": -136
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -46
+        },
+        {
+          "at": [
+            90
+          ],
+          "value": 44
+        }
+      ]
+    },
+    {
+      "target": "bone:weaponGrip.rotation",
+      "params": [
+        "WeaponWrist"
+      ],
+      "keys": [
+        {
+          "at": [
+            -120
+          ],
+          "value": -186
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -66
+        },
+        {
+          "at": [
+            140
+          ],
+          "value": 74
+        }
+      ]
+    },
+    {
+      "target": "part:slashArcDown.opacity",
+      "params": [
+        "SlashAlpha"
+      ],
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 0.92
+        }
+      ]
+    },
+    {
+      "target": "part:slashArcUp.opacity",
+      "params": [
+        "SlashUpAlpha"
+      ],
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 0.92
+        }
+      ]
+    },
+    {
+      "target": "bone:cape1.rotation",
+      "params": [
+        "Cape1"
+      ],
+      "keys": [
+        {
+          "at": [
+            -55
+          ],
+          "value": 78
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 118
+        },
+        {
+          "at": [
+            55
+          ],
+          "value": 168
+        }
+      ]
+    },
+    {
+      "target": "bone:cape2.rotation",
+      "params": [
+        "Cape2"
+      ],
+      "keys": [
+        {
+          "at": [
+            -55
+          ],
+          "value": -48
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -8
+        },
+        {
+          "at": [
+            55
+          ],
+          "value": 36
+        }
+      ]
+    },
+    {
+      "target": "bone:cape3.rotation",
+      "params": [
+        "Cape3"
+      ],
+      "keys": [
+        {
+          "at": [
+            -55
+          ],
+          "value": -48
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -8
+        },
+        {
+          "at": [
+            55
+          ],
+          "value": 36
+        }
+      ]
+    },
+    {
+      "target": "bone:plume1.rotation",
+      "params": [
+        "Plume1"
+      ],
+      "keys": [
+        {
+          "at": [
+            -50
+          ],
+          "value": 112
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 148
+        },
+        {
+          "at": [
+            50
+          ],
+          "value": 184
+        }
+      ]
+    },
+    {
+      "target": "bone:plume2.rotation",
+      "params": [
+        "Plume2"
+      ],
+      "keys": [
+        {
+          "at": [
+            -50
+          ],
+          "value": -48
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -14
+        },
+        {
+          "at": [
+            50
+          ],
+          "value": 22
+        }
+      ]
+    }
+  ],
+  "ik": [
+    {
+      "id": "legBackIk",
+      "bones": [
+        "thighBack",
+        "shinBack"
+      ],
+      "target": "footBackTarget",
+      "mix": 1,
+      "bendPositive": false,
+      "softness": 8
+    },
+    {
+      "id": "legFrontIk",
+      "bones": [
+        "thighFront",
+        "shinFront"
+      ],
+      "target": "footFrontTarget",
+      "mix": 1,
+      "bendPositive": false,
+      "softness": 8
+    }
+  ],
+  "physics": [
+    {
+      "id": "capeSwing",
+      "inputs": [
+        {
+          "param": "FootFX",
+          "type": "x",
+          "weight": 0.35
+        },
+        {
+          "param": "BodyLean",
+          "type": "x",
+          "weight": 0.9
+        },
+        {
+          "param": "BodyBobY",
+          "type": "y",
+          "weight": 0.6
+        },
+        {
+          "param": "ArmFrontShoulder",
+          "type": "x",
+          "weight": 0.2
+        }
+      ],
+      "outputs": [
+        {
+          "param": "Cape1",
+          "type": "angle",
+          "segment": 0,
+          "scale": 0.9
+        },
+        {
+          "param": "Cape2",
+          "type": "angle",
+          "segment": 1,
+          "scale": 1
+        },
+        {
+          "param": "Cape3",
+          "type": "angle",
+          "segment": 2,
+          "scale": 1.1
+        }
+      ],
+      "segments": [
+        {
+          "length": 42,
+          "mass": 1
+        },
+        {
+          "length": 42,
+          "mass": 1.1
+        },
+        {
+          "length": 40,
+          "mass": 1.3
+        }
+      ],
+      "damping": 0.12,
+      "stiffness": 14
+    },
+    {
+      "id": "plumeSwing",
+      "inputs": [
+        {
+          "param": "HeadNod",
+          "type": "x",
+          "weight": 0.8
+        },
+        {
+          "param": "BodyBobY",
+          "type": "y",
+          "weight": 0.5
+        },
+        {
+          "param": "BodyLean",
+          "type": "x",
+          "weight": 0.6
+        }
+      ],
+      "outputs": [
+        {
+          "param": "Plume1",
+          "type": "angle",
+          "segment": 0,
+          "scale": 0.85
+        },
+        {
+          "param": "Plume2",
+          "type": "angle",
+          "segment": 1,
+          "scale": 1
+        }
+      ],
+      "segments": [
+        {
+          "length": 28,
+          "mass": 0.9
+        },
+        {
+          "length": 26,
+          "mass": 1.1
+        }
+      ],
+      "damping": 0.14,
+      "stiffness": 18
+    }
+  ],
+  "animations": [
+    {
+      "id": "idle",
+      "duration": 1.6,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:BodyBobY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.8,
+              "v": 5.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": 2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.8,
+              "v": -1.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": 2
+            }
+          ]
+        },
+        {
+          "target": "param:HeadNod",
+          "keys": [
+            {
+              "t": 0,
+              "v": -2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.8,
+              "v": 3,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": -2
+            }
+          ]
+        },
+        {
+          "target": "param:ArmFrontShoulder",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.8,
+              "v": 8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:WeaponWrist",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.8,
+              "v": -6,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:EyeBlink",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0
+            },
+            {
+              "t": 1.12,
+              "v": 0
+            },
+            {
+              "t": 1.2,
+              "v": 1
+            },
+            {
+              "t": 1.3,
+              "v": 0
+            },
+            {
+              "t": 1.6,
+              "v": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "duration": 0.64,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": 13,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.16,
+              "v": 16,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.32,
+              "v": 13,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": 16,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.64,
+              "v": 13
+            }
+          ]
+        },
+        {
+          "target": "param:BodyBobY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 6,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.16,
+              "v": -9,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.32,
+              "v": 6,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -9,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.64,
+              "v": 6
+            }
+          ]
+        },
+        {
+          "target": "param:FootFX",
+          "keys": [
+            {
+              "t": 0,
+              "v": 34,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.16,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.32,
+              "v": -36,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.48,
+              "v": 4,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.64,
+              "v": 34
+            }
+          ]
+        },
+        {
+          "target": "param:FootFY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.16,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.32,
+              "v": -4,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.48,
+              "v": -30,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.64,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:FootBX",
+          "keys": [
+            {
+              "t": 0,
+              "v": -36,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.16,
+              "v": 4,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.32,
+              "v": 34,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.48,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.64,
+              "v": -36
+            }
+          ]
+        },
+        {
+          "target": "param:FootBY",
+          "keys": [
+            {
+              "t": 0,
+              "v": -4,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.16,
+              "v": -34,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.32,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.48,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.64,
+              "v": -4
+            }
+          ]
+        },
+        {
+          "target": "param:ArmBackRot",
+          "keys": [
+            {
+              "t": 0,
+              "v": -36,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.32,
+              "v": 36,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.64,
+              "v": -36
+            }
+          ]
+        },
+        {
+          "target": "param:ArmFrontShoulder",
+          "keys": [
+            {
+              "t": 0,
+              "v": 26,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.32,
+              "v": -20,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.64,
+              "v": 26
+            }
+          ]
+        },
+        {
+          "target": "param:HeadNod",
+          "keys": [
+            {
+              "t": 0,
+              "v": -4,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.16,
+              "v": 3,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.32,
+              "v": -4,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": 3,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.64,
+              "v": -4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jump",
+      "duration": 0.72,
+      "loop": false,
+      "tracks": [
+        {
+          "target": "param:BodyBobY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 12,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.12,
+              "v": -24,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.42,
+              "v": -28,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.72,
+              "v": -6
+            }
+          ]
+        },
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": 10,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.18,
+              "v": -12,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.52,
+              "v": 8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.72,
+              "v": 4
+            }
+          ]
+        },
+        {
+          "target": "param:FootFY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.16,
+              "v": -44,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.5,
+              "v": -32,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.72,
+              "v": -8
+            }
+          ]
+        },
+        {
+          "target": "param:FootFX",
+          "keys": [
+            {
+              "t": 0,
+              "v": 12,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.25,
+              "v": 30,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.72,
+              "v": 18
+            }
+          ]
+        },
+        {
+          "target": "param:FootBY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.2,
+              "v": -38,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.72,
+              "v": -10
+            }
+          ]
+        },
+        {
+          "target": "param:FootBX",
+          "keys": [
+            {
+              "t": 0,
+              "v": -12,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.25,
+              "v": -32,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.72,
+              "v": -16
+            }
+          ]
+        },
+        {
+          "target": "param:ArmFrontShoulder",
+          "keys": [
+            {
+              "t": 0,
+              "v": 20,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.2,
+              "v": -55,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.72,
+              "v": -18
+            }
+          ]
+        },
+        {
+          "target": "param:ArmBackRot",
+          "keys": [
+            {
+              "t": 0,
+              "v": 15,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.22,
+              "v": -52,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.72,
+              "v": -14
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "attack_1",
+      "duration": 0.42,
+      "loop": false,
+      "tracks": [
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.11,
+              "v": -14,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.2,
+              "v": 20,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.42,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:BodyBobY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.11,
+              "v": -6,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.2,
+              "v": 12,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.42,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:FootFX",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.11,
+              "v": -8,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.2,
+              "v": 32,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.42,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:ArmFrontShoulder",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.11,
+              "v": -64,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.19,
+              "v": 14,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.28,
+              "v": 22,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.42,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:ArmFrontElbow",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.11,
+              "v": -22,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.19,
+              "v": 26,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.42,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:WeaponWrist",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.11,
+              "v": -28,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.19,
+              "v": 64,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.28,
+              "v": 74,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.42,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:SlashAlpha",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "step"
+            },
+            {
+              "t": 0.15,
+              "v": 1,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.3,
+              "v": 0
+            },
+            {
+              "t": 0.42,
+              "v": 0
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "t": 0.18,
+          "name": "hit_frame"
+        }
+      ]
+    },
+    {
+      "id": "attack_2",
+      "duration": 0.44,
+      "loop": false,
+      "tracks": [
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": 18,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.1,
+              "v": 22,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.21,
+              "v": -14,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.44,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:BodyBobY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 10,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.1,
+              "v": 14,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.21,
+              "v": -10,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.44,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:ArmFrontShoulder",
+          "keys": [
+            {
+              "t": 0,
+              "v": 20,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.1,
+              "v": 32,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.21,
+              "v": -62,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.44,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:WeaponWrist",
+          "keys": [
+            {
+              "t": 0,
+              "v": 58,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.1,
+              "v": 76,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.21,
+              "v": -38,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.44,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:SlashUpAlpha",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "step"
+            },
+            {
+              "t": 0.15,
+              "v": 1,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.32,
+              "v": 0
+            },
+            {
+              "t": 0.44,
+              "v": 0
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "t": 0.19,
+          "name": "hit_frame"
+        }
+      ]
+    }
+  ]
+}

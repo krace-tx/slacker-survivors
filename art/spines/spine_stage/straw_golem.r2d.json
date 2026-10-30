@@ -1,0 +1,710 @@
+{
+  "format": "rev2d",
+  "version": 1,
+  "meta": {
+    "name": "straw_golem",
+    "width": 384,
+    "height": 384,
+    "background": "rgba(0,0,0,0)",
+    "fps": 30,
+    "author": "Slacker Survivors Rev2D Pipeline",
+    "description": "2.5D Rune Scarecrow Golem target dummy with swaying lantern physics and hit recoil animation."
+  },
+  "parameters": [
+    {
+      "id": "Sway",
+      "min": -35,
+      "max": 35,
+      "default": 0,
+      "group": "Body"
+    },
+    {
+      "id": "Squash",
+      "min": -25,
+      "max": 25,
+      "default": 0,
+      "group": "Body"
+    },
+    {
+      "id": "ArmRattle",
+      "min": -40,
+      "max": 40,
+      "default": 0,
+      "group": "Arms"
+    },
+    {
+      "id": "LanternSwing",
+      "min": -55,
+      "max": 55,
+      "default": 0,
+      "group": "Physics"
+    }
+  ],
+  "bones": [
+    {
+      "id": "ground",
+      "x": 192,
+      "y": 352,
+      "length": 0
+    },
+    {
+      "id": "post",
+      "parent": "ground",
+      "x": 0,
+      "y": -74,
+      "length": 0
+    },
+    {
+      "id": "chest",
+      "parent": "post",
+      "x": 0,
+      "y": -58,
+      "length": 0
+    },
+    {
+      "id": "head",
+      "parent": "chest",
+      "x": 0,
+      "y": -44,
+      "length": 0
+    },
+    {
+      "id": "armL",
+      "parent": "chest",
+      "x": -38,
+      "y": -12,
+      "rotation": 168,
+      "length": 52
+    },
+    {
+      "id": "armR",
+      "parent": "chest",
+      "x": 38,
+      "y": -12,
+      "rotation": 12,
+      "length": 52
+    },
+    {
+      "id": "lanternChain",
+      "parent": "armR",
+      "x": 46,
+      "y": 0,
+      "rotation": 78,
+      "length": 34
+    }
+  ],
+  "parts": [
+    {
+      "id": "woodenPost",
+      "parent": "post",
+      "shape": {
+        "type": "rect",
+        "x": 179,
+        "y": 246,
+        "w": 26,
+        "h": 106,
+        "radius": 6
+      },
+      "fill": "#78350f",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 5
+    },
+    {
+      "id": "postBase",
+      "parent": "ground",
+      "shape": {
+        "type": "ellipse",
+        "cx": 192,
+        "cy": 348,
+        "rx": 38,
+        "ry": 10,
+        "detail": 6
+      },
+      "fill": "#451a03",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 4
+    },
+    {
+      "id": "crossbarL",
+      "parent": "armL",
+      "shape": {
+        "type": "rect",
+        "x": 96,
+        "y": 198,
+        "w": 66,
+        "h": 18,
+        "radius": 6
+      },
+      "fill": "#92400e",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 8
+    },
+    {
+      "id": "crossbarR",
+      "parent": "armR",
+      "shape": {
+        "type": "rect",
+        "x": 222,
+        "y": 198,
+        "w": 66,
+        "h": 18,
+        "radius": 6
+      },
+      "fill": "#92400e",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.4
+      },
+      "z": 8
+    },
+    {
+      "id": "lanternBody",
+      "parent": "lanternChain",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          268,
+          222,
+          290,
+          222,
+          296,
+          254,
+          279,
+          266,
+          262,
+          254
+        ],
+        "detail": 3
+      },
+      "fill": {
+        "type": "radial",
+        "center": [
+          279,
+          242
+        ],
+        "radius": 22,
+        "stops": [
+          [
+            0,
+            "#fef08a"
+          ],
+          [
+            0.6,
+            "#f59e0b"
+          ],
+          [
+            1,
+            "#78350f"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.2
+      },
+      "z": 10
+    },
+    {
+      "id": "burlapTorso",
+      "parent": "chest",
+      "shape": {
+        "type": "path",
+        "d": "M 148 184 Q 192 172 236 184 L 244 274 Q 192 288 140 274 Z",
+        "detail": 8
+      },
+      "fill": {
+        "type": "linear",
+        "from": [
+          148,
+          178
+        ],
+        "to": [
+          240,
+          282
+        ],
+        "stops": [
+          [
+            0,
+            "#d97706"
+          ],
+          [
+            0.55,
+            "#b45309"
+          ],
+          [
+            1,
+            "#78350f"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.8
+      },
+      "z": 14
+    },
+    {
+      "id": "targetBullseyeOuter",
+      "parent": "chest",
+      "shape": {
+        "type": "ellipse",
+        "cx": 192,
+        "cy": 230,
+        "rx": 26,
+        "ry": 26,
+        "detail": 6
+      },
+      "fill": "#f8fafc",
+      "stroke": {
+        "color": "#111622",
+        "width": 3
+      },
+      "z": 15
+    },
+    {
+      "id": "targetBullseyeInner",
+      "parent": "chest",
+      "shape": {
+        "type": "ellipse",
+        "cx": 192,
+        "cy": 230,
+        "rx": 13,
+        "ry": 13,
+        "detail": 5
+      },
+      "fill": "#ef4444",
+      "z": 16
+    },
+    {
+      "id": "pumpkinHead",
+      "parent": "head",
+      "shape": {
+        "type": "ellipse",
+        "cx": 192,
+        "cy": 138,
+        "rx": 42,
+        "ry": 36,
+        "detail": 8
+      },
+      "fill": {
+        "type": "radial",
+        "center": [
+          184,
+          128
+        ],
+        "radius": 48,
+        "stops": [
+          [
+            0,
+            "#fb923c"
+          ],
+          [
+            0.6,
+            "#ea580c"
+          ],
+          [
+            1,
+            "#9a3412"
+          ]
+        ]
+      },
+      "stroke": {
+        "color": "#111622",
+        "width": 3.8
+      },
+      "z": 20
+    },
+    {
+      "id": "witchHat",
+      "parent": "head",
+      "shape": {
+        "type": "path",
+        "d": "M 134 118 Q 192 104 250 118 L 222 104 L 202 52 L 166 104 Z",
+        "detail": 8
+      },
+      "fill": "#312e81",
+      "stroke": {
+        "color": "#111622",
+        "width": 3.6
+      },
+      "z": 22
+    },
+    {
+      "id": "golemEyeL",
+      "parent": "head",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          168,
+          140,
+          180,
+          126,
+          186,
+          142
+        ],
+        "detail": 2
+      },
+      "fill": "#fef08a",
+      "z": 21
+    },
+    {
+      "id": "golemEyeR",
+      "parent": "head",
+      "shape": {
+        "type": "polygon",
+        "points": [
+          198,
+          142,
+          204,
+          126,
+          216,
+          140
+        ],
+        "detail": 2
+      },
+      "fill": "#fef08a",
+      "z": 21
+    }
+  ],
+  "bindings": [
+    {
+      "target": "bone:post.rotation",
+      "params": [
+        "Sway"
+      ],
+      "keys": [
+        {
+          "at": [
+            -35
+          ],
+          "value": -28
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            35
+          ],
+          "value": 28
+        }
+      ]
+    },
+    {
+      "target": "bone:head.rotation",
+      "params": [
+        "Sway"
+      ],
+      "keys": [
+        {
+          "at": [
+            -35
+          ],
+          "value": -18
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            35
+          ],
+          "value": 18
+        }
+      ]
+    },
+    {
+      "target": "bone:chest.y",
+      "params": [
+        "Squash"
+      ],
+      "keys": [
+        {
+          "at": [
+            -25
+          ],
+          "value": -72
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -58
+        },
+        {
+          "at": [
+            25
+          ],
+          "value": -42
+        }
+      ]
+    },
+    {
+      "target": "bone:armL.rotation",
+      "params": [
+        "ArmRattle"
+      ],
+      "keys": [
+        {
+          "at": [
+            -40
+          ],
+          "value": 138
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 168
+        },
+        {
+          "at": [
+            40
+          ],
+          "value": 198
+        }
+      ]
+    },
+    {
+      "target": "bone:armR.rotation",
+      "params": [
+        "ArmRattle"
+      ],
+      "keys": [
+        {
+          "at": [
+            -40
+          ],
+          "value": -18
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 12
+        },
+        {
+          "at": [
+            40
+          ],
+          "value": 42
+        }
+      ]
+    },
+    {
+      "target": "bone:lanternChain.rotation",
+      "params": [
+        "LanternSwing"
+      ],
+      "keys": [
+        {
+          "at": [
+            -55
+          ],
+          "value": 28
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 78
+        },
+        {
+          "at": [
+            55
+          ],
+          "value": 128
+        }
+      ]
+    }
+  ],
+  "physics": [
+    {
+      "id": "lanternPhys",
+      "inputs": [
+        {
+          "param": "Sway",
+          "type": "x",
+          "weight": 1.1
+        },
+        {
+          "param": "ArmRattle",
+          "type": "x",
+          "weight": 0.7
+        }
+      ],
+      "outputs": [
+        {
+          "param": "LanternSwing",
+          "type": "angle",
+          "segment": 0,
+          "scale": 1
+        }
+      ],
+      "segments": [
+        {
+          "length": 34,
+          "mass": 1.2
+        }
+      ],
+      "damping": 0.08,
+      "stiffness": 12
+    }
+  ],
+  "animations": [
+    {
+      "id": "idle",
+      "duration": 2,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:Sway",
+          "keys": [
+            {
+              "t": 0,
+              "v": -3.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1,
+              "v": 3.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 2,
+              "v": -3.5
+            }
+          ]
+        },
+        {
+          "target": "param:Squash",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.5,
+              "v": 4,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.5,
+              "v": 4,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 2,
+              "v": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hit",
+      "duration": 0.46,
+      "loop": false,
+      "tracks": [
+        {
+          "target": "param:Sway",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.08,
+              "v": 30,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.2,
+              "v": -18,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.33,
+              "v": 9,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.46,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:Squash",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.08,
+              "v": 18,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.22,
+              "v": -10,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.46,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRattle",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.09,
+              "v": -36,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.22,
+              "v": 26,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.46,
+              "v": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
