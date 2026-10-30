@@ -11,10 +11,11 @@ extends Resource
 @export var key_id: StringName = &""      ## 资源的全局唯一命名空间标识（标准格式：&"<domain>:<subject>"，如 &"shared:player_profile"）
 
 @export_group("Disk Settings")
-@export var disk_path: String = ""        ## 本地持久化路径（如 user://saves/shared/player_profile.json），为空则不落盘
+@export var disk_path: String = ""        ## 本地持久化路径（如 user://saves/shared/player_profile.sav），为空则不落盘
 @export var use_backup: bool = true       ## 是否启用 .tmp 原子写 + .bak 容灾备份与损坏自愈（默认开启）
 @export var compressed: bool = false      ## 是否使用 ZSTD 算法压缩落盘（适用于体积较大的关卡快照或配置缓存）
-@export var encryption_key: String = ""   ## AES-256 加密口令（非空时自动加密落盘，防止明文篡改存档）
+@export var encryption_key: String = ""   ## 单项显式指定的 AES-256 加密口令（非空时优先于全局存档加密策略生效）
+@export var use_global_encryption: bool = false ## 是否继承 App.storage 全局存档加密与压缩策略（for_save 默认开启，for_config 默认关闭）
 @export var expected_md5: String = ""     ## FILE 载荷模式下可选的 32 位十六进制 MD5 完整性校验码
 
 @export_group("Remote Settings")
@@ -70,26 +71,29 @@ static func for_config(
 
 
 ## 构造【玩家核心存档】存储项（一级分区：[constant FileUtils.USER_SAVES_DIR]，二级架构域：[param domain]）。[br]
-## 物理路径固定映射为 [code]user://saves/<domain>/<subject>.<ext>[/code]，纳入 `.tmp/.bak` 容灾自愈与云存档同步范围。[br]
+## 物理路径固定映射为 [code]user://saves/<domain>/<subject>.<ext>[/code]，默认开启 [member use_global_encryption] 自动继承
+## [code]App.storage[/code] 全局存档压缩/加密策略，并纳入 `.tmp/.bak` 容灾自愈与云存档同步范围。[br]
 ## [param domain] 二级架构域（[code]&"shared"[/code] 或具体 Feature 目录名，如 [code]&"battle"[/code]）。[br]
 ## [param subject] 存档文件主体名（不含扩展名，如 [code]"player_profile"[/code]）。[br]
 ## [param p_schema_version] 存档结构版本号（默认 [code]1[/code]）。[br]
-## [param ext] 扩展名（明文 JSON 传 [code]"json"[/code]，压缩或加密二进制存档传 [code]"sav"[/code]）。[br]
+## [param ext] 扩展名（默认 [code]"sav"[/code]；特殊明文调试存档可传 [code]"json"[/code] 并链式调用 [method without_encryption]）。[br]
 ## [param p_memory_ttl] L1 内存缓存存活秒数（默认 [code]-1.0[/code] 常驻）。
 static func for_save(
 	domain: StringName,
 	subject: String,
 	p_schema_version: int = 1,
-	ext: String = "json",
+	ext: String = "sav",
 	p_memory_ttl: float = -1.0
 ) -> StorageItem:
 	var clean_domain := String(domain).strip_edges()
 	var clean_subject := subject.strip_edges().get_basename()
 	var clean_ext := ext.strip_edges().trim_prefix(".")
 	if clean_ext.is_empty():
-		clean_ext = "json"
+		clean_ext = "sav"
 	var full_path := "%s/%s/%s.%s" % [FileUtils.USER_SAVES_DIR, clean_domain, clean_subject, clean_ext]
-	return StorageItem.new(make_key(domain, clean_subject), full_path, p_schema_version, p_memory_ttl)
+	var item := StorageItem.new(make_key(domain, clean_subject), full_path, p_schema_version, p_memory_ttl)
+	item.use_global_encryption = true
+	return item
 #endregion
 
 
@@ -147,13 +151,21 @@ func with_compression(p_enabled: bool = true) -> StorageItem:
 	return self
 
 
-## 链式设置本地磁盘 AES-256 加密密钥。
+## 链式设置单项专属的本地磁盘 AES-256 加密密钥（优先级高于全局存档加密策略）。
 func with_encryption(p_password: String) -> StorageItem:
 	encryption_key = p_password
 	return self
 
 
-## 链式开启绑定当前设备硬件指纹（[method OS.get_unique_id]）的 AES-256 加密密钥派生（防跨设备拷贝替档）。[br]
+## 链式显式豁免当前条目的本地加密（同时清空单项密钥并关闭全局存档加密继承，强制保持明文落盘）。
+func without_encryption() -> StorageItem:
+	encryption_key = ""
+	use_global_encryption = false
+	return self
+
+
+## 链式开启绑定当前设备硬件指纹（[method OS.get_unique_id]）的单项 AES-256 加密密钥派生（防跨设备拷贝替档）。[br]
+## 注：若已在启动期调用 [method BaseStorageSystem.set_save_encryption] 开启全局硬件绑定加密，所有 [method for_save] 条目会自动继承，无需逐个调用本方法。[br]
 ## [param p_passphrase] 应用主密钥口令。[br]
 ## [param p_salt] 可选领域盐值（为空时默认使用当前条目的 [member key_id]）。
 func with_device_encryption(p_passphrase: String, p_salt: String = "") -> StorageItem:

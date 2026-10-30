@@ -177,4 +177,24 @@ export const scriptTools: MCPTool[] = [
       return `Generated GDScript template:\n\n\`\`\`gdscript\n${template}\n\`\`\``;
     },
   },
+
+  {
+    name: 'attach_script',
+    description: 'Attach an existing GDScript file to a node (or detach if script_path is empty) without modifying the file',
+    parameters: z.object({
+      node_path: z.string().describe('Target node path'),
+      script_path: z.string().default('').describe('Existing .gd path (e.g. "res://src/.../card.gd"), empty to detach'),
+    }),
+    execute: async ({ node_path, script_path = '' }: any): Promise<string> => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('attach_script', { node_path, script_path });
+        return result.script_path
+          ? `Attached ${result.script_path} to ${result.node_path}`
+          : `Detached script from ${result.node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to attach script: ${(error as Error).message}`);
+      }
+    },
+  },
 ];

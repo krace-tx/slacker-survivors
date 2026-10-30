@@ -61,6 +61,35 @@ func register_migration(
 ) -> Result
 
 
+## 配置全局核心存档（[method StorageItem.for_save]）的透明加密与压缩策略。[br]
+##
+## 在启动阶段调用一次后，所有启用了 [member StorageItem.use_global_encryption]（[method StorageItem.for_save] 默认开启）
+## 且未单独指定 [member StorageItem.encryption_key] 的存档项，在读写 L2 本地磁盘时将自动按各自 `key_id` 领域盐值派生独立的 AES-256 认证加密密钥；
+## 通过 [method StorageItem.for_config] 创建的设备偏好设置自动豁免，始终保持明文 JSON。[br]
+##
+## [param passphrase] 全局存档主派生口令（传入空白字符串等同于调用 [method clear_save_encryption] 关闭全局加密）。[br]
+## [param bind_device] 为 [code]true[/code] 时自动混入当前设备硬件唯一指纹（[method OS.get_unique_id]），阻止跨机器拷贝替档（默认 [code]true[/code]）。[br]
+## [param auto_compress] 为 [code]true[/code] 时在加密前自动执行 ZSTD 内存帧压缩（默认 [code]true[/code]）。[br]
+## [param allow_plaintext_fallback] 为 [code]true[/code] 时允许平滑读取历史未加密的明文旧档并在下次保存时自动升级为密文；正式生产环境建议设为 [code]false[/code] 以防明文降级篡改。
+@abstract
+func set_save_encryption(
+	passphrase: String,
+	bind_device: bool = true,
+	auto_compress: bool = true,
+	allow_plaintext_fallback: bool = false
+) -> void
+
+
+## 关闭并清空全局核心存档加密策略与派生密钥缓存（恢复明文落盘）。
+@abstract
+func clear_save_encryption() -> void
+
+
+## 查询当前是否已启用全局核心存档加密策略。
+@abstract
+func is_save_encryption_enabled() -> bool
+
+
 ## 等待所有进行中的异步写入任务（含后台远端同步）完成，用于应用退出或切后台前的优雅落盘保证。
 @abstract
 func flush_async(timeout_seconds: float = 3.0) -> Result

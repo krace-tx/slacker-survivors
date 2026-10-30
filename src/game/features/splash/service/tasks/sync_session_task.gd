@@ -28,8 +28,8 @@ func get_failure_policy() -> FailurePolicy:
 
 
 func execute(context: SplashBootContext) -> Result:
-	if App.env != null and App.env.has_profile():
-		var env_res := App.env.activate_profile()
+	if App.env != null:
+		var env_res := GameEnvService.setup_and_activate()
 		if env_res.is_err():
 			return env_res
 
@@ -37,7 +37,7 @@ func execute(context: SplashBootContext) -> Result:
 
 	if App.auth != null:
 		var auth_opts := AuthOptions.create().with_offline_fallback(true)
-		if not is_local_env and App.env != null and not App.env.get_api_base_url().is_empty():
+		if not is_local_env and not GameEnvService.get_api_base_url().is_empty():
 			auth_opts.with_remote_gateway(true)
 		var auth_res := await App.auth.login_auto_async(auth_opts)
 		if auth_res.is_ok() and auth_res.value is AuthSession:

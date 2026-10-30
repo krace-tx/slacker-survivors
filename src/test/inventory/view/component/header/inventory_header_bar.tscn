@@ -1,0 +1,280 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/test/inventory/view/component/header/inventory_header_bar.gd" id="1_header"]
+[ext_resource type="Script" path="res://src/test/inventory/view/component/art/inventory_mini_icon.gd" id="2_icon"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.068, 0.094, 0.145, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.137, 0.188, 0.275, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.32)
+shadow_size = 18
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pass"]
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 3.0
+bg_color = Color(0.06, 0.19, 0.15, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.56, 0.42, 0.85)
+corner_radius_top_left = 99
+corner_radius_top_right = 99
+corner_radius_bottom_right = 99
+corner_radius_bottom_left = 99
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wallet"]
+content_margin_left = 12.0
+content_margin_top = 5.0
+content_margin_right = 14.0
+content_margin_bottom = 5.0
+bg_color = Color(0.048, 0.068, 0.108, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.14, 0.2, 0.3, 1)
+corner_radius_top_left = 99
+corner_radius_top_right = 99
+corner_radius_bottom_right = 99
+corner_radius_bottom_left = 99
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.095, 0.135, 0.21, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.185, 0.25, 0.36, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.13, 0.18, 0.275, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.37, 0.51, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.075, 0.105, 0.165, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.3, 0.42, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_craft_normal"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.16, 0.13, 0.29, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.52, 0.42, 0.88, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_craft_hover"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.21, 0.17, 0.37, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.64, 0.54, 0.96, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_craft_pressed"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.125, 0.1, 0.23, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.48, 0.38, 0.82, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="InventoryHeaderBar" type="PanelContainer"]
+theme_override_styles/panel = SubResource("StyleBoxFlat_bar")
+script = ExtResource("1_header")
+craft_ready_normal = SubResource("StyleBoxFlat_craft_normal")
+craft_ready_hover = SubResource("StyleBoxFlat_craft_hover")
+craft_ready_pressed = SubResource("StyleBoxFlat_craft_pressed")
+craft_idle_normal = SubResource("StyleBoxFlat_btn_normal")
+craft_idle_hover = SubResource("StyleBoxFlat_btn_hover")
+craft_idle_pressed = SubResource("StyleBoxFlat_btn_pressed")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="BrandLabel" type="Label" parent="HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.945, 0.965, 0.99, 1)
+theme_override_font_sizes/font_size = 19
+text = "INVENTORY"
+
+[node name="PassPill" type="PanelContainer" parent="HBox"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_pass")
+
+[node name="PassBadgeLabel" type="Label" parent="HBox/PassPill"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.9, 0.68, 1)
+theme_override_font_sizes/font_size = 11
+text = "PASS 10/10"
+
+[node name="Spacer" type="Control" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GoldPill" type="PanelContainer" parent="HBox"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_wallet")
+
+[node name="Row" type="HBoxContainer" parent="HBox/GoldPill"]
+layout_mode = 2
+theme_override_constants/separation = 7
+alignment = 1
+
+[node name="GoldIcon" type="Control" parent="HBox/GoldPill/Row"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("2_icon")
+icon_kind = 0
+accent_color = Color(0.98, 0.75, 0.15, 1)
+
+[node name="GoldValueLabel" type="Label" parent="HBox/GoldPill/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.945, 0.965, 0.99, 1)
+theme_override_font_sizes/font_size = 14
+text = "1,200"
+
+[node name="GemPill" type="PanelContainer" parent="HBox"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_wallet")
+
+[node name="Row" type="HBoxContainer" parent="HBox/GemPill"]
+layout_mode = 2
+theme_override_constants/separation = 7
+alignment = 1
+
+[node name="GemIcon" type="Control" parent="HBox/GemPill/Row"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("2_icon")
+icon_kind = 1
+accent_color = Color(0.66, 0.54, 0.98, 1)
+
+[node name="GemValueLabel" type="Label" parent="HBox/GemPill/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.945, 0.965, 0.99, 1)
+theme_override_font_sizes/font_size = 14
+text = "15"
+
+[node name="Divider" type="VSeparator" parent="HBox"]
+modulate = Color(1, 1, 1, 0.25)
+custom_minimum_size = Vector2(8, 22)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="SupplyButton" type="Button" parent="HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(78, 34)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.84, 0.9, 0.98, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.86, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "补给"
+
+[node name="CraftButton" type="Button" parent="HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 34)
+layout_mode = 2
+tooltip_text = "300 金币 + 5 寒铁矿 → 符文长剑"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.93, 0.89, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.9, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_craft_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_craft_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_craft_hover")
+text = "锻造"
+
+[node name="ResetButton" type="Button" parent="HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(78, 34)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.84, 0.9, 0.98, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.86, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "重置"

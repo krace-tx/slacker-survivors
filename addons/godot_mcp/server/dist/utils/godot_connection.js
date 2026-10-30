@@ -77,8 +77,8 @@ var GodotConnection = /** @class */ (function () {
                         tryConnect = function () {
                             return new Promise(function (resolve, reject) {
                                 console.error("Connecting to Godot WebSocket server at ".concat(_this.url, "... (Attempt ").concat(retries + 1, "/").concat(_this.maxRetries + 1, ")"));
-                                // Standard WebSocket connection
-                                _this.ws = new WebSocket(_this.url, {
+                                // Standard WebSocket connection (negotiate 'json' subprotocol matching ws_transport.gd)
+                                _this.ws = new WebSocket(_this.url, ['json'], {
                                     handshakeTimeout: 8000, // Increase handshake timeout
                                     perMessageDeflate: false // Disable compression for compatibility
                                 });

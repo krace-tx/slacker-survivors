@@ -56,6 +56,7 @@ var target_opponent: SoulsFighterActor = null
 
 var _flash_timer: float = 0.0
 var _hitstop_timer: float = 0.0
+var _debug_fsm_id: int = 0
 
 #endregion
 
@@ -131,6 +132,9 @@ func setup_actor(title: String, boss_flag: bool, theme_color: Color, spawn_pos: 
 
 
 func _exit_tree() -> void:
+	if _debug_fsm_id != 0:
+		GraphDebugBridge.unregister(_debug_fsm_id)
+		_debug_fsm_id = 0
 	target_opponent = null
 	if _fsm != null:
 		_fsm.clear()
@@ -880,7 +884,22 @@ func _build_fsm_and_ast() -> void:
 		"战败陨落 (Dead)"
 	)
 
+	_fsm.add_visual_edge(STATE_IDLE, STATE_MOVE, "WASD")
+	_fsm.add_visual_edge(STATE_MOVE, STATE_IDLE, "stop")
+	_fsm.add_visual_edge(STATE_IDLE, STATE_DODGE, "Space")
+	_fsm.add_visual_edge(STATE_DODGE, STATE_IDLE, "0.42s")
+	_fsm.add_visual_edge(STATE_IDLE, STATE_PARRY, "RMB")
+	_fsm.add_visual_edge(STATE_PARRY, STATE_BLOCK, "hold")
+	_fsm.add_visual_edge(STATE_BLOCK, STATE_IDLE, "release")
+	_fsm.add_visual_edge(STATE_IDLE, STATE_ATTACK_WINDUP, "LMB")
+	_fsm.add_visual_edge(STATE_ATTACK_WINDUP, STATE_ATTACK_SLASH, "slash")
+	_fsm.add_visual_edge(STATE_ATTACK_SLASH, STATE_ATTACK_RECOVERY, "recover")
+	_fsm.add_visual_edge(STATE_ATTACK_RECOVERY, STATE_IDLE, "done")
+	_fsm.add_visual_edge(STATE_STAGGERED, STATE_IDLE, "recover")
+	_fsm.add_visual_edge(STATE_HIT_STUN, STATE_IDLE, "recover")
+
 	_fsm.start(STATE_IDLE)
+	_debug_fsm_id = GraphDebugBridge.register(_fsm, self, "%s · FSM" % _stats.actor_title)
 
 
 func _try_deliver_slash_hit() -> void:

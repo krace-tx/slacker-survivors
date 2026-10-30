@@ -1,0 +1,108 @@
+[gd_resource type="Resource" script_class="FsmGraphDef" format=3 uid="uid://fve5jirawhgt"]
+
+[ext_resource type="Script" uid="uid://bv7v4488o5vng" path="res://addons/flow_graph/runtime/fsm/ast/fsm_graph_def.gd" id="1_a4xw5"]
+[ext_resource type="Script" uid="uid://rwk2iqga75wm" path="res://addons/flow_graph/runtime/fsm/ast/fsm_state_def.gd" id="2_j1mok"]
+[ext_resource type="Script" uid="uid://cdlws6th2qxtm" path="res://addons/flow_graph/runtime/fsm/ast/fsm_transition_def.gd" id="3_n6q0b"]
+
+[sub_resource type="Resource" id="Resource_a4xw5"]
+script = ExtResource("2_j1mok")
+state_id = &"idle"
+title = "待机警戒"
+action_key = &"idle"
+params = {
+"speed": 0.0
+}
+editor_pos = Vector2(81.599976, 204)
+
+[sub_resource type="Resource" id="Resource_j1mok"]
+script = ExtResource("2_j1mok")
+state_id = &"patrol"
+title = "巡逻移动"
+action_key = &"patrol"
+params = {
+"speed": 90.0
+}
+editor_pos = Vector2(449.59998, 204)
+
+[sub_resource type="Resource" id="Resource_n6q0b"]
+script = ExtResource("2_j1mok")
+state_id = &"attack"
+title = "追击挥砍"
+action_key = &"attack"
+params = {
+"damage": 25,
+"speed": 150.0
+}
+editor_pos = Vector2(81.599976, 72)
+
+[sub_resource type="Resource" id="Resource_s3blo"]
+script = ExtResource("2_j1mok")
+state_id = &"stun"
+title = "受击眩晕"
+action_key = &"stun"
+params = {
+"speed": 0.0
+}
+editor_pos = Vector2(228, 336)
+
+[sub_resource type="Resource" id="Resource_r5yew"]
+script = ExtResource("3_n6q0b")
+from_state = &"idle"
+to_state = &"patrol"
+min_state_time = 2.0
+description = "警戒满 2.0s 自动巡逻"
+
+[sub_resource type="Resource" id="Resource_gtgur"]
+script = ExtResource("3_n6q0b")
+from_state = &"patrol"
+to_state = &"idle"
+min_state_time = 3.0
+description = "巡逻满 3.0s 停下警戒"
+
+[sub_resource type="Resource" id="Resource_no14k"]
+script = ExtResource("3_n6q0b")
+from_state = &"idle"
+to_state = &"attack"
+condition_key = &"enemy_in_sight"
+priority = 10
+description = "发现敌人"
+
+[sub_resource type="Resource" id="Resource_sl01h"]
+script = ExtResource("3_n6q0b")
+from_state = &"patrol"
+to_state = &"attack"
+condition_key = &"enemy_in_sight"
+priority = 10
+description = "发现敌人"
+
+[sub_resource type="Resource" id="Resource_0eqxs"]
+script = ExtResource("3_n6q0b")
+from_state = &"attack"
+to_state = &"idle"
+condition_key = &"enemy_lost"
+min_state_time = 0.4
+priority = 5
+description = "目标脱离视野"
+
+[sub_resource type="Resource" id="Resource_7og48"]
+script = ExtResource("3_n6q0b")
+from_state = &"*"
+to_state = &"stun"
+condition_key = &"hit_stun_triggered"
+priority = 100
+description = "遭受重击打断"
+
+[sub_resource type="Resource" id="Resource_7uxhw"]
+script = ExtResource("3_n6q0b")
+from_state = &"stun"
+to_state = &"idle"
+min_state_time = 1.4
+priority = 10
+description = "眩晕 1.4s 恢复"
+
+[resource]
+script = ExtResource("1_a4xw5")
+graph_id = &"guard_patrol_fsm"
+initial_state = &"idle"
+states = Array[ExtResource("2_j1mok")]([SubResource("Resource_a4xw5"), SubResource("Resource_j1mok"), SubResource("Resource_n6q0b"), SubResource("Resource_s3blo")])
+transitions = Array[ExtResource("3_n6q0b")]([SubResource("Resource_r5yew"), SubResource("Resource_gtgur"), SubResource("Resource_no14k"), SubResource("Resource_sl01h"), SubResource("Resource_0eqxs"), SubResource("Resource_7og48"), SubResource("Resource_7uxhw")])

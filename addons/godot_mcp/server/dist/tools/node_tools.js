@@ -1,217 +1,295 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 import { z } from 'zod';
 import { getGodotConnection } from '../utils/godot_connection.js';
-/**
- * Definition for node tools - operations that manipulate nodes in the scene tree
- */
-export var nodeTools = [
-    {
-        name: 'create_node',
-        description: 'Create a new node in the Godot scene tree',
-        parameters: z.object({
-            parent_path: z.string()
-                .describe('Path to the parent node where the new node will be created (e.g. "/root", "/root/MainScene")'),
-            node_type: z.string()
-                .describe('Type of node to create (e.g. "Node2D", "Sprite2D", "Label")'),
-            node_name: z.string()
-                .describe('Name for the new node'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, error_1;
-            var parent_path = _b.parent_path, node_type = _b.node_type, node_name = _b.node_name;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('create_node', {
-                                parent_path: parent_path,
-                                node_type: node_type,
-                                node_name: node_name,
-                            })];
-                    case 2:
-                        result = _c.sent();
-                        return [2 /*return*/, "Created ".concat(node_type, " node named \"").concat(node_name, "\" at ").concat(result.node_path)];
-                    case 3:
-                        error_1 = _c.sent();
-                        throw new Error("Failed to create node: ".concat(error_1.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+
+export const nodeTools = [
+  {
+    name: 'create_node',
+    description: 'Create a new node in the Godot scene tree',
+    parameters: z.object({
+      parent_path: z.string()
+        .describe('Path to the parent node where the new node will be created (e.g. "/root", "/root/MainScene")'),
+      node_type: z.string()
+        .describe('Type of node to create (e.g. "Node2D", "Sprite2D", "Label")'),
+      node_name: z.string()
+        .describe('Name for the new node'),
+    }),
+    execute: async ({ parent_path, node_type, node_name }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('create_node', {
+          parent_path,
+          node_type,
+          node_name,
+        });
+        return `Created ${node_type} node named "${node_name}" at ${result.node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to create node: ${error.message}`);
+      }
     },
-    {
-        name: 'delete_node',
-        description: 'Delete a node from the Godot scene tree',
-        parameters: z.object({
-            node_path: z.string()
-                .describe('Path to the node to delete (e.g. "/root/MainScene/Player")'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, error_2;
-            var node_path = _b.node_path;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('delete_node', { node_path: node_path })];
-                    case 2:
-                        _c.sent();
-                        return [2 /*return*/, "Deleted node at ".concat(node_path)];
-                    case 3:
-                        error_2 = _c.sent();
-                        throw new Error("Failed to delete node: ".concat(error_2.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'delete_node',
+    description: 'Delete a node from the Godot scene tree',
+    parameters: z.object({
+      node_path: z.string()
+        .describe('Path to the node to delete (e.g. "/root/MainScene/Player")'),
+    }),
+    execute: async ({ node_path }) => {
+      const godot = getGodotConnection();
+      try {
+        await godot.sendCommand('delete_node', { node_path });
+        return `Deleted node at ${node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to delete node: ${error.message}`);
+      }
     },
-    {
-        name: 'update_node_property',
-        description: 'Update a property of a node in the Godot scene tree',
-        parameters: z.object({
-            node_path: z.string()
-                .describe('Path to the node to update (e.g. "/root/MainScene/Player")'),
-            property: z.string()
-                .describe('Name of the property to update (e.g. "position", "text", "modulate")'),
-            value: z.any()
-                .describe('New value for the property'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, error_3;
-            var node_path = _b.node_path, property = _b.property, value = _b.value;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('update_node_property', {
-                                node_path: node_path,
-                                property: property,
-                                value: value,
-                            })];
-                    case 2:
-                        result = _c.sent();
-                        return [2 /*return*/, "Updated property \"".concat(property, "\" of node at ").concat(node_path, " to ").concat(JSON.stringify(value))];
-                    case 3:
-                        error_3 = _c.sent();
-                        throw new Error("Failed to update node property: ".concat(error_3.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'update_node_property',
+    description: 'Update a property of a node in the Godot scene tree',
+    parameters: z.object({
+      node_path: z.string()
+        .describe('Path to the node to update (e.g. "/root/MainScene/Player")'),
+      property: z.string()
+        .describe('Name of the property to update (e.g. "position", "text", "modulate")'),
+      value: z.any()
+        .describe('New value for the property'),
+    }),
+    execute: async ({ node_path, property, value }) => {
+      const godot = getGodotConnection();
+      try {
+        await godot.sendCommand('update_node_property', {
+          node_path,
+          property,
+          value,
+        });
+        return `Updated property "${property}" of node at ${node_path} to ${JSON.stringify(value)}`;
+      } catch (error) {
+        throw new Error(`Failed to update node property: ${error.message}`);
+      }
     },
-    {
-        name: 'get_node_properties',
-        description: 'Get all properties of a node in the Godot scene tree',
-        parameters: z.object({
-            node_path: z.string()
-                .describe('Path to the node to inspect (e.g. "/root/MainScene/Player")'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, formattedProperties, error_4;
-            var node_path = _b.node_path;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('get_node_properties', { node_path: node_path })];
-                    case 2:
-                        result = _c.sent();
-                        formattedProperties = Object.entries(result.properties)
-                            .map(function (_a) {
-                            var key = _a[0], value = _a[1];
-                            return "".concat(key, ": ").concat(JSON.stringify(value));
-                        })
-                            .join('\n');
-                        return [2 /*return*/, "Properties of node at ".concat(node_path, ":\n\n").concat(formattedProperties)];
-                    case 3:
-                        error_4 = _c.sent();
-                        throw new Error("Failed to get node properties: ".concat(error_4.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'get_node_properties',
+    description: 'Get all properties of a node in the Godot scene tree',
+    parameters: z.object({
+      node_path: z.string()
+        .describe('Path to the node to inspect (e.g. "/root/MainScene/Player")'),
+    }),
+    execute: async ({ node_path }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('get_node_properties', { node_path });
+        const formattedProperties = Object.entries(result.properties)
+          .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+          .join('\n');
+        return `Properties of node at ${node_path}:\n\n${formattedProperties}`;
+      } catch (error) {
+        throw new Error(`Failed to get node properties: ${error.message}`);
+      }
     },
-    {
-        name: 'list_nodes',
-        description: 'List all child nodes under a parent node in the Godot scene tree',
-        parameters: z.object({
-            parent_path: z.string()
-                .describe('Path to the parent node (e.g. "/root", "/root/MainScene")'),
-        }),
-        execute: function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
-            var godot, result, formattedChildren, error_5;
-            var parent_path = _b.parent_path;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        godot = getGodotConnection();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, godot.sendCommand('list_nodes', { parent_path: parent_path })];
-                    case 2:
-                        result = _c.sent();
-                        if (result.children.length === 0) {
-                            return [2 /*return*/, "No child nodes found under ".concat(parent_path)];
-                        }
-                        formattedChildren = result.children
-                            .map(function (child) { return "".concat(child.name, " (").concat(child.type, ") - ").concat(child.path); })
-                            .join('\n');
-                        return [2 /*return*/, "Children of node at ".concat(parent_path, ":\n\n").concat(formattedChildren)];
-                    case 3:
-                        error_5 = _c.sent();
-                        throw new Error("Failed to list nodes: ".concat(error_5.message));
-                    case 4: return [2 /*return*/];
-                }
-            });
-        }); },
+  },
+  {
+    name: 'list_nodes',
+    description: 'List all child nodes under a parent node in the Godot scene tree',
+    parameters: z.object({
+      parent_path: z.string()
+        .describe('Path to the parent node (e.g. "/root", "/root/MainScene")'),
+    }),
+    execute: async ({ parent_path }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('list_nodes', { parent_path });
+        if (result.children.length === 0) {
+          return `No child nodes found under ${parent_path}`;
+        }
+        const formattedChildren = result.children
+          .map((child) => `${child.name} (${child.type}) - ${child.path}`)
+          .join('\n');
+        return `Children of node at ${parent_path}:\n\n${formattedChildren}`;
+      } catch (error) {
+        throw new Error(`Failed to list nodes: ${error.message}`);
+      }
     },
+  },
+  {
+    name: 'connect_signal',
+    description: 'Connect a signal from source node to target node method (persists in scene file)',
+    parameters: z.object({
+      source_node: z.string().describe('Source node path'),
+      signal_name: z.string().describe('Signal name to connect (e.g. pressed, timeout)'),
+      target_node: z.string().describe('Target node path'),
+      method_name: z.string().describe('Target method name'),
+      persist: z.boolean().default(true).describe('Whether to persist in scene file'),
+    }),
+    execute: async ({ source_node, signal_name, target_node, method_name, persist = true }) => {
+      const godot = getGodotConnection();
+      try {
+        await godot.sendCommand('connect_signal', { source_node, signal_name, target_node, method_name, persist });
+        return `Connected ${source_node}.${signal_name} -> ${target_node}.${method_name}`;
+      } catch (error) {
+        throw new Error(`Failed to connect signal: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'disconnect_signal',
+    description: 'Disconnect a signal between source node and target node',
+    parameters: z.object({
+      source_node: z.string().describe('Source node path'),
+      signal_name: z.string().describe('Signal name'),
+      target_node: z.string().describe('Target node path'),
+      method_name: z.string().describe('Target method name'),
+    }),
+    execute: async ({ source_node, signal_name, target_node, method_name }) => {
+      const godot = getGodotConnection();
+      try {
+        await godot.sendCommand('disconnect_signal', { source_node, signal_name, target_node, method_name });
+        return `Disconnected ${source_node}.${signal_name} from ${target_node}.${method_name}`;
+      } catch (error) {
+        throw new Error(`Failed to disconnect signal: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'list_signals',
+    description: 'List all signals and active connections on a node',
+    parameters: z.object({
+      node_path: z.string().describe('Node path to inspect'),
+    }),
+    execute: async ({ node_path }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('list_signals', { node_path });
+        return `Signals for ${node_path}:\n\n${JSON.stringify(result, null, 2)}`;
+      } catch (error) {
+        throw new Error(`Failed to list signals: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'set_anchor_preset',
+    description: 'Set Control node layout anchor preset (e.g. full_rect, center, top_wide)',
+    parameters: z.object({
+      node_path: z.string().describe('Control node path'),
+      preset: z.string().describe('Preset name (full_rect, center, top_wide, bottom_wide, top_left, etc.)'),
+      keep_offsets: z.boolean().default(false).describe('Whether to preserve current offsets'),
+    }),
+    execute: async ({ node_path, preset, keep_offsets = false }) => {
+      const godot = getGodotConnection();
+      try {
+        await godot.sendCommand('set_anchor_preset', { node_path, preset, keep_offsets });
+        return `Set anchor preset "${preset}" on ${node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to set anchor preset: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'set_size_flags',
+    description: 'Set container size flags for Control node (horizontal/vertical)',
+    parameters: z.object({
+      node_path: z.string().describe('Control node path'),
+      horizontal: z.string().optional().describe('Horizontal flag (fill, expand, expand_fill, shrink_center)'),
+      vertical: z.string().optional().describe('Vertical flag (fill, expand, expand_fill, shrink_center)'),
+    }),
+    execute: async ({ node_path, horizontal = '', vertical = '' }) => {
+      const godot = getGodotConnection();
+      try {
+        await godot.sendCommand('set_size_flags', { node_path, horizontal, vertical });
+        return `Set size flags on ${node_path}: H=${horizontal}, V=${vertical}`;
+      } catch (error) {
+        throw new Error(`Failed to set size flags: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'instantiate_scene',
+    description: 'Instantiate an existing .tscn or .glb PackedScene prefab as a child node',
+    parameters: z.object({
+      parent_path: z.string().default('/root').describe('Parent node path'),
+      scene_path: z.string().describe('PackedScene resource path (e.g. "res://src/.../slot_card.tscn")'),
+      node_name: z.string().optional().describe('Optional explicit name for the instanced node'),
+    }),
+    execute: async ({ parent_path = '/root', scene_path, node_name = '' }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('instantiate_scene', { parent_path, scene_path, node_name });
+        return `Instantiated ${scene_path} as "${result.node_name}" at ${result.node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to instantiate scene: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'set_unique_name',
+    description: 'Enable or disable scene-unique name (%NodeName) on a node',
+    parameters: z.object({
+      node_path: z.string().describe('Target node path'),
+      enabled: z.boolean().default(true).describe('Whether unique_name_in_owner is enabled'),
+    }),
+    execute: async ({ node_path, enabled = true }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('set_unique_name', { node_path, enabled });
+        return `Set unique_name_in_owner=${enabled} on ${result.node_path} (${result.unique_name})`;
+      } catch (error) {
+        throw new Error(`Failed to set unique name: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'move_node',
+    description: 'Reorder child index or reparent a node within the edited scene tree',
+    parameters: z.object({
+      node_path: z.string().describe('Target node path'),
+      new_parent_path: z.string().optional().describe('Optional new parent node path'),
+      index: z.number().default(-1).describe('Target child index (-1 appends or keeps current)'),
+    }),
+    execute: async ({ node_path, new_parent_path = '', index = -1 }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('move_node', { node_path, new_parent_path, index });
+        return `Moved node to ${result.node_path} (index=${result.index})`;
+      } catch (error) {
+        throw new Error(`Failed to move node: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'get_scene_tree',
+    description: 'Get recursive scene tree hierarchy snapshot with script, prefab, and layout info',
+    parameters: z.object({
+      root_path: z.string().default('/root').describe('Subtree root path'),
+      max_depth: z.number().default(8).describe('Maximum recursion depth'),
+    }),
+    execute: async ({ root_path = '/root', max_depth = 8 }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('get_scene_tree', { root_path, max_depth });
+        return JSON.stringify(result, null, 2);
+      } catch (error) {
+        throw new Error(`Failed to get scene tree: ${error.message}`);
+      }
+    },
+  },
+  {
+    name: 'set_theme_override',
+    description: 'Set Control theme override (constant, color, font_size, or stylebox from res:// / StyleBoxFlat dict)',
+    parameters: z.object({
+      node_path: z.string().describe('Target Control node path'),
+      override_type: z.enum(['constant', 'color', 'font_size', 'stylebox']).describe('Override category'),
+      name: z.string().describe('Theme item name (e.g. separation, margin_left, font_color, panel)'),
+      value: z.any().describe('Override value (int, #hex/{r,g,b,a}, res://...tres, or StyleBoxFlat dict)'),
+    }),
+    execute: async ({ node_path, override_type, name, value }) => {
+      const godot = getGodotConnection();
+      try {
+        const result = await godot.sendCommand('set_theme_override', { node_path, override_type, name, value });
+        return `Applied ${result.property} on ${result.node_path}`;
+      } catch (error) {
+        throw new Error(`Failed to set theme override: ${error.message}`);
+      }
+    },
+  },
 ];
-//# sourceMappingURL=node_tools.js.map

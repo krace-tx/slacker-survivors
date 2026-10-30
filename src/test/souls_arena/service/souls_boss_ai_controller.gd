@@ -20,6 +20,7 @@ var _bt_graph_def: BTGraphDef = null
 var _bt_tree: BTTree = null
 var _bt_compiler: BTCompiler = null
 var _bt_ctx: BTContext = null
+var _debug_bt_id: int = 0
 var _strafe_clock: float = 0.0
 var _dodge_side_sign: float = 1.0
 
@@ -32,9 +33,13 @@ func _init(boss: SoulsFighterActor, player: SoulsFighterActor) -> void:
 	_boss = boss
 	_player = player
 	_build_boss_bt_ast_and_compile()
+	_debug_bt_id = GraphDebugBridge.register_bt(_bt_tree, _bt_ctx, _boss, "深渊铁卫 · AI 行为树")
 
 
 func clear() -> void:
+	if _debug_bt_id != 0:
+		GraphDebugBridge.unregister(_debug_bt_id)
+		_debug_bt_id = 0
 	_boss = null
 	_player = null
 	_bt_tree = null
@@ -107,6 +112,25 @@ func tick_ai(delta: float) -> int:
 	_bt_ctx.blackboard.set_var(&"player_is_attacking", player_is_attacking)
 	_bt_ctx.blackboard.set_var(&"boss_is_attacking", boss_is_busy)
 	_bt_ctx.blackboard.set_var(&"is_pacing_standoff", _boss.post_attack_pacing_timer > 0.0)
+
+	# 响应编辑器 Mermaid 画布双击动作卡片下发的强制测试指令
+	var forced_act: StringName = _bt_ctx.blackboard.get_string_name(&"debug_forced_action", &"")
+	if not forced_act.is_empty():
+		_bt_ctx.blackboard.set_var(&"debug_forced_action", &"")
+		match forced_act:
+			SoulsCombatConfig.BT_LEAF_EVADE_DODGE:
+				_boss.cmd_dodge_roll(Vector3.ZERO, true)
+			SoulsCombatConfig.BT_LEAF_DEFEND_PARRY_BLOCK:
+				_boss.cmd_parry_or_block()
+			SoulsCombatConfig.BT_LEAF_GAP_CLOSE:
+				_boss.cmd_gap_closer_leap()
+			SoulsCombatConfig.BT_LEAF_RED_NOVA:
+				_boss.cmd_unblockable_red_nova()
+			SoulsCombatConfig.BT_LEAF_DELAYED_FEINT:
+				_boss.cmd_delayed_feint_combo()
+			SoulsCombatConfig.BT_LEAF_COMBO_SLASH:
+				_boss.cmd_light_attack_or_riposte()
+
 	return _bt_tree.tick(_bt_ctx, delta)
 
 #endregion

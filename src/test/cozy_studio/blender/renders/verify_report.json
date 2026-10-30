@@ -1,0 +1,90 @@
+{
+  "passed": true,
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "stats": {
+    "blender_version": "5.2.0 LTS",
+    "mesh_object_count": 724,
+    "total_vertices": 57084,
+    "total_polygons": 55392,
+    "zero_area_faces": 0,
+    "loose_vertices": 0,
+    "unweighted_skinned_vertices": 0,
+    "material_count": 27,
+    "armatures": [],
+    "hierarchy": {
+      "max_hierarchy_depth": 6,
+      "collection_count": 4,
+      "collections": [
+        "01_Export_Hierarchy",
+        "02_Work_Helpers",
+        "03_Studio_LookDev",
+        "COL_Asset_CozyStudio"
+      ],
+      "unparented_mesh_count": 0,
+      "empty_group_nodes": [
+        "CLUSTER_Center_WovenRug",
+        "CLUSTER_Coffee_Bar",
+        "CLUSTER_Grand_Bookcase",
+        "CLUSTER_Plant_DeskWindow_FiddleFig",
+        "CLUSTER_Plant_SofaCorner_Palm",
+        "CLUSTER_Plant_WindowFront_MiniFicus",
+        "CLUSTER_Plant_WindowFront_Monstera",
+        "CLUSTER_Pouf_And_SleepingCat",
+        "CLUSTER_Sofa_And_Table",
+        "CLUSTER_Wall_Gallery",
+        "CLUSTER_Workstation_Main",
+        "GRP_01_Building_Shell",
+        "GRP_02_Interior_FunctionalZones",
+        "GRP_04_Gameplay_Anchors",
+        "GRP_Chair_StaticBase",
+        "GRP_Desk_Monitors_And_Gear",
+        "GRP_Desk_Structure",
+        "GRP_Floors_And_Base",
+        "GRP_French_Windows_And_Curtains",
+        "GRP_Walls_Wainscot_And_Beams",
+        "PIVOT_Chair_UpperSwivel",
+        "PIVOT_Monitor_L",
+        "PIVOT_Monitor_R",
+        "ROOT_Venue_CozyStudio",
+        "SOCKET_Spawn_Partner",
+        "SOCKET_Spawn_Slacker",
+        "ZONE_Bookshelf_Decor",
+        "ZONE_Coffee_Lounge",
+        "ZONE_Workstation"
+      ]
+    },
+    "aabb": {
+      "min": [
+        -4.92,
+        -4.08,
+        -0.195
+      ],
+      "max": [
+        4.58,
+        4.14,
+        4.27
+      ],
+      "size": [
+        9.5,
+        8.22,
+        4.465
+      ],
+      "center": [
+        -0.17,
+        0.03,
+        2.0375
+      ]
+    }
+  },
+  "glb_verification": {
+    "checked": true,
+    "exists": true,
+    "path": "src/test/cozy_studio/assets/models/mdl_cozy_studio_room.glb",
+    "size_bytes": 11780272,
+    "gltf_version": 2
+  },
+  "diagnostic_renders": []
+}

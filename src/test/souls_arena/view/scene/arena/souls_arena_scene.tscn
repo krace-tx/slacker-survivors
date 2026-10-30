@@ -1,7 +1,7 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://c7qhubxvgj6b1"]
 
-[ext_resource type="Script" path="res://src/test/souls_arena/view/scene/arena/souls_arena_scene.gd" id="1_scene"]
-[ext_resource type="Script" path="res://src/test/souls_arena/view/scene/arena/souls_arena_view.gd" id="2_view"]
+[ext_resource type="Script" uid="uid://bcnadsf60t3tm" path="res://src/test/souls_arena/view/scene/arena/souls_arena_scene.gd" id="1_scene"]
+[ext_resource type="Script" uid="uid://bq651ikoijhb1" path="res://src/test/souls_arena/view/scene/arena/souls_arena_view.gd" id="2_view"]
 [ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/stage/souls_arena_stage_3d.tscn" id="3_stage"]
 [ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/camera/souls_camera_rig_3d.tscn" id="4_cam"]
 [ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/fighter/souls_fighter_actor.tscn" id="5_actor"]
@@ -9,26 +9,26 @@
 [ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/help_dialog/souls_keybind_help_dialog.tscn" id="7_help"]
 [ext_resource type="PackedScene" path="res://src/test/souls_arena/view/component/blueprint_dialog/souls_blueprint_dialog.tscn" id="8_bp"]
 
-[node name="SoulsArenaScene" type="Node3D"]
+[node name="SoulsArenaScene" type="Node3D" unique_id=196844284]
 script = ExtResource("1_scene")
 
-[node name="World3D" type="Node3D" parent="."]
+[node name="World3D" type="Node3D" parent="." unique_id=1363185185]
 
-[node name="ArenaStage3D" parent="World3D" instance=ExtResource("3_stage")]
+[node name="ArenaStage3D" parent="World3D" unique_id=2137733464 instance=ExtResource("3_stage")]
 unique_name_in_owner = true
 
-[node name="CameraRig3D" parent="World3D" instance=ExtResource("4_cam")]
+[node name="CameraRig3D" parent="World3D" unique_id=481078303 instance=ExtResource("4_cam")]
 unique_name_in_owner = true
 
-[node name="PlayerActor" parent="World3D" instance=ExtResource("5_actor")]
+[node name="PlayerActor" parent="World3D" unique_id=1678343148 instance=ExtResource("5_actor")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.2)
 
-[node name="BossActor" parent="World3D" instance=ExtResource("5_actor")]
+[node name="BossActor" parent="World3D" unique_id=1232998874 instance=ExtResource("5_actor")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.2)
 
-[node name="ArenaView" type="Control" parent="."]
+[node name="ArenaView" type="Control" parent="." unique_id=1941390226]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -38,14 +38,14 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_view")
 
-[node name="CombatHudBar" parent="ArenaView" instance=ExtResource("6_hud")]
+[node name="CombatHudBar" parent="ArenaView" unique_id=1833075833 instance=ExtResource("6_hud")]
 unique_name_in_owner = true
 layout_mode = 1
 
-[node name="KeybindHelpDialog" parent="ArenaView" instance=ExtResource("7_help")]
+[node name="KeybindHelpDialog" parent="ArenaView" unique_id=515707594 instance=ExtResource("7_help")]
 unique_name_in_owner = true
 layout_mode = 1
 
-[node name="BlueprintDialog" parent="ArenaView" instance=ExtResource("8_bp")]
+[node name="BlueprintDialog" parent="ArenaView" unique_id=36842399 instance=ExtResource("8_bp")]
 unique_name_in_owner = true
 layout_mode = 1

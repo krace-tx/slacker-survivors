@@ -22,7 +22,12 @@ func _initialize() -> void:
 			define_script.call("generate_headless")
 
 	# 3. 递归扫描并编译校验全部 GDScript 文件
-	var target_dirs: Array[String] = ["res://src", "res://addons/scene_define_generator"]
+	var target_dirs: Array[String] = [
+		"res://src",
+		"res://addons/scene_define_generator",
+		"res://addons/flow_graph",
+		"res://addons/build_isolation",
+	]
 	var files: Array[String] = []
 	for dir_path in target_dirs:
 		_collect_gd_files(dir_path, files)

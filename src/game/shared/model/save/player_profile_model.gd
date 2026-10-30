@@ -39,14 +39,12 @@ var custom_data: Dictionary = {}
 
 
 #region Public API
-## 创建玩家档案标准存储配置项（落盘至玩家核心存档区 user://saves/shared/player_profile.json，并启用 Steam Cloud 同步）
+## 创建玩家档案标准存储配置项（落盘至玩家核心存档区 user://saves/shared/player_profile.sav，自动继承全局硬件指纹加密并启用 Steam Cloud 同步）
 static func storage_item() -> StorageItem:
 	return StorageItem.for_save(
 		STORAGE_DOMAIN,
 		STORAGE_SUBJECT,
-		_STORAGE_SCHEMA_VERSION,
-		"json",
-		-1.0
+		_STORAGE_SCHEMA_VERSION
 	).with_steam_cloud()
 
 

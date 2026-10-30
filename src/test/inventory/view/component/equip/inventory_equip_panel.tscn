@@ -1,0 +1,214 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/test/inventory/view/component/equip/inventory_equip_panel.gd" id="1_equip_panel"]
+[ext_resource type="PackedScene" path="res://src/test/inventory/view/component/slot/inventory_slot_card.tscn" id="2_slot_card"]
+[ext_resource type="Script" path="res://src/test/inventory/view/component/art/inventory_mini_icon.gd" id="3_icon"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 22.0
+content_margin_top = 20.0
+content_margin_right = 22.0
+content_margin_bottom = 20.0
+bg_color = Color(0.068, 0.094, 0.145, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.137, 0.188, 0.275, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.32)
+shadow_size = 18
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inset"]
+content_margin_left = 18.0
+content_margin_top = 18.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+bg_color = Color(0.048, 0.068, 0.108, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.16, 0.24, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 11
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon_frame"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.075, 0.105, 0.165, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.3, 0.44, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="InventoryEquipPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(344, 512)
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+script = ExtResource("1_equip_panel")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.945, 0.965, 0.99, 1)
+theme_override_font_sizes/font_size = 16
+text = "装备"
+
+[node name="Spacer" type="Control" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RuleTagLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 11
+text = "RULE"
+
+[node name="SlotsRow" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="WeaponSlot" parent="VBox/SlotsRow" instance=ExtResource("2_slot_card")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+container_id = &"equip_weapon"
+empty_watermark_kind = 10
+role_caption = "主手"
+
+[node name="ShieldSlot" parent="VBox/SlotsRow" instance=ExtResource("2_slot_card")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+container_id = &"equip_shield"
+empty_watermark_kind = 11
+role_caption = "副手"
+
+[node name="RingSlot" parent="VBox/SlotsRow" instance=ExtResource("2_slot_card")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+container_id = &"equip_ring"
+empty_watermark_kind = 12
+role_caption = "饰品"
+
+[node name="FocusPanel" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_inset")
+
+[node name="EmptyLabel" type="Label" parent="VBox/FocusPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 13
+text = "未选中"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContentBox" type="VBoxContainer" parent="VBox/FocusPanel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TopPadSpacer" type="Control" parent="VBox/FocusPanel/ContentBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="IconCenter" type="CenterContainer" parent="VBox/FocusPanel/ContentBox"]
+layout_mode = 2
+
+[node name="IconFrame" type="PanelContainer" parent="VBox/FocusPanel/ContentBox/IconCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(82, 82)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_icon_frame")
+
+[node name="FocusIcon" type="Control" parent="VBox/FocusPanel/ContentBox/IconCenter/IconFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_icon")
+
+[node name="TitleCol" type="VBoxContainer" parent="VBox/FocusPanel/ContentBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="VBox/FocusPanel/ContentBox/TitleCol"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.945, 0.965, 0.99, 1)
+theme_override_font_sizes/font_size = 18
+text = "符文长剑"
+horizontal_alignment = 1
+
+[node name="SubLabel" type="Label" parent="VBox/FocusPanel/ContentBox/TitleCol"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.54, 0.98, 1)
+theme_override_font_sizes/font_size = 12
+text = "史诗 · 主手"
+horizontal_alignment = 1
+
+[node name="StatLabel" type="Label" parent="VBox/FocusPanel/ContentBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.89, 0.98, 1)
+theme_override_font_sizes/font_size = 14
+text = "ATK +45"
+horizontal_alignment = 1
+
+[node name="BottomPadSpacer" type="Control" parent="VBox/FocusPanel/ContentBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Divider" type="HSeparator" parent="VBox/FocusPanel/ContentBox"]
+modulate = Color(1, 1, 1, 0.14)
+layout_mode = 2
+
+[node name="MetaRow" type="HBoxContainer" parent="VBox/FocusPanel/ContentBox"]
+layout_mode = 2
+
+[node name="MetaLeftLabel" type="Label" parent="VBox/FocusPanel/ContentBox/MetaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.455, 0.535, 0.655, 1)
+theme_override_font_sizes/font_size = 12
+text = "尺寸 1×3"
+
+[node name="Spacer" type="Control" parent="VBox/FocusPanel/ContentBox/MetaRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MetaRightLabel" type="Label" parent="VBox/FocusPanel/ContentBox/MetaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 12
+text = "#1"

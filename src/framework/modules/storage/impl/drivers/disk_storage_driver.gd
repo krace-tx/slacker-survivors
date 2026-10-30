@@ -14,6 +14,7 @@ extends StorageDriver
 
 const EXT_BAK := ".bak"
 const EXT_TMP := ".tmp"
+const _GODOT_ENCRYPTED_MAGIC := "GDEC"
 
 var _log_service: BaseFrameworkLogger
 
@@ -170,11 +171,12 @@ func _write_raw(path: String, data: Variant, kwargs: Dictionary, atomic: bool) -
 func _read_json_payload(path: String, kwargs: Dictionary) -> Result:
 	var enc_key := str(kwargs.get("encryption_key", ""))
 	var compressed := bool(kwargs.get("compressed", false))
+	var allow_plain_fallback := bool(kwargs.get("allow_plaintext_fallback", false))
 
 	if enc_key.is_empty() and not compressed:
 		return FileUtils.read_json(path)
 
-	var bytes_res := _read_decoded_bytes(path, enc_key, compressed)
+	var bytes_res := _read_decoded_bytes(path, enc_key, compressed, allow_plain_fallback)
 	if bytes_res.is_err():
 		return bytes_res
 
@@ -238,7 +240,8 @@ func _read_file_payload(path: String, kwargs: Dictionary) -> Result:
 
 	var enc_key := str(kwargs.get("encryption_key", ""))
 	var compressed := bool(kwargs.get("compressed", false))
-	return _read_decoded_bytes(path, enc_key, compressed)
+	var allow_plain_fallback := bool(kwargs.get("allow_plaintext_fallback", false))
+	return _read_decoded_bytes(path, enc_key, compressed, allow_plain_fallback)
 
 
 func _write_file_payload(path: String, data: Variant, kwargs: Dictionary, atomic: bool) -> Result:
@@ -281,15 +284,27 @@ static func _write_encoded_bytes(
 	return FileUtils.write_bytes(path, raw_bytes, atomic)
 
 
-## 正交组合解码读取管线：支持「先 AES-256 解密 ➔ 再识别 FWKZ 帧解压」，并向下兼容历史单步格式。
-static func _read_decoded_bytes(path: String, enc_key: String, compressed: bool) -> Result:
+## 正交组合解码读取管线：支持「先 AES-256 解密 ➔ 再识别 FWKZ 帧解压」，并兼容历史未加密明文旧档受控升级。
+static func _read_decoded_bytes(
+	path: String,
+	enc_key: String,
+	compressed: bool,
+	allow_plaintext_fallback: bool = false
+) -> Result:
 	if not enc_key.is_empty():
 		var dec_res := FileUtils.read_encrypted(path, enc_key)
 		if dec_res.is_err():
-			# 兼容直接使用 CryptoUtils.encrypt_bytes (FWKE 信封) 落盘的文件
 			var raw_file_res := FileUtils.read_bytes(path)
-			if raw_file_res.is_ok() and CryptoUtils.is_encrypted_envelope(raw_file_res.value as PackedByteArray):
-				dec_res = CryptoUtils.decrypt_bytes(raw_file_res.value as PackedByteArray, enc_key)
+			if raw_file_res.is_ok():
+				var raw_file_bytes: PackedByteArray = raw_file_res.value as PackedByteArray
+				# 1. 兼容直接使用 CryptoUtils.encrypt_bytes (FWKE 信封) 落盘的文件
+				if CryptoUtils.is_encrypted_envelope(raw_file_bytes):
+					dec_res = CryptoUtils.decrypt_bytes(raw_file_bytes, enc_key)
+				# 2. 若显式开启旧档明文回退，且文件头并非密文容器魔数（仅对历史未加密旧档生效，被篡改或异机密文仍严格拦截）
+				elif allow_plaintext_fallback and not _has_cipher_magic(raw_file_bytes):
+					if CryptoUtils.is_compressed_frame(raw_file_bytes):
+						return CryptoUtils.decompress_bytes(raw_file_bytes)
+					return Result.ok(raw_file_bytes)
 			if dec_res.is_err():
 				return Result.err_ex(
 					StorageError.DECRYPT_FAILED,
@@ -310,11 +325,22 @@ static func _read_decoded_bytes(path: String, enc_key: String, compressed: bool)
 		if comp_res.is_ok():
 			return comp_res
 		var raw_res := FileUtils.read_bytes(path)
-		if raw_res.is_ok() and CryptoUtils.is_compressed_frame(raw_res.value as PackedByteArray):
-			return CryptoUtils.decompress_bytes(raw_res.value as PackedByteArray)
+		if raw_res.is_ok():
+			var raw_bytes: PackedByteArray = raw_res.value as PackedByteArray
+			if CryptoUtils.is_compressed_frame(raw_bytes):
+				return CryptoUtils.decompress_bytes(raw_bytes)
+			if allow_plaintext_fallback and not _has_cipher_magic(raw_bytes):
+				return Result.ok(raw_bytes)
 		return comp_res
 
 	return FileUtils.read_bytes(path)
+
+
+static func _has_cipher_magic(bytes: PackedByteArray) -> bool:
+	if bytes.size() < 4:
+		return false
+	var magic: String = bytes.slice(0, 4).get_string_from_ascii()
+	return magic == CryptoUtils.CIPHER_MAGIC or magic == _GODOT_ENCRYPTED_MAGIC
 
 
 static func _wrap_disk_error(res: Result, path: String) -> Result:

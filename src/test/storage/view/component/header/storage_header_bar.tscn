@@ -1,0 +1,121 @@
+[gd_scene format=3 uid="uid://clrpnjash8nog"]
+
+[ext_resource type="Script" uid="uid://uytherc5la7t" path="res://src/test/storage/view/component/header/storage_header_bar.gd" id="1_283ex"]
+[ext_resource type="PackedScene" uid="uid://diglp8xbagpnm" path="res://src/test/storage/view/component/pill/storage_stat_pill.tscn" id="2_rggml"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mhvpr"]
+content_margin_left = 22.0
+content_margin_top = 14.0
+content_margin_right = 22.0
+content_margin_bottom = 14.0
+bg_color = Color(0.06666667, 0.09411765, 0.15294118, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12156863, 0.16078432, 0.21568628, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gwwmx"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.11764706, 0.16078432, 0.23137255, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.21960784, 0.7411765, 0.972549, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wrk3x"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.05882353, 0.09019608, 0.16470589, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.21960784, 0.7411765, 0.972549, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_idu2e"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.14901961, 0.20784314, 0.3019608, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.49019608, 0.827451, 0.9882353, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="StorageHeaderBar" type="PanelContainer" unique_id=1489418525]
+theme_override_styles/panel = SubResource("StyleBoxFlat_mhvpr")
+script = ExtResource("1_283ex")
+
+[node name="BarRow" type="HBoxContainer" parent="." unique_id=1347938834]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TitleBox" type="VBoxContainer" parent="BarRow" unique_id=1126042865]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="BarRow/TitleBox" unique_id=1144713869]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94509804, 0.9607843, 0.9764706, 1)
+theme_override_font_sizes/font_size = 19
+text = "STORAGE SECURITY LAB"
+
+[node name="SubTitleLabel" type="Label" parent="BarRow/TitleBox" unique_id=1477684772]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5803922, 0.6392157, 0.72156864, 1)
+theme_override_font_sizes/font_size = 12
+text = "全局存档加密 · 环境开关 · 硬件设备指纹防替档实时验证台"
+
+[node name="Spacer" type="Control" parent="BarRow" unique_id=859629219]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="EnvPill" parent="BarRow" unique_id=1241696631 instance=ExtResource("2_rggml")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="DevicePill" parent="BarRow" unique_id=1347020439 instance=ExtResource("2_rggml")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SuitePill" parent="BarRow" unique_id=1443943234 instance=ExtResource("2_rggml")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RerunButton" type="Button" parent="BarRow" unique_id=552899597]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(156, 38)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.94509804, 0.9607843, 0.9764706, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_gwwmx")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_wrk3x")
+theme_override_styles/hover = SubResource("StyleBoxFlat_idu2e")
+text = "重新运行 9 项断言"

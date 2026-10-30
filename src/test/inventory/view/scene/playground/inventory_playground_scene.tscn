@@ -1,0 +1,98 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/test/inventory/view/scene/playground/inventory_playground_scene.gd" id="1_scene"]
+[ext_resource type="Script" path="res://src/test/inventory/view/scene/playground/inventory_playground_view.gd" id="2_view"]
+[ext_resource type="PackedScene" path="res://src/test/inventory/view/component/header/inventory_header_bar.tscn" id="3_header"]
+[ext_resource type="PackedScene" path="res://src/test/inventory/view/component/equip/inventory_equip_panel.tscn" id="4_equip"]
+[ext_resource type="PackedScene" path="res://src/test/inventory/view/component/bag/inventory_bag_panel.tscn" id="5_bag"]
+[ext_resource type="PackedScene" path="res://src/test/inventory/view/component/grid/inventory_grid_panel.tscn" id="6_grid"]
+
+[node name="InventoryPlaygroundScene" type="Node"]
+script = ExtResource("1_scene")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.039, 0.055, 0.09, 1)
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_view")
+
+[node name="CenterStage" type="CenterContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainVBox" type="VBoxContainer" parent="UI/CenterStage"]
+custom_minimum_size = Vector2(1406, 0)
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="HeaderBar" parent="UI/CenterStage/MainVBox" instance=ExtResource("3_header")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ColumnsHBox" type="HBoxContainer" parent="UI/CenterStage/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="EquipPanel" parent="UI/CenterStage/MainVBox/ColumnsHBox" instance=ExtResource("4_equip")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BagPanel" parent="UI/CenterStage/MainVBox/ColumnsHBox" instance=ExtResource("5_bag")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="GridPanel" parent="UI/CenterStage/MainVBox/ColumnsHBox" instance=ExtResource("6_grid")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FooterHints" type="HBoxContainer" parent="UI/CenterStage/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="HintDrag" type="Label" parent="UI/CenterStage/MainVBox/FooterHints"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 12
+text = "拖拽  移动 / 合堆 / 互换"
+
+[node name="Dot1" type="Label" parent="UI/CenterStage/MainVBox/FooterHints"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 12
+text = "·"
+
+[node name="HintRightClick" type="Label" parent="UI/CenterStage/MainVBox/FooterHints"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 12
+text = "右键  穿脱 / 快移"
+
+[node name="Dot2" type="Label" parent="UI/CenterStage/MainVBox/FooterHints"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 12
+text = "·"
+
+[node name="HintRotate" type="Label" parent="UI/CenterStage/MainVBox/FooterHints"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.325, 0.395, 0.505, 1)
+theme_override_font_sizes/font_size = 12
+text = "R  旋转"

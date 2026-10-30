@@ -60,6 +60,20 @@ func register_commands(registry: CommandRegistry) -> void:
 	)
 	registry.register_alias("set_size_flags", "ui.set_size_flags")
 
+	# 3. ui.set_theme_override
+	registry.register_command(
+		"ui.set_theme_override",
+		"Set Control theme override (constant, color, font_size, or stylebox from res:// / StyleBoxFlat dict)",
+		{
+			"node_path": {"type": "string", "required": true, "description": "Target Control node path"},
+			"override_type": {"type": "string", "required": true, "description": "Override category: constant | color | font_size | stylebox"},
+			"name": {"type": "string", "required": true, "description": "Theme item name (e.g. separation, margin_left, font_color, panel)"},
+			"value": {"type": "any", "required": true, "description": "Override value (int, #hex/{r,g,b,a}, res://...tres, or StyleBoxFlat dict)"},
+		},
+		_set_theme_override
+	)
+	registry.register_alias("set_theme_override", "ui.set_theme_override")
+
 
 func _set_anchor_preset(p: Dictionary) -> Variant:
 	var node := ctx.resolve_node(p.node_path)
@@ -140,3 +154,109 @@ func _set_size_flags(p: Dictionary) -> Variant:
 		"horizontal": h_str,
 		"vertical": v_str
 	}
+
+
+func _set_theme_override(p: Dictionary) -> Variant:
+	var node := ctx.resolve_node(p.node_path)
+	if node == null:
+		return RpcError.not_found("Node not found: %s" % p.node_path)
+	if not node is Control:
+		return RpcError.invalid_params("Node '%s' is not a Control node" % p.node_path)
+
+	var category: String = str(p.override_type).to_lower().strip_edges()
+	var item_name: String = str(p.name).strip_edges()
+	var raw_val: Variant = p.value
+
+	var prop_path := ""
+	var parsed: Variant = null
+
+	match category:
+		"constant", "constants":
+			prop_path = "theme_override_constants/%s" % item_name
+			parsed = int(raw_val)
+		"font_size", "font_sizes":
+			prop_path = "theme_override_font_sizes/%s" % item_name
+			parsed = int(raw_val)
+		"color", "colors":
+			prop_path = "theme_override_colors/%s" % item_name
+			parsed = _parse_color(raw_val)
+		"stylebox", "styles":
+			prop_path = "theme_override_styles/%s" % item_name
+			parsed = _parse_stylebox(raw_val)
+			if parsed == null and raw_val != null:
+				return RpcError.invalid_params("Invalid stylebox value for '%s'" % item_name)
+		_:
+			return RpcError.invalid_params("Unknown override_type '%s'. Expected constant, color, font_size, or stylebox" % category)
+
+	ctx.set_property_undoable(node, prop_path, parsed, "MCP: Theme %s/%s" % [category, item_name])
+	return {
+		"node_path": p.node_path,
+		"property": prop_path
+	}
+
+
+func _parse_color(val: Variant) -> Color:
+	if val is Color:
+		return val
+	if typeof(val) == TYPE_STRING:
+		var s := String(val).strip_edges()
+		if Color.html_is_valid(s):
+			return Color.html(s)
+		var parsed := ctx.parse_property_value(s)
+		if parsed is Color:
+			return parsed
+	elif typeof(val) == TYPE_DICTIONARY:
+		var parsed_d := ctx.parse_property_value(val)
+		if parsed_d is Color:
+			return parsed_d
+	return Color.WHITE
+
+
+func _parse_stylebox(val: Variant) -> StyleBox:
+	if val == null:
+		return null
+	if val is StyleBox:
+		return val
+	if typeof(val) == TYPE_STRING:
+		var spath := String(val).strip_edges()
+		if spath.is_empty():
+			return null
+		if spath == "empty":
+			return StyleBoxEmpty.new()
+		if not spath.begins_with("res://"):
+			spath = "res://" + spath
+		return ResourceLoader.load(spath) as StyleBox
+	if typeof(val) == TYPE_DICTIONARY:
+		var d: Dictionary = val
+		var sb_type: String = str(d.get("type", "StyleBoxFlat")).strip_edges()
+		if sb_type == "StyleBoxEmpty":
+			return StyleBoxEmpty.new()
+		var sb := StyleBoxFlat.new()
+		if d.has("bg_color"):
+			sb.bg_color = _parse_color(d["bg_color"])
+		if d.has("border_color"):
+			sb.border_color = _parse_color(d["border_color"])
+		if d.has("border_width"):
+			sb.set_border_width_all(int(d["border_width"]))
+		if d.has("corner_radius"):
+			sb.set_corner_radius_all(int(d["corner_radius"]))
+		if d.has("content_margin"):
+			var cm: Variant = d["content_margin"]
+			if typeof(cm) == TYPE_ARRAY and (cm as Array).size() == 4:
+				var arr: Array = cm
+				sb.content_margin_left = float(arr[0])
+				sb.content_margin_top = float(arr[1])
+				sb.content_margin_right = float(arr[2])
+				sb.content_margin_bottom = float(arr[3])
+			else:
+				sb.set_content_margin_all(float(cm))
+		for k in d.keys():
+			var ks := String(k)
+			if ks in ["type", "bg_color", "border_color", "border_width", "corner_radius", "content_margin"]:
+				continue
+			if ks.ends_with("_color"):
+				sb.set(ks, _parse_color(d[k]))
+			else:
+				sb.set(ks, ctx.parse_property_value_for(sb, ks, d[k]))
+		return sb
+	return null

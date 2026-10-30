@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="GameEnvConfig" format=3 uid="uid://h1nmvpjc85f5"]
+
+[ext_resource type="Script" uid="uid://l52nlvrp3yya" path="res://src/game/shared/model/config/game_env_config.gd" id="1_lgj00"]
+
+[resource]
+script = ExtResource("1_lgj00")
+allow_plaintext_save_fallback = true
+enable_debug_tools = true

@@ -62,6 +62,13 @@ var _active_write_keys: Dictionary = {} ## StringName -> bool
 var _write_wait_queues: Dictionary = {} ## StringName -> Array[int]
 var _next_write_ticket: int = 0
 var _disposed: bool = false
+
+## 全局核心存档（saves/）透明加密与压缩策略
+var _save_master_passphrase: String = ""
+var _save_bind_device: bool = true
+var _save_auto_compress: bool = true
+var _save_allow_plaintext_fallback: bool = false
+var _derived_save_keys: Dictionary = {} ## StringName -> String
 #endregion
 
 
@@ -90,6 +97,7 @@ func dispose() -> void:
 	_disposed = true
 	_active_write_keys.clear()
 	_write_wait_queues.clear()
+	clear_save_encryption()
 	_write_lock_changed.emit()
 	clear()
 
@@ -141,6 +149,7 @@ func clear() -> void:
 		_memory.clear()
 	if _migrator != null:
 		_migrator.clear()
+	_derived_save_keys.clear()
 	_items.clear()
 
 
@@ -152,6 +161,38 @@ func register_migration(
 	migrate_fn: Callable
 ) -> Result:
 	return _migrator.register_migration(key_id, from_version, to_version, migrate_fn)
+
+
+## 配置全局核心存档（[method StorageItem.for_save]）的透明加密与压缩策略。
+func set_save_encryption(
+	passphrase: String,
+	bind_device: bool = true,
+	auto_compress: bool = true,
+	allow_plaintext_fallback: bool = false
+) -> void:
+	var clean_pass: String = passphrase.strip_edges()
+	if clean_pass.is_empty():
+		clear_save_encryption()
+		return
+	_save_master_passphrase = clean_pass
+	_save_bind_device = bind_device
+	_save_auto_compress = auto_compress
+	_save_allow_plaintext_fallback = allow_plaintext_fallback
+	_derived_save_keys.clear()
+
+
+## 关闭并清空全局核心存档加密策略与派生密钥缓存。
+func clear_save_encryption() -> void:
+	_save_master_passphrase = ""
+	_save_bind_device = true
+	_save_auto_compress = true
+	_save_allow_plaintext_fallback = false
+	_derived_save_keys.clear()
+
+
+## 查询当前是否已启用全局核心存档加密策略。
+func is_save_encryption_enabled() -> bool:
+	return not _save_master_passphrase.is_empty()
 
 
 ## 等待所有进行中的异步写入任务（含后台远端同步）完成。
@@ -181,6 +222,9 @@ func get_diagnostics() -> Dictionary:
 		"bound_items_count": _items.size(),
 		"inflight_writes": _inflight_writes,
 		"active_write_locks": _active_write_keys.size(),
+		"save_encryption_enabled": is_save_encryption_enabled(),
+		"save_bind_device": _save_bind_device if is_save_encryption_enabled() else false,
+		"save_auto_compress": _save_auto_compress if is_save_encryption_enabled() else false,
 		"memory_cache": _memory.get_diagnostics() if _memory != null else {},
 	}
 #endregion
@@ -204,6 +248,7 @@ func read_async(target: Variant, policy: int = StorageReadMode.CACHE_FIRST) -> R
 	var hit_tier: int = -1
 	var result_data: Variant = null
 	var last_err_res: Result = null
+	var local_disk_err_res: Result = null
 
 	# 1. 瀑布穿透：按 Tier 执行链顺序依次读取
 	for tier: Tier in chain:
@@ -213,9 +258,18 @@ func read_async(target: Variant, policy: int = StorageReadMode.CACHE_FIRST) -> R
 			hit_tier = tier
 			break
 		else:
+			if tier == Tier.DISK and result.error_code() != StorageError.NOT_FOUND:
+				local_disk_err_res = result
 			last_err_res = result
 
 	if hit_tier == -1 or result_data == null:
+		# 若本地磁盘存在明确损坏或解密失败（如 DECRYPT_FAILED / PARSE_ERROR），且远端不可达，绝不将其吞没为 NOT_FOUND 以免误初始化覆盖旧档
+		if local_disk_err_res != null and (
+			last_err_res == null
+			or last_err_res.error_code() == StorageError.REMOTE_UNAVAILABLE
+			or last_err_res.error_code() == StorageError.NOT_FOUND
+		):
+			return local_disk_err_res
 		if last_err_res != null and last_err_res.error_code() != StorageError.NOT_FOUND:
 			if policy == StorageReadMode.REMOTE_ONLY or policy == StorageReadMode.REMOTE_FIRST or last_err_res.error_code() != StorageError.REMOTE_UNAVAILABLE:
 				return last_err_res
@@ -451,18 +505,38 @@ func _backfill_cache(item: StorageItem, data: Variant, chain: Array, hit_tier: i
 		elif tier == Tier.DISK:
 			if item.disk_path.is_empty():
 				continue
+			var disk_kwargs: Dictionary = _build_disk_kwargs(item)
 			# 若 FILE 模式已在 Tier.REMOTE 下载时直接原子落盘到了 item.disk_path（且未开启额外压缩/加密），无需重复写盘
-			if item.payload_type == "FILE" and hit_tier == Tier.REMOTE and not item.compressed and item.encryption_key.is_empty():
+			if item.payload_type == "FILE" and hit_tier == Tier.REMOTE and not bool(disk_kwargs["compressed"]) and str(disk_kwargs["encryption_key"]).is_empty():
 				continue
-			_disk.write(StringName(item.disk_path), data, _build_disk_kwargs(item))
+			_disk.write(StringName(item.disk_path), data, disk_kwargs)
 
 
-static func _build_disk_kwargs(item: StorageItem) -> Dictionary:
+func _resolve_encryption_key(item: StorageItem) -> String:
+	if not item.encryption_key.is_empty():
+		return item.encryption_key
+	if not item.use_global_encryption or _save_master_passphrase.is_empty():
+		return ""
+	var salt_id: StringName = item.key_id if not item.key_id.is_empty() else StringName(item.disk_path)
+	if _derived_save_keys.has(salt_id):
+		return str(_derived_save_keys[salt_id])
+	var derived: String = CryptoUtils.derive_passphrase(_save_master_passphrase, String(salt_id), _save_bind_device)
+	if not derived.is_empty():
+		_derived_save_keys[salt_id] = derived
+	return derived
+
+
+func _build_disk_kwargs(item: StorageItem) -> Dictionary:
+	var resolved_key: String = _resolve_encryption_key(item)
+	var using_global: bool = item.encryption_key.is_empty() and item.use_global_encryption and not resolved_key.is_empty()
+	var resolved_compressed: bool = item.compressed or (using_global and _save_auto_compress)
+	var allow_plain_fallback: bool = using_global and _save_allow_plaintext_fallback
 	return {
 		"payload_type": item.payload_type,
 		"use_backup": item.use_backup,
-		"compressed": item.compressed,
-		"encryption_key": item.encryption_key,
+		"compressed": resolved_compressed,
+		"encryption_key": resolved_key,
+		"allow_plaintext_fallback": allow_plain_fallback,
 		"expected_md5": item.expected_md5,
 	}
 

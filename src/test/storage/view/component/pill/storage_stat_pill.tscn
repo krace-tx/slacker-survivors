@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://diglp8xbagpnm"]
+
+[ext_resource type="Script" uid="uid://bwsvoscjg8xc0" path="res://src/test/storage/view/component/pill/storage_stat_pill.gd" id="1_eg7ry"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eg7ry"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.050980393, 0.07450981, 0.1254902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12156863, 0.16078432, 0.21568628, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="StorageStatPill" type="PanelContainer" unique_id=1241696631]
+custom_minimum_size = Vector2(168, 36)
+theme_override_styles/panel = SubResource("StyleBoxFlat_eg7ry")
+script = ExtResource("1_eg7ry")
+
+[node name="Row" type="HBoxContainer" parent="." unique_id=2073150663]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="KeyLabel" type="Label" parent="Row" unique_id=326799224]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39215687, 0.45490196, 0.54509807, 1)
+theme_override_font_sizes/font_size = 12
+text = "ENV"
+
+[node name="ValueLabel" type="Label" parent="Row" unique_id=663004182]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.20392157, 0.827451, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "LOCAL · ENCRYPTED"
+horizontal_alignment = 2

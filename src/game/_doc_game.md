@@ -32,23 +32,23 @@ src/
 │   └── (core, modules, infra, util)
 │
 └── game/                        # [游戏玩法与业务逻辑层]
-    ├── _doc_game.md             # 本架构规范文档
-    │
-    ├── bootstrap/               # 引擎极简纯空启动器 (仅承载内核装配、硬件预设对齐与首棒交接)
-    │   ├── _doc_bootstrap.md
-    │   ├── bootstrap_scene.gd   # 引擎主入口空场景 (run/main_scene，0 UI 渲染开销)
-    │   └── bootstrap_scene.tscn
-    │
-    ├── shared/                  # 业务层跨模块共享内核 (对齐 M-S-V 三支柱 + 二级子域分包)
-    │   ├── _doc_shared.md
-    │   ├── model/               # [支柱 1 · M] 共享数据模型 (save/ 持久化模型, data/ 子数据与内聚枚举, config/ 配置与路由表)
-    │   ├── service/             # [支柱 2 · S] 共享业务服务 (settings/ 设置服务, profile/ 档案服务 —— 内聚各自 EVENT_* 常量)
-    │   └── component/           # [支柱 3 · V] 通用无业务流 UI 组件 (button/, dialog/, toast/, widget/)
-    │
-    └── features/                # 核心垂直业务功能模块集合 (按模块特征采用 MSVP 或 MES 子目录架构)
-        ├── splash/              # [MSVP 标杆模块] 闪屏展示与加权业务启动管线 (model/, service/, view/, presenter/)
-        ├── <ui_feature>/        # [模式 A: MSVP 交互模块] (model/, service/, view/, presenter/)
-        └── <data_feature>/      # [模式 B: MES 算法/数据模块] (model/, engine/, service/)
+	├── _doc_game.md             # 本架构规范文档
+	│
+	├── bootstrap/               # 引擎极简纯空启动器 (仅承载内核装配、硬件预设对齐与首棒交接)
+	│   ├── _doc_bootstrap.md
+	│   ├── bootstrap_scene.gd   # 引擎主入口空场景 (run/main_scene，0 UI 渲染开销)
+	│   └── bootstrap_scene.tscn
+	│
+	├── shared/                  # 业务层跨模块共享内核 (对齐 M-S-V 三支柱 + 二级子域分包)
+	│   ├── _doc_shared.md
+	│   ├── model/               # [支柱 1 · M] 共享数据模型 (save/ 持久化模型, data/ 子数据与内聚枚举, config/ 配置与路由表)
+	│   ├── service/             # [支柱 2 · S] 共享业务服务 (settings/ 设置服务, profile/ 档案服务 —— 内聚各自 EVENT_* 常量)
+	│   └── component/           # [支柱 3 · V] 通用无业务流 UI 组件 (button/, dialog/, toast/, widget/)
+	│
+	└── features/                # 核心垂直业务功能模块集合 (按模块特征采用 MSVP 或 MES 子目录架构)
+		├── splash/              # [MSVP 标杆模块] 闪屏展示与加权业务启动管线 (model/, service/, view/, presenter/)
+		├── <ui_feature>/        # [模式 A: MSVP 交互模块] (model/, service/, view/, presenter/)
+		└── <data_feature>/      # [模式 B: MES 算法/数据模块] (model/, engine/, service/)
 ```
 
 ---
@@ -68,35 +68,35 @@ src/game/features/<feature_name>/
 ├── service/                     # 业务规则校验、App.* 存储/网络读写、Model 修改
 ├── presenter/                   # 视图与业务中介胶水 (监听 View 交互 -> 调 Service；监听 Model/Bus -> 刷 View)
 └── view/                        # 视图表现层 (按 scene/ 与 component/ 分类，每个单元以独立领域文件夹包裹)
-    ├── scene/                   # [主场景单元集合] 顶层路由舞台 (BaseScene + BaseView)
-    │   └── <domain>/            # 单个主场景单元文件夹 (按领域命名，内含 1 个 .tscn + 多个 .gd)
-    └── component/               # [局部预制体单元集合] 拆出的可复用挂件、动态列表项或弹窗预制体
-        └── <domain>/            # 单个组件预制体单元文件夹 (按领域命名，内含 1 个 .tscn + 多个 .gd)
+	├── scene/                   # [主场景单元集合] 顶层路由舞台 (BaseScene + BaseView)
+	│   └── <domain>/            # 单个主场景单元文件夹 (按领域命名，内含 1 个 .tscn + 多个 .gd)
+	└── component/               # [局部预制体单元集合] 拆出的可复用挂件、动态列表项或弹窗预制体
+		└── <domain>/            # 单个组件预制体单元文件夹 (按领域命名，内含 1 个 .tscn + 多个 .gd)
 ```
 
 ```mermaid
 flowchart LR
-    subgraph View_Dir ["view/ (视图表现层)"]
-        View["View (BaseScene / BaseView / BaseDialog)<br>• 纯视觉排版、动效播放<br>• 发射用户交互点击信号"]
-    end
+	subgraph View_Dir ["view/ (视图表现层)"]
+		View["View (BaseScene / BaseView / BaseDialog)<br>• 纯视觉排版、动效播放<br>• 发射用户交互点击信号"]
+	end
 
-    subgraph Presenter_Dir ["presenter/ (视图调度层)"]
-        Presenter["Presenter (RefCounted)<br>• 监听 View 信号 -> 调用 Service<br>• 监听 Model/Bus 信号 -> 驱动 View"]
-    end
+	subgraph Presenter_Dir ["presenter/ (视图调度层)"]
+		Presenter["Presenter (RefCounted)<br>• 监听 View 信号 -> 调用 Service<br>• 监听 Model/Bus 信号 -> 驱动 View"]
+	end
 
-    subgraph Service_Dir ["service/ (领域服务层)"]
-        Service["Service (RefCounted)<br>• 业务逻辑、规则校验<br>• 读写 App.storage / App.net<br>• 修改 Model 状态并广播 Bus 事件"]
-    end
+	subgraph Service_Dir ["service/ (领域服务层)"]
+		Service["Service (RefCounted)<br>• 业务逻辑、规则校验<br>• 读写 App.storage / App.net<br>• 修改 Model 状态并广播 Bus 事件"]
+	end
 
-    subgraph Model_Dir ["model/ (数据模型层)"]
-        Model["Model (*Config / *Model / *State / *Params)<br>• 纯状态数据、字段持有与序列化<br>• 数据变更时发射领域信号"]
-    end
+	subgraph Model_Dir ["model/ (数据模型层)"]
+		Model["Model (*Config / *Model / *State / *Params)<br>• 纯状态数据、字段持有与序列化<br>• 数据变更时发射领域信号"]
+	end
 
-    View --"1. 用户交互 (signal)"--> Presenter
-    Presenter --"2. 委托业务处理"--> Service
-    Service --"3. 计算并更新数据"--> Model
-    Model --"4. 状态变更通知 (signal)"--> Presenter
-    Presenter --"5. 纯净渲染数据"--> View
+	View --"1. 用户交互 (signal)"--> Presenter
+	Presenter --"2. 委托业务处理"--> Service
+	Service --"3. 计算并更新数据"--> Model
+	Model --"4. 状态变更通知 (signal)"--> Presenter
+	Presenter --"5. 纯净渲染数据"--> View
 ```
 
 ### 2. 模式 B：MES 架构（面向纯数据与核心算法演算模块）
@@ -113,15 +113,15 @@ src/game/features/<feature_name>/
 
 ```mermaid
 flowchart LR
-    Caller["外部调用方 / 其它模块 Service"] --"1. 发起业务请求"--> Service
-    subgraph MES_Module ["MES 纯数据/算法业务模块"]
-        Service["service/ (*Service)<br>• 对外暴露业务 API 与生命周期<br>• 读写 App.storage / 广播 Bus 事件"]
-        Engine["engine/ (*Engine)<br>• 纯数学公式、状态推演、规则判定<br>• 零外部 I/O 依赖，100% 可独立单测"]
-        Model["model/ (*Model / *State / *Context)<br>• 承载输入上下文、实体状态与配置数据"]
-    end
-    Service --"2. 组装 Context 并驱动推演"--> Engine
-    Engine --"3. 纯算法读写状态"--> Model
-    Service --"4. 持久化或广播结果 (Bus.emit)"--> Model
+	Caller["外部调用方 / 其它模块 Service"] --"1. 发起业务请求"--> Service
+	subgraph MES_Module ["MES 纯数据/算法业务模块"]
+		Service["service/ (*Service)<br>• 对外暴露业务 API 与生命周期<br>• 读写 App.storage / 广播 Bus 事件"]
+		Engine["engine/ (*Engine)<br>• 纯数学公式、状态推演、规则判定<br>• 零外部 I/O 依赖，100% 可独立单测"]
+		Model["model/ (*Model / *State / *Context)<br>• 承载输入上下文、实体状态与配置数据"]
+	end
+	Service --"2. 组装 Context 并驱动推演"--> Engine
+	Engine --"3. 纯算法读写状态"--> Model
+	Service --"4. 持久化或广播结果 (Bus.emit)"--> Model
 ```
 
 ### 3. 各子目录职责与硬性红线

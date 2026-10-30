@@ -1,94 +1,81 @@
-# Slacker Survivors 游戏策划文档总纲与架构索引 (GDD Architecture & Master Index)
+# 游戏功能系统策划总纲与通用架构索引 (System Design & Architecture Index)
 
-> **适用范围**：`Slacker Survivors` 全项目玩法设计、数值配表（`src/resources/configs/`）与业务层实现（`src/game/`）。
-> **核心定位**：定义一套**模块化、强契约、可验证、与代码架构（MSVP / MES）严格对齐**的工业级游戏策划文档（GDD）体系，作为人类策划、程序员与 AI Agent 协作的唯一真实数据源（Single Source of Truth, SSOT）。
+> **定位**：面向 **Steam 单机（Offline-First）与联机扩展（Online-Ready）** 兼容的通用游戏产品功能系统底座，严格对齐 [`src/framework/`](../../src/framework/_doc_framework.md) 与 [`src/game/`](../../src/game/_doc_game.md) 的 **MSVP / MES** 架构规范。
+> **原则**：先立通用产品骨架，再填具体玩法血肉；单机零后端可独立闭环，联机开启网关与同步层即可平滑演进。
 
 ---
 
-## 一、 策划文档工程架构 (Documentation Topology)
-
-为杜绝传统单文件巨型 GDD 导致的“上下文污染、改一处崩全局、策划文案无法直接转化为代码契约”等顽疾，本项目采用 **渐进式披露（Progressive Disclosure）+ 领域垂直解耦** 的六卷本工业级文档架构：
+## 一、 文档目录拓扑
 
 ```text
 docs/
-├── godot_coding_standards.md                     # [工程技术规范] Godot 4.7 架构设计与 GDScript 编码规范
-└── design/                                       # [游戏策划设计域] (遵循领域单数命名法则)
-    ├── _doc_design.md                            # [总纲与路由] 策划文档架构、设计宪法、全局术语表与研发映射矩阵
-    ├── 01_vision_and_core_loop.md                # [卷一：核心愿景与心流] 一句话定义、核心情绪节拍、四尺度时间乐趣与删减红线
-    ├── 02_pipeline_and_modules.md                # [卷二：流水线与模块契约] 工单状态机、顺序敏感铁律、6大原型模块I/O契约与换位矩阵
-    ├── 03_control_resources_and_intervention.md  # [卷三：操控、资源与救火] 三大玩家操作、双核资源（干预额度/未处理麻烦）、爆仓与干预机制
-    ├── 04_enemies_and_pressure_events.md         # [卷四：反工作流敌人与波次] 8类工作流破坏者、30秒压力预告事件、三阶段战局演进
-    ├── 05_progression_and_ai_hooks.md            # [卷五：机器重构与远期扩展] 局内减负升级池、条件路由规则、AI Galgame 拟人模块接入协议
-    └── 06_mvp_60s_prototype_spec.md              # [卷六：60秒最小原型规格书] 第一阶段可运行切片：3波剧本、精确参数、UI反馈与三大验证门禁
+├── godot_coding_standards.md      # [工程编码规范] Godot 4.7 静态类型、命名与性能红线
+└── design/                        # [功能系统策划域]
+	├── _doc_design.md             # [总纲] 全局流转拓扑、Steam 单机/联机双模矩阵、代码映射总表
+	├── 01_splash.md               # [模块 01] 启动页闪屏：品牌/合规声明展示、首帧硬件承接
+	├── 02_loading.md              # [模块 02] 加载资源页：冷启动预载、跨大场景资源装卸载与联机同步屏障
+	├── 03_login.md                # [模块 03] 登录页：Steam 直连/网关换票、离线保底、档案与云存档恢复
+	├── 04_lobby.md                # [模块 04] 游戏大厅：主导航中枢、断点续玩、房间入口与社交状态
+	├── 05_notice.md               # [模块 05] 公告系统：内置更新日志 + 远端动态公告双源合并与红点
+	├── 06_stage.md                # [模块 06] 游戏关卡：章节/难度/词缀选择、战前整备与进局契约组装
+	├── 07_gameplay.md             # [模块 07] 游戏局内：单局状态机、HUD/暂停/结算、中途快照与同步抽象
+	└── 08_settings.md             # [模块 08] 设置系统：显示(15s回滚)/画质/五路音频/双轨改键/多语言
 ```
+
+---
+
+## 二、 全生命周期流转总图
 
 ```mermaid
-flowchart TD
-    Index["_doc_design.md<br/>(总纲 / 术语字典 / 代码映射)"] --> V1["01_vision_and_core_loop.md<br/>(核心心流与情绪节奏)"]
-    V1 --> V2["02_pipeline_and_modules.md<br/>(处理队列与模块顺序契约)"]
-    V1 --> V3["03_control_resources_and_intervention.md<br/>(走位喂料 / 压单复利 / 关键干预)"]
-    V2 --> V4["04_enemies_and_pressure_events.md<br/>(反工作流敌人 / 30秒压力事件)"]
-    V3 --> V4
-    V2 --> V5["05_progression_and_ai_hooks.md<br/>(减负改造 / AI 角色模块接入)"]
-    V4 --> V6["06_mvp_60s_prototype_spec.md<br/>(第一阶段：60秒最小战斗原型)"]
-    V3 --> V6
+flowchart LR
+	Boot["BootstrapScene<br/>(纯空入口: 内核+硬件对齐)"] --> S01["01 启动页闪屏<br/>(Splash)"]
+	S01 --> S02A["02 加载资源页<br/>(冷启动全局预载)"]
+	S02A --> S03["03 登录页<br/>(Login / Title)"]
+	S03 --> S04["04 游戏大厅<br/>(Lobby Hub)"]
+	S04 --> S06["06 游戏关卡<br/>(选关 / 房间整备)"]
+	S06 --> S02B["02 加载资源页<br/>(关卡预载 / 同步屏障)"]
+	S02B --> S07["07 游戏局内<br/>(Gameplay)"]
+	S07 -- "结算返回 / 放弃退出" --> S02C["02 加载资源页<br/>(释放局内资产)"]
+	S02C --> S04
+	S04 -. "断点快照续玩" .-> S02B
+
+	subgraph GlobalPopups ["全局模态层 (CanvasLayer: POPUP)"]
+		P05["05 公告弹窗 (Notice)"]
+		P08["08 设置弹窗 (Settings)"]
+	end
+
+	S03 -.-> P05
+	S03 -.-> P08
+	S04 -.-> P05
+	S04 -.-> P08
+	S07 -. "暂停菜单唤起" .-> P08
 ```
 
 ---
 
-## 二、 项目核心定义与三大设计铁律 (The Three Iron Laws)
+## 三、 Steam 单机 vs 联机双模架构策略矩阵
 
-### 1. 项目一句话北极星 (High Concept)
-> **玩家搭建一套只需要偶尔值班的生存机器，然后在战场上尽量不亲自处理问题，直到系统即将失控时，才做一次关键干预。**
->
-> **真正的“懒惰爽感”**：不是“角色无脑自动打怪”，而是**“我提前做了一次聪明安排，所以接下来几十秒都不用重复劳动。”**
-
-### 2. 三大不可妥协的策划铁律 (Non-Negotiable Design Rules)
-
-| 铁律编号 | 铁律名称 | 判定标准（Acceptance Criteria） | 严禁出现的反模式（Anti-Patterns） |
+| 核心维度 | Steam 纯单机 / 离线模式 (Offline-First) | Steam 联机 / 在线扩展模式 (Online-Ready) | 断网与异常降级策略 |
 | :--- | :--- | :--- | :--- |
-| **Law #1** | **严格顺序敏感铁律**<br>*(Order Sensitivity)* | 任何进入队列的模块，与相邻模块交换位置（`A ➔ B` vs `B ➔ A`）后，必须在**空间几何形态**或**时间结算时机**上产生肉眼可见的质变。 | 严禁把“伤害+15%”、“暴击率+10%”等与顺序无关的纯数值属性做成占据队列槽位的模块。 |
-| **Law #2** | **高价值低频干预铁律**<br>*(High-Leverage Intervention)* | 玩家的手动干预必须是稀缺且高杠杆的决策（每波有限额度）。每 30 秒围绕一次压力事件决定“继续躺平攒复利”还是“起身救火”。 | 严禁要求玩家持续点击攻击、每秒手动瞄准或高频微操换槽；若玩家每 10 秒都在干预，说明自动化设计失败。 |
-| **Law #3** | **反工作流威胁铁律**<br>*(Workflow Disruption)* | 敌人的存在价值是**专门破坏或卡住某种自动化流水线习惯**（打断延迟、正面挡聚拢、偷取地面积压资源），倒逼玩家调整队列或走位。 | 严禁单纯通过堆砌敌人血量（HP 膨胀）与移动速度来制造伪难度。 |
+| **身份鉴权 (`App.auth`)** | `SteamAuthProvider` 采集 `SteamID64` + `LocalPassthroughVerifier` 0ms 本地签发 | 开启 `RemoteGatewayVerifier`：持 Steam WebAPI Ticket 换取后端 JWT + 401 自动续期 | Steam 离线模式保底签发真实 `SteamID64`；网关不可达时自动降级本地离线会话 |
+| **存档与配置 (`App.storage`)** | 本地 `.tmp/.bak` 原子自愈写 + `with_steam_cloud()` 自动同步 Steam Cloud | 支持叠加 `with_remote()` 双写自建后端云存档；设备配置 `user://config/` 严禁上云 | 云端拉取超时自动回退本地最新有效存档；版本过高阻断覆写保护原档 |
+| **时钟基准 (`App.clock`)** | 本机系统时间 + 单调时钟 `monotonic_msec` | 登录换票同步服务端 `server_time_ms` 校准防作弊权威时钟 | 标记 `is_trusted() == false`，仅限制强时效在线活动，不阻断单机玩法 |
+| **公告投递 (`Notice`)** | 读取包内 `src/resources/tables/tbl_local_notices.json` 版本更新日志 | `App.net` 异步拉取 CDN/API 动态公告，按语言与时间窗合并去重 | 请求失败静默吞没网络错误，仅展示包内版本公告，零报错弹窗 |
+| **战前与加载 (`Stage/Loading`)** | 单人选关整备 ➔ 生成本地随机种子 `seed` ➔ 加载达 100% 立即进局 | Steam Lobby / 匹配房间全员 `Ready` ➔ 下发统一 `seed` ➔ 加载页 `Ready Barrier` 齐步进局 | 成员加载超时触发房主剔除或单人接管降级，防无限卡死在 99% |
+| **局内模拟与暂停 (`Gameplay`)** | 本地输入直驱 `Engine` Tick；打开暂停菜单时 `SceneTree.paused = true` 冻结世界；支持中途快照存盘 | 输入封装为 `CommandFrame` / 状态同步包；打开菜单**不冻结**世界模拟；走断线重连恢复 | 主机掉线支持 Host Migration 或结算保底保存已获收益 |
 
 ---
 
-## 三、 全局标准术语词典 (Canonical Glossary)
+## 四、 八大系统模块与工程落点映射总表
 
-为确保策划文档与代码类名（`class_name`）、配表字段保持 1:1 映射，全工程统一使用以下标准术语：
-
-| 中文标准术语 | 英文代码标识 (Identifier) | 概念定义与职责边界 |
-| :--- | :--- | :--- |
-| **处理队列 / 流水线** | `ProcessQueue` / `Pipeline` | 玩家编排的固定顺序槽位序列（原型期为 5 个槽位），决定一次基础攻击如何逐步演变为最终清场效果。 |
-| **处理模块 / 工序** | `PipelineModule` | 镶嵌在队列槽位中的功能单元（如`[标记]`、`[聚拢]`、`[穿透]`、`[延迟]`、`[分裂]`、`[回收]`），接收上一步焦点并输出新焦点。 |
-| **工单包 / 攻击包** | `WorkPacket` | 进入处理队列并投射到战场上的实体化载体。按槽位顺序逐步执行各模块工序，而非高频乱飞的散装子弹。 |
-| **作用焦点** | `FocusNode` | 模块执行时的当前空间锚点或目标集合。每个模块本质上都是对 `FocusNode` 集合的几何变换或负载叠加。 |
-| **挂载负载** | `PacketPayload` | 随工单流转在焦点上累积的伤害基数、控制力与待结算层数。 |
-| **未处理麻烦（压单）** | `TroubleBacklog` | 核心资源之一。场上未及时击杀的精英、未拾取的掉落物、挂起中的`[延迟]`伤害共同构成的积压池。积压越多结算倍率越高，但超限会引发爆仓失控。 |
-| **麻烦实体（催债怪）** | `TroubleEntity` | 当 `TroubleBacklog` 超过安全阈值未结算时，由系统强制生成的失控惩罚实体，逼迫玩家立即“还债”。 |
-| **干预额度** | `InterventionQuota` | 核心资源之一。代表玩家当前还能“亲自起身插手”的次数，通过队列连续自动完成闭环或高风险行为恢复。 |
-| **关键干预（起身救火）** | `ManualIntervention` | 玩家消耗 1 点 `InterventionQuota` 执行的瞬时高价值指令（如插队立即结算、临时旁路、交换相邻模块、强行转向）。 |
-| **威胁预告** | `ThreatForecast` | 波次开始前或压力事件前 5~10 秒向玩家公示的敌人机制预警，是玩家决定是否重排队列的决策依据。 |
-
----
-
-## 四、 策划文档与 Godot 代码架构映射矩阵 (Design-to-Code Mapping)
-
-严格遵循 [`docs/godot_coding_standards.md`](../godot_coding_standards.md) 与 [`src/game/_doc_game.md`](../../src/game/_doc_game.md) 的 **MSVP / MES 双轨架构**，各策划卷宗对应代码落点如下：
-
-| 策划卷宗 | 架构模式 | 目标代码域 (`src/game/`) | 关键领域模型后缀 (`model/`) |
-| :--- | :--- | :--- | :--- |
-| **卷二：流水线与模块契约**<br>([`02_pipeline_and_modules.md`](02_pipeline_and_modules.md)) | **MES**<br>*(纯逻辑演算)* | `features/pipeline/`<br>(`model/`, `engine/`, `service/`) | • `PipelineModuleConfig` (静态配表)<br>• `PipelineQueueState` (队列槽位状态)<br>• `WorkPacketContext` (工单步进上下文) |
-| **卷三：操控、资源与救火**<br>([`03_control_resources_and_intervention.md`](03_control_resources_and_intervention.md)) | **MES + MSVP** | `features/combat/`<br>`features/battle_hud/` | • `CombatResourceState` (干预额度与未处理麻烦)<br>• `InterventionParams` (干预动作入参) |
-| **卷四：敌人与波次压力**<br>([`04_enemies_and_pressure_events.md`](04_enemies_and_pressure_events.md)) | **MES** | `features/wave/`<br>`features/enemy/` | • `EnemyArchetypeConfig` (反工作流敌人配表)<br>• `WavePressureConfig` (30秒压力事件配表)<br>• `WaveRuntimeState` (波次运行状态) |
-| **卷五：机器重构与 AI 接入**<br>([`05_progression_and_ai_hooks.md`](05_progression_and_ai_hooks.md)) | **MSVP** | `features/upgrade/`<br>`features/agent_module/` *(Phase 2)* | • `ModuleUpgradeConfig` (减负改造配表)<br>• `AgentPersonalityState` (AI 角色模块情绪状态) |
-| **卷六：60 秒最小原型**<br>([`06_mvp_60s_prototype_spec.md`](06_mvp_60s_prototype_spec.md)) | **MSVP 场景组合** | `features/battle/` | • `BattleScene` (`BaseScene`)<br>• `BattlePresenter` / `BattleService` |
-
----
-
-## 五、 文档维护与版本演进准则 (Governance Rules)
-
-1. **先改文档，后动代码**：任何涉及队列槽位规则、模块输入输出逻辑、资源增减公式或新敌人机制的改动，必须先更新 `docs/design/` 下对应的分卷文档，再进入 `src/game/` 编码。
-2. **阶段隔离（Phase Gating）**：
-   - **Phase 1（当前阶段：MVP 60s 原型）**：严格锁定 [`06_mvp_60s_prototype_spec.md`](06_mvp_60s_prototype_spec.md) 的裁剪范围（1 种基础工单、5 槽位、6 模块、1 干预、3 敌人），禁止提前混入多武器或 AI 剧情代码。
-   - **Phase 2（核心循环跑通后）**：按 [`05_progression_and_ai_hooks.md`](05_progression_and_ai_hooks.md) 的接口协议，将 AI Galgame 角色作为“具备自主情绪与谈判条件的特殊模块”无损挂载进流水线槽位。
+| 序号 | 功能模块 | 形态 | 架构模式 | 目标代码目录 (`src/game/`) | 关键持久化模型与沙盒归属 (`R16`) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **00** | **引擎冷启动引导** *(前置已就绪)* | 空场景 (`BaseScene`) | 极简引导 | `bootstrap/` | 调 `GameSettingsService.load_and_apply()` 首帧前对齐硬件 |
+| **01** | [**启动页闪屏**](01_splash.md) | 全屏场景 (`BaseScene`) | **MSVP** | `features/splash/` | 无独立存盘（读全局首次启动标记控制是否允许跳过） |
+| **02** | [**加载资源页**](02_loading.md) | 全屏场景 (`BaseScene`) | **MSVP** | `features/loading/` | 无存盘（纯运行时 `LoadingState` + `LoadingContext`） |
+| **03** | [**登录页**](03_login.md) | 全屏场景 (`BaseScene`) | **MSVP** | `features/login/` | 驱动 `shared` 层 `PlayerProfileModel` (`user://saves/shared/player_profile.json` + Steam Cloud) |
+| **04** | [**游戏大厅**](04_lobby.md) | 全屏场景 (`BaseScene`) | **MSVP** | `features/lobby/` | 消费 `PlayerProfileModel`；探测 `gameplay` 快照存在性 |
+| **05** | [**公告系统**](05_notice.md) | 模态弹窗 (`BaseDialog`) | **MSVP** | `features/notice/` | `NoticeReadModel` (`user://config/notice/notice_read.json`，仅本地) |
+| **06** | [**游戏关卡**](06_stage.md) | 全屏场景或子视图 | **MSVP** | `features/stage/` | `StageProgressModel` (`user://saves/stage/stage_progress.json` + Steam Cloud) |
+| **07** | [**游戏局内**](07_gameplay.md) | 全屏场景 + 玩法内核 | **MSVP + MES** | `features/gameplay/` + 玩法子域 | `RunSnapshotModel` (`user://saves/gameplay/run_snapshot.sav`，单局检查点快照，结算即焚) |
+| **08** | [**设置系统**](08_settings.md) | 模态弹窗 (`BaseDialog`) | **MSVP** | `features/settings/` + `shared` 内核 | 复用 `GameSettingsModel` (`user://config/shared/game_settings.json`，严禁上云) |
