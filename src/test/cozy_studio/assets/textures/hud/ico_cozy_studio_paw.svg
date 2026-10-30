@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <!-- Cozy Cat Paw Pad Icon -->
+  <ellipse cx="10" cy="13.2" rx="4.6" ry="3.7" fill="#F6A6A6" stroke="#593A27" stroke-width="1.5"/>
+  <ellipse cx="5.2" cy="8.6" rx="1.9" ry="2.4" transform="rotate(-18 5.2 8.6)" fill="#FAD0C9" stroke="#593A27" stroke-width="1.4"/>
+  <ellipse cx="8.4" cy="6.4" rx="1.85" ry="2.45" transform="rotate(-5 8.4 6.4)" fill="#FAD0C9" stroke="#593A27" stroke-width="1.4"/>
+  <ellipse cx="11.9" cy="6.4" rx="1.85" ry="2.45" transform="rotate(6 11.9 6.4)" fill="#FAD0C9" stroke="#593A27" stroke-width="1.4"/>
+  <ellipse cx="15.0" cy="8.7" rx="1.9" ry="2.4" transform="rotate(18 15.0 8.7)" fill="#FAD0C9" stroke="#593A27" stroke-width="1.4"/>
+  <ellipse cx="8.9" cy="12.3" rx="1.4" ry="0.85" fill="#FFE6E4"/>
+</svg>

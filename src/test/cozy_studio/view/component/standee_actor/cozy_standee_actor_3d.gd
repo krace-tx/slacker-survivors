@@ -1,7 +1,8 @@
+@tool
 class_name CozyStandeeActor3D
 extends Node3D
 
-## 2.5D 二次元立牌角色组件（支持 正/侧/背 3 视图 × 待机/走路 6 行图集、相机相对朝向迟滞解算、相位连续切向与双向 3D 阴影）。
+## 2.5D 二次元立牌角色组件（支持 正/侧/背 3 视图 × 待机/走路/入座 9 行图集、抛物线纸片轻跳、铅垂深度防穿模与双向 3D 阴影）。
 
 enum FacingView {
 	FRONT = 0, ## 正视图（面向相机 / S 键朝下）
@@ -12,6 +13,7 @@ enum FacingView {
 enum AnimState {
 	IDLE = 0,
 	WALK = 1,
+	SIT = 2,
 }
 
 const _STANDEE_SHADER_PATH: String = "res://src/test/cozy_studio/assets/shaders/shd_cozy_studio_standee_2d.gdshader"
@@ -21,14 +23,32 @@ const _BLOB_SHADOW_TEX_PATH: String = "res://src/test/cozy_studio/assets/texture
 const _SECTOR_ENTER_BIAS: float = 0.14
 const _SECTOR_EXIT_BIAS: float = -0.06
 
-@export var sprite_texture: Texture2D = null
-@export var sheet_hframes: int = 1
-@export var sheet_vframes: int = 1
+@export var sprite_texture: Texture2D = null:
+	set(value):
+		sprite_texture = value
+		_refresh_editor_geometry_if_ready()
+
+@export var sheet_hframes: int = 1:
+	set(value):
+		sheet_hframes = maxi(1, value)
+		_refresh_editor_geometry_if_ready()
+
+@export var sheet_vframes: int = 1:
+	set(value):
+		sheet_vframes = maxi(1, value)
+		_refresh_editor_geometry_if_ready()
+
 @export var idle_fps: float = 3.4
 @export var walk_fps: float = 7.6
-@export var world_height: float = 1.48
+@export var sit_fps: float = 2.6
+
+@export var world_height: float = 1.48:
+	set(value):
+		world_height = value
+		_refresh_editor_geometry_if_ready()
+
 @export var camera_yaw_deg: float = 37.0
-@export var standee_tilt_deg: float = -22.0
+@export var standee_tilt_deg: float = -20.0
 @export var idle_phase_offset: float = 0.0
 
 @onready var _visual_pivot: Node3D = %VisualPivot as Node3D
@@ -46,7 +66,10 @@ var _current_frame_idx: int = -1
 var _step_cushion: float = 0.0
 var _idle_sway_time: float = 0.0
 var _facing_left: bool = false
+var _seated_mode: bool = false
+var _glue_enabled: bool = true
 var _flip_tween: Tween = null
+var _hop_tween: Tween = null
 
 
 func _ready() -> void:
@@ -95,18 +118,100 @@ func is_facing_left() -> bool:
 	return _facing_left
 
 
+func is_seated_mode() -> bool:
+	return _seated_mode
+
+
 func get_facing_view_label() -> String:
+	var prefix: String = "坐姿 · " if _seated_mode else ""
 	match _facing_view:
 		FacingView.FRONT:
-			return "正视图 (Front)"
+			return prefix + "正视图 (Front)"
 		FacingView.SIDE:
-			return "侧视图·左 (Side-L)" if _facing_left else "侧视图·右 (Side-R)"
+			return prefix + ("侧视图·左 (Side-L)" if _facing_left else "侧视图·右 (Side-R)")
 		FacingView.BACK:
-			return "背视图 (Back)"
-	return "正视图"
+			return prefix + "背视图 (Back)"
+	return prefix + "正视图"
 
 
-## 推进 3 视图序列帧状态机与落地微缓冲（6 行图集走完整 3 视图 × 待机/走路；单帧立牌保留轻柔呼吸）。
+## 切换 3D 家具入座姿态（自动开启坐姿深度前移补偿并隐藏地面圆形接触阴影，支持 Q/E 360° 环绕观察无穿模）。
+func set_seated_mode(seated: bool) -> void:
+	_seated_mode = seated
+	_anim_state = AnimState.SIT if seated else AnimState.IDLE
+	_frame_accum = 0.0
+	_current_col = 0
+	_sync_depth_and_shadow_state()
+	_apply_effective_tilt()
+	_refresh_sheet_frame()
+
+
+## 执行抛物线弧线轻跳（用于跳上 3D 转椅/贵妃沙发，或从家具跳回地板）。
+func play_paper_hop_to(
+	target_pos: Vector3,
+	facing_dir: Vector3,
+	enter_sit: bool,
+	on_landed: Callable,
+	duration: float = 0.24
+) -> void:
+	if _hop_tween != null and _hop_tween.is_valid():
+		_hop_tween.kill()
+
+	set_world_facing_direction(facing_dir)
+	var start_pos: Vector3 = position
+	var arc_height: float = 0.34 if enter_sit else 0.28
+
+	# 起跳瞬间将接触阴影暂隐，落地瞬间恢复或转入坐姿
+	if _contact_shadow != null:
+		_contact_shadow.visible = false
+
+	if _visual_pivot != null:
+		_visual_pivot.scale = Vector3(0.92, 1.09, 1.0)
+
+	_hop_tween = create_tween()
+	_hop_tween.tween_method(
+		func(t: float) -> void:
+			var base_p: Vector3 = start_pos.lerp(target_pos, t)
+			var parabola_y: float = 4.0 * arc_height * t * (1.0 - t)
+			position = base_p + Vector3(0.0, parabola_y, 0.0)
+			if t > 0.52 and enter_sit != _seated_mode:
+				set_seated_mode(enter_sit)
+	,
+		0.0,
+		1.0,
+		duration
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	_hop_tween.tween_callback(func() -> void:
+		position = target_pos
+		if enter_sit != _seated_mode:
+			set_seated_mode(enter_sit)
+		else:
+			_sync_depth_and_shadow_state()
+		_step_cushion = 1.0
+		if _visual_pivot != null:
+			_visual_pivot.scale = Vector3(1.07, 0.91, 1.0)
+			var settle := create_tween()
+			settle.tween_property(_visual_pivot, "scale:x", 1.0, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		if on_landed.is_valid():
+			on_landed.call()
+	)
+
+
+## 原地开心互动小跳（用于冲泡拿铁或撸橘猫时的角色喜悦反馈）。
+func play_cheer_hop(facing_dir: Vector3) -> void:
+	set_world_facing_direction(facing_dir)
+	if _visual_pivot == null:
+		return
+	if _hop_tween != null and _hop_tween.is_valid():
+		_hop_tween.kill()
+	_hop_tween = create_tween()
+	_hop_tween.tween_property(_visual_pivot, "position:y", 0.12, 0.09).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_hop_tween.parallel().tween_property(_visual_pivot, "scale", Vector3(0.95, 1.06, 1.0), 0.09)
+	_hop_tween.tween_property(_visual_pivot, "position:y", 0.0, 0.11).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	_hop_tween.parallel().tween_property(_visual_pivot, "scale", Vector3(1.0, 1.0, 1.0), 0.11)
+
+
+## 推进 3 视图序列帧状态机与落地微缓冲（9 行图集走完整 正/侧/背 × 待机/走路/坐姿；单帧立牌保留轻柔呼吸）。
 func tick_visual(delta: float, is_moving: bool, speed_ratio: float = 1.0) -> void:
 	_idle_sway_time += delta * 2.2
 	if _visual_pivot == null:
@@ -119,7 +224,10 @@ func tick_visual(delta: float, is_moving: bool, speed_ratio: float = 1.0) -> voi
 
 
 func _tick_sheet_animation(delta: float, is_moving: bool, speed_ratio: float) -> void:
-	var next_state: AnimState = AnimState.WALK if is_moving else AnimState.IDLE
+	var next_state: AnimState = AnimState.SIT
+	if not _seated_mode:
+		next_state = AnimState.WALK if is_moving else AnimState.IDLE
+
 	if next_state != _anim_state:
 		_anim_state = next_state
 		_frame_accum = 0.0
@@ -137,6 +245,12 @@ func _tick_sheet_animation(delta: float, is_moving: bool, speed_ratio: float) ->
 			_current_col = (_current_col + step_advance) % sheet_hframes
 			if _current_col != prev_col and (_current_col % 2 == 0):
 				_step_cushion = 1.0
+	elif _anim_state == AnimState.SIT:
+		_frame_accum += delta * sit_fps
+		if _frame_accum >= 1.0:
+			var sit_advance: int = int(floor(_frame_accum))
+			_frame_accum -= float(sit_advance)
+			_current_col = (_current_col + sit_advance) % sheet_hframes
 	else:
 		_frame_accum += delta * idle_fps
 		if _frame_accum >= 1.0:
@@ -148,14 +262,24 @@ func _tick_sheet_animation(delta: float, is_moving: bool, speed_ratio: float) ->
 
 	_step_cushion = lerpf(_step_cushion, 0.0, 1.0 - exp(-14.0 * delta))
 	var squash_y: float = 1.0 - 0.022 * _step_cushion
-	_visual_pivot.position.y = 0.0
-	_visual_pivot.rotation_degrees.z = lerpf(
-		_visual_pivot.rotation_degrees.z,
-		0.0,
-		1.0 - exp(-10.0 * delta)
-	)
-	_visual_pivot.scale.y = squash_y
-	if _contact_shadow != null:
+	if _seated_mode:
+		# 入座摸鱼悠闲呼吸微晃
+		var cozy_sway: float = sin(_idle_sway_time * 0.85) * 0.85
+		_visual_pivot.rotation_degrees.z = lerpf(
+			_visual_pivot.rotation_degrees.z,
+			cozy_sway,
+			1.0 - exp(-8.0 * delta)
+		)
+		_visual_pivot.scale.y = squash_y + sin(_idle_sway_time * 1.1) * 0.008
+	else:
+		_visual_pivot.rotation_degrees.z = lerpf(
+			_visual_pivot.rotation_degrees.z,
+			0.0,
+			1.0 - exp(-10.0 * delta)
+		)
+		_visual_pivot.scale.y = squash_y
+
+	if _contact_shadow != null and not _seated_mode:
 		var is_passing_lift: bool = (_anim_state == AnimState.WALK) and (_current_col % 2 == 1)
 		var target_sh: float = 0.90 if is_passing_lift else (1.03 if _step_cushion > 0.3 else 1.0)
 		var cur_sh: float = lerpf(_contact_shadow.scale.x, target_sh, 1.0 - exp(-12.0 * delta))
@@ -164,11 +288,15 @@ func _tick_sheet_animation(delta: float, is_moving: bool, speed_ratio: float) ->
 
 func _refresh_sheet_frame() -> void:
 	var row: int = 0
-	if sheet_vframes >= 6:
-		# 6 行标准 3 视图契约：0=FrontIdle, 1=FrontWalk, 2=SideIdle, 3=SideWalk, 4=BackIdle, 5=BackWalk
-		row = int(_facing_view) * 2 + int(_anim_state)
+	if _anim_state == AnimState.SIT and sheet_vframes >= 9:
+		# 9 行标准图集：6=FrontSit, 7=SideSit, 8=BackSit
+		row = 6 + int(_facing_view)
+	elif sheet_vframes >= 6:
+		# 0=FrontIdle, 1=FrontWalk, 2=SideIdle, 3=SideWalk, 4=BackIdle, 5=BackWalk
+		var walk_bit: int = 1 if _anim_state == AnimState.WALK else 0
+		row = int(_facing_view) * 2 + walk_bit
 	elif sheet_vframes >= 2:
-		row = int(_anim_state)
+		row = 1 if _anim_state == AnimState.WALK else 0
 	row = clampi(row, 0, maxi(0, sheet_vframes - 1))
 	_apply_frame_index(row * sheet_hframes + (_current_col % maxi(1, sheet_hframes)))
 
@@ -197,7 +325,7 @@ func _apply_frame_index(frame_idx: int) -> void:
 		_shader_mat.set_shader_parameter(&"frame_index", _current_frame_idx)
 
 
-## 根据 `world_facing_dir` 与相机水平基向量的点积，解算当前应显示的 正/侧/背 视图与左右翻转（保留步态相位不重置！）。
+## 根据 `world_facing_dir` 与相机水平基向量的点积，解算当前应显示的 正/侧/背 视图与左右翻转。
 func _resolve_camera_relative_view() -> void:
 	if sheet_vframes < 6:
 		return
@@ -225,7 +353,6 @@ func _resolve_camera_relative_view() -> void:
 	else:
 		next_view = FacingView.SIDE
 
-	# 正视图与背视图保持原始不翻转构图（发旋呆毛/衣襟左右自然一致），仅在侧视图下根据 local_x 控制左右翻转
 	var next_flip_left: bool = _facing_left
 	if next_view == FacingView.SIDE:
 		if abs_x > 0.08:
@@ -243,7 +370,7 @@ func _resolve_camera_relative_view() -> void:
 
 func _apply_view_or_flip_transition(target_flip_left: bool, full_paper_flip: bool) -> void:
 	_facing_left = target_flip_left
-	if _visual_pivot == null:
+	if _visual_pivot == null or not is_inside_tree() or Engine.is_editor_hint():
 		if _shader_mat != null:
 			_shader_mat.set_shader_parameter(&"flip_h", _facing_left)
 		_refresh_sheet_frame()
@@ -253,7 +380,6 @@ func _apply_view_or_flip_transition(target_flip_left: bool, full_paper_flip: boo
 		_flip_tween.kill()
 
 	if full_paper_flip:
-		# 同为侧视图左右掉头：纸片立牌 180° 轻快窄折翻面
 		_flip_tween = create_tween()
 		_flip_tween.tween_property(_visual_pivot, "scale:x", 0.10, 0.055).set_trans(Tween.TRANS_SINE)
 		_flip_tween.tween_callback(func() -> void:
@@ -263,7 +389,6 @@ func _apply_view_or_flip_transition(target_flip_left: bool, full_paper_flip: boo
 		)
 		_flip_tween.tween_property(_visual_pivot, "scale:x", 1.0, 0.075).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	else:
-		# 正 <-> 侧 <-> 背 90° 切面：立即切换对应视图行（保持脚步相位连续）并附带微弱 Q 弹过渡
 		if _shader_mat != null:
 			_shader_mat.set_shader_parameter(&"flip_h", _facing_left)
 		_refresh_sheet_frame()
@@ -272,7 +397,6 @@ func _apply_view_or_flip_transition(target_flip_left: bool, full_paper_flip: boo
 		_flip_tween.tween_property(_visual_pivot, "scale:x", 1.0, 0.085).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
-## 手动设置左右翻转（供单帧/2行模式兼容调用）。
 func set_facing_left(face_left: bool) -> void:
 	if _facing_left == face_left:
 		return
@@ -281,28 +405,42 @@ func set_facing_left(face_left: bool) -> void:
 
 ## 一键切换 2.5D 光影融合层开关（用于 A/B 教学对比）。
 func set_glue_layer_enabled(enabled: bool) -> void:
-	if _contact_shadow != null:
-		_contact_shadow.visible = enabled
-	if _standee_mesh != null:
-		_standee_mesh.cast_shadow = (
-			GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-			if enabled
-			else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		)
+	_glue_enabled = enabled
+	_sync_depth_and_shadow_state()
 	if _shader_mat != null:
 		_shader_mat.set_shader_parameter(&"normal_up_bias", 0.78 if enabled else 0.0)
 		_shader_mat.set_shader_parameter(&"self_warmth", 0.18 if enabled else 0.0)
 		_shader_mat.set_shader_parameter(&"backlight_strength", 0.28 if enabled else 0.0)
 
 
-## 视平面平行（View-Plane Parallelism）：对齐相机水平偏航角，并同步重算相机相对 3 视图（支持 Q/E 原地转镜头切面！）。
+func _sync_depth_and_shadow_state() -> void:
+	if _contact_shadow != null:
+		_contact_shadow.visible = _glue_enabled and not _seated_mode
+	if _standee_mesh != null:
+		_standee_mesh.cast_shadow = (
+			GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			if (_glue_enabled and not _seated_mode)
+			else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		)
+	if _shader_mat != null:
+		# 入座时加大铅垂深度拉直与前移偏置，使正/侧/背坐姿在 3D 椅背、扶手与沙发靠垫间 100% 零穿模
+		_shader_mat.set_shader_parameter(&"tilt_depth_comp", 0.44 if _seated_mode else 0.18)
+		_shader_mat.set_shader_parameter(&"seat_depth_pull", 0.26 if _seated_mode else 0.0)
+
+
+## 视平面平行（View-Plane Parallelism）：对齐相机水平偏航角，并同步重算相机相对 3 视图。
 func set_camera_alignment(yaw_deg: float, tilt_deg: float) -> void:
 	camera_yaw_deg = yaw_deg
 	standee_tilt_deg = tilt_deg
 	rotation_degrees.y = yaw_deg
-	if _visual_pivot != null:
-		_visual_pivot.rotation_degrees.x = tilt_deg
+	_apply_effective_tilt()
 	_resolve_camera_relative_view()
+
+
+func _apply_effective_tilt() -> void:
+	if _visual_pivot != null:
+		# 入座时立牌微直（-12°），视觉重心稳稳贴合 3D 座椅/沙发坐垫
+		_visual_pivot.rotation_degrees.x = standee_tilt_deg * (0.60 if _seated_mode else 1.0)
 
 
 func _setup_standee_geometry() -> void:
@@ -318,7 +456,6 @@ func _setup_standee_geometry() -> void:
 	quad.size = Vector2(quad_w, world_height)
 	quad.center_offset = Vector3(0.0, world_height * 0.5, 0.0)
 	_standee_mesh.mesh = quad
-	_standee_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 
 	var shd: Shader = load(_STANDEE_SHADER_PATH) as Shader
 	_shader_mat = ShaderMaterial.new()
@@ -328,6 +465,7 @@ func _setup_standee_geometry() -> void:
 	_shader_mat.set_shader_parameter(&"frame_index", maxi(0, _current_frame_idx))
 	_shader_mat.set_shader_parameter(&"flip_h", _facing_left)
 	_standee_mesh.material_override = _shader_mat
+	_sync_depth_and_shadow_state()
 
 
 func _setup_contact_shadow() -> void:
@@ -348,3 +486,10 @@ func _setup_contact_shadow() -> void:
 	_shadow_mat.albedo_color = Color(1.0, 1.0, 1.0, 0.85)
 	_shadow_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_contact_shadow.material_override = _shadow_mat
+
+
+func _refresh_editor_geometry_if_ready() -> void:
+	if not Engine.is_editor_hint() or not is_node_ready():
+		return
+	_setup_standee_geometry()
+	_refresh_sheet_frame()

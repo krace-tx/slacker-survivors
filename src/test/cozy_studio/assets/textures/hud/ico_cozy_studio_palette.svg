@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <!-- Artist wood palette -->
+  <path d="M10.0 2.6 C5.7 2.6, 2.4 5.9, 2.4 10.0 C2.4 14.1, 5.8 17.4, 9.8 17.4 C11.4 17.4, 12.5 16.3, 12.5 15.0 C12.5 14.1, 11.9 13.5, 11.9 12.8 C11.9 12.1, 12.6 11.6, 13.6 11.6 L15.0 11.6 C16.6 11.6, 17.6 10.3, 17.6 8.6 C17.6 5.2, 14.2 2.6, 10.0 2.6 Z" fill="#F5DEC0" stroke="#593A27" stroke-width="1.7" stroke-linejoin="round"/>
+  <circle cx="6.6" cy="8.2" r="1.5" fill="#F09B84" stroke="#593A27" stroke-width="1.0"/>
+  <circle cx="9.8" cy="6.2" r="1.5" fill="#F5CB6E" stroke="#593A27" stroke-width="1.0"/>
+  <circle cx="13.2" cy="7.8" r="1.5" fill="#89B27E" stroke="#593A27" stroke-width="1.0"/>
+  <circle cx="6.8" cy="12.2" r="1.4" fill="#8AA9C9" stroke="#593A27" stroke-width="1.0"/>
+</svg>

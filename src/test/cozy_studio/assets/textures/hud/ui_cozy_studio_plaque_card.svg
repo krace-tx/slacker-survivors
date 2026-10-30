@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="72" viewBox="0 0 128 72">
+  <defs>
+    <linearGradient id="plaqueFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFDF8" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#F9EBD4" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <!-- Soft warm caramel offset shadow -->
+  <rect x="4" y="6" width="121" height="63" rx="18" fill="#5A3925" fill-opacity="0.16"/>
+  <!-- Warm honey-oak bottom lip -->
+  <rect x="3" y="5" width="121" height="62" rx="17" fill="#D7A673" stroke="#593A27" stroke-width="2"/>
+  <!-- Cream watercolor stationery card face -->
+  <rect x="3" y="3" width="121" height="59" rx="17" fill="url(#plaqueFill)" stroke="#593A27" stroke-width="2"/>
+  <!-- Top inner cream highlight -->
+  <rect x="5" y="5" width="117" height="55" rx="15" fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="1.2"/>
+  <!-- Hand-stitched journal inner border -->
+  <rect x="8.5" y="8.5" width="110" height="48" rx="12" fill="none" stroke="#D5B38C" stroke-width="1.2" stroke-dasharray="5 3.5" stroke-linecap="round"/>
+  <!-- Brass corner pins (left & right) -->
+  <circle cx="15" cy="15" r="2.6" fill="#EAC870" stroke="#593A27" stroke-width="1.2"/>
+  <circle cx="112" cy="15" r="2.6" fill="#EAC870" stroke="#593A27" stroke-width="1.2"/>
+</svg>

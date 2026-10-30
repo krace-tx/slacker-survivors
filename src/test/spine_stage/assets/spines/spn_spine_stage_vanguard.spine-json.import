@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://besnqrtoypv77"
+path="res://.godot/imported/spn_spine_stage_vanguard.spine-json-24f0d406c9c176cf525535caaf0f41bf.spjson"
+
+[deps]
+
+source_file="res://src/test/spine_stage/assets/spines/spn_spine_stage_vanguard.spine-json"
+dest_files=["res://.godot/imported/spn_spine_stage_vanguard.spine-json-24f0d406c9c176cf525535caaf0f41bf.spjson"]
+
+[params]
+

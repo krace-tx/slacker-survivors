@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <!-- Plump Cozy Tufted Sofa & Pillow Icon -->
+  <rect x="3.5" y="5.2" width="13" height="6.8" rx="2.6" fill="#AFCFB5" stroke="#593A27" stroke-width="1.5"/>
+  <rect x="2.0" y="8.4" width="3.4" height="6.2" rx="1.7" fill="#98BE9F" stroke="#593A27" stroke-width="1.5"/>
+  <rect x="14.6" y="8.4" width="3.4" height="6.2" rx="1.7" fill="#98BE9F" stroke="#593A27" stroke-width="1.5"/>
+  <rect x="4.2" y="10.4" width="11.6" height="4.2" rx="1.8" fill="#FFF7E8" stroke="#593A27" stroke-width="1.5"/>
+  <rect x="10.8" y="6.8" width="3.8" height="3.8" rx="1.1" transform="rotate(14 12.7 8.7)" fill="#F7B3A6" stroke="#593A27" stroke-width="1.3"/>
+  <line x1="4.8" y1="14.8" x2="4.2" y2="17.2" stroke="#593A27" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="15.2" y1="14.8" x2="15.8" y2="17.2" stroke="#593A27" stroke-width="1.6" stroke-linecap="round"/>
+</svg>

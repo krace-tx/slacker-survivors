@@ -1,0 +1,39 @@
+spn_spine_stage_vanguard.png
+	size: 1024, 512
+	filter: Linear, Linear
+fx_skill_ring
+	bounds: 2, 274, 180, 60
+hair_back
+	bounds: 258, 153, 147, 146
+arm_far
+	bounds: 409, 407, 66, 98
+leg_far
+	bounds: 408, 301, 35, 104
+leg_near
+	bounds: 445, 301, 35, 104
+torso
+	bounds: 482, 301, 88, 90
+torso_shoulder_cap
+	bounds: 305, 473, 28, 34
+coat_tail
+	bounds: 305, 412, 102, 59
+face_open
+	bounds: 407, 79, 101, 109
+face_blink
+	bounds: 305, 301, 101, 109
+face_skill
+	bounds: 407, 190, 101, 109
+head_acc
+	bounds: 393, 2, 120, 75
+hair_bangs
+	bounds: 161, 336, 142, 159
+weapon_primary
+	bounds: 258, 2, 133, 149
+weapon_secondary
+	bounds: 2, 336, 157, 173
+arm_near
+	bounds: 477, 407, 65, 98
+fx_slash_down
+	bounds: 122, 2, 134, 263
+fx_slash_up
+	bounds: 2, 2, 118, 270

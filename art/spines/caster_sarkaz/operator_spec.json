@@ -1,0 +1,53 @@
+{
+  "char_id": "caster_sarkaz",
+  "title": "Rhodes Sarkaz Flame Arts Guard (2.8-Head Arknights 2.5D Standard)",
+  "canvas": {
+    "width": 512,
+    "height": 512,
+    "ground_y": 448,
+    "center_x": 256
+  },
+  "kit_source": "ai_sources/raw_kit_front_34.png",
+  "export": {
+    "out_dir": "../../../src/test/spine_stage/assets/spines",
+    "spine_name": "spn_spine_stage_caster",
+    "write_godot_tres": true,
+    "default_mix": 0.12,
+    "weapon_skin_names": {
+      "weapon/sword": ["weapon_primary"],
+      "weapon/scythe": ["weapon_secondary"],
+      "weapon/hammer": ["weapon_secondary"]
+    }
+  },
+  "style": {
+    "far_limb_tint": [0.82, 0.78, 0.86],
+    "slash_primary_color": "#f97316",
+    "slash_core_color": "#fef3c7",
+    "skill_ring_color": "#ef4444",
+    "shoulder_cap_color": "#261c24"
+  },
+  "proportions": {
+    "target_total_height": 336,
+    "head_scale": 1.0,
+    "bangs_scale": 1.01,
+    "acc_scale": 0.98,
+    "torso_scale": 1.0,
+    "coat_height_ratio": 0.175,
+    "arm_length": 88,
+    "leg_length": 98,
+    "weapon_length": 148,
+    "weapon_secondary_length": 162
+  },
+  "rig_tuning": {
+    "neck_offset": [0, -40],
+    "bangs_offset": [0, -2],
+    "shoulder_near_offset": [-29, -27],
+    "shoulder_far_offset": [28, -27],
+    "hip_near_offset": [-15, 0],
+    "hip_far_offset": [15, -1],
+    "coat_offset": [0, 0],
+    "head_acc_offset": [0, -34],
+    "weapon_grip_ratio_y": 0.80,
+    "weapon_rest_angle_deg": 128
+  }
+}

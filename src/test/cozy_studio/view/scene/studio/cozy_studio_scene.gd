@@ -1,7 +1,7 @@
 class_name CozyStudioScene
 extends BaseScene
 
-## 2.5D 温馨二次元工作室测试舞台根场景（继承 `BaseScene`，组合 3D 房间、三段式跟随相机、序列帧立牌角色与轻量操控 HUD）。
+## 2.5D 温馨二次元工作室测试舞台根场景（继承 `BaseScene`，组合 3D 房间、三段式跟随相机、4x9 序列帧立牌角色与手账交互 UI）。
 
 const _SLACKER_SHEET_PATH: String = "res://src/test/cozy_studio/assets/textures/spr_cozy_studio_slacker_sheet.png"
 const _PARTNER_TEX_PATH: String = "res://src/test/cozy_studio/assets/textures/spr_cozy_studio_partner_idle.png"
@@ -22,7 +22,7 @@ func _ready() -> void:
 func _on_enter(_params: BaseParams = null) -> void:
 	_setup_scene_if_needed()
 	if App.logger != null:
-		App.logger.info("CozyStudio", "Entered 2.5D Cozy Studio test scene (CameraRig + Walk Sheet).")
+		App.logger.info("CozyStudio", "Entered 2.5D Cozy Studio test scene (Interactive 3D Furniture + 3-View Sheet).")
 
 
 func _on_exit() -> void:
@@ -51,7 +51,7 @@ func _setup_scene_if_needed() -> void:
 	var partner_tex: Texture2D = load(_PARTNER_TEX_PATH) as Texture2D
 	if _player_actor != null:
 		_player_actor.idle_phase_offset = 0.0
-		_player_actor.setup_character_sheet(slacker_sheet, 4, 6, 1.62)
+		_player_actor.setup_character_sheet(slacker_sheet, 4, 9, 1.62)
 	if _partner_actor != null:
 		_partner_actor.idle_phase_offset = 1.65
 		_partner_actor.setup_character(partner_tex, 1.54)

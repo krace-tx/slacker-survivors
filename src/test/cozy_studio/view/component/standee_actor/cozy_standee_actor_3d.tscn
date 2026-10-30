@@ -2,16 +2,16 @@
 
 [ext_resource type="Script" path="res://src/test/cozy_studio/view/component/standee_actor/cozy_standee_actor_3d.gd" id="1_ugn4g"]
 
-[node name="CozyStandeeActor3D" type="Node3D" unique_id=431412553]
+[node name="CozyStandeeActor3D" type="Node3D" unique_id=1525180763]
 script = ExtResource("1_ugn4g")
 
-[node name="VisualPivot" type="Node3D" parent="." unique_id=2058035633]
+[node name="VisualPivot" type="Node3D" parent="." unique_id=1723940697]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0.92718387, 0.37460658, 0, -0.37460658, 0.92718387, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9396926, 0.34202012, 0, -0.34202012, 0.9396926, 0, 0, 0)
 
-[node name="StandeeMesh" type="MeshInstance3D" parent="VisualPivot" unique_id=829588403]
+[node name="StandeeMesh" type="MeshInstance3D" parent="VisualPivot" unique_id=1996076245]
 unique_name_in_owner = true
 
-[node name="ContactShadow" type="MeshInstance3D" parent="." unique_id=1644162258]
+[node name="ContactShadow" type="MeshInstance3D" parent="." unique_id=247602421]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.016, 0)

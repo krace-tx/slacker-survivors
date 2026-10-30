@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://r6d8vvncibnh"
+path="res://.godot/imported/spn_spine_stage_vanguard.atlas-f16196d4beae0d96b22bd13b4db981c0.spatlas"
+
+[deps]
+
+source_file="res://src/test/spine_stage/assets/spines/spn_spine_stage_vanguard.atlas"
+dest_files=["res://.godot/imported/spn_spine_stage_vanguard.atlas-f16196d4beae0d96b22bd13b4db981c0.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

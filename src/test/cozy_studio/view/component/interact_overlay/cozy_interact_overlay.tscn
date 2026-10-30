@@ -1,0 +1,108 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/cozy_studio/view/component/interact_overlay/cozy_interact_overlay.gd" id="1_wgajq"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_prompt_tag.tres" id="2_lju1s"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_keycap_e.tres" id="3_cmhkf"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ico_cozy_studio_latte.svg" id="4_8hplp"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ui_cozy_studio_heart_bubble.svg" id="5_ee8nf"]
+
+[node name="CozyInteractOverlay" type="Control" unique_id=391122605]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_wgajq")
+
+[node name="PromptCard" type="PanelContainer" parent="." unique_id=1982211037]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(156, 42)
+layout_mode = 0
+offset_left = 872.0
+offset_top = 460.0
+offset_right = 872.0
+offset_bottom = 460.0
+mouse_default_cursor_shape = 2
+theme_override_styles/panel = ExtResource("2_lju1s")
+
+[node name="PromptRow" type="HBoxContainer" parent="PromptCard" unique_id=16287534]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 7
+alignment = 1
+
+[node name="KeycapBadge" type="PanelContainer" parent="PromptCard/PromptRow" unique_id=747852167]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("3_cmhkf")
+
+[node name="KeycapLabel" type="Label" parent="PromptCard/PromptRow/KeycapBadge" unique_id=555959345]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionIcon" type="TextureRect" parent="PromptCard/PromptRow" unique_id=1072946004]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_8hplp")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ActionLabel" type="Label" parent="PromptCard/PromptRow" unique_id=134306970]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+text = "冲泡拿铁"
+
+[node name="Bubble0" type="TextureRect" parent="." unique_id=1880245622]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 0
+offset_left = 860.0
+offset_top = 380.0
+offset_right = 924.0
+offset_bottom = 444.0
+mouse_filter = 2
+texture = ExtResource("5_ee8nf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Bubble1" type="TextureRect" parent="." unique_id=481671797]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 0
+offset_left = 910.0
+offset_top = 360.0
+offset_right = 974.0
+offset_bottom = 424.0
+mouse_filter = 2
+texture = ExtResource("5_ee8nf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Bubble2" type="TextureRect" parent="." unique_id=1078982329]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 0
+offset_left = 960.0
+offset_top = 370.0
+offset_right = 1024.0
+offset_bottom = 434.0
+mouse_filter = 2
+texture = ExtResource("5_ee8nf")
+expand_mode = 1
+stretch_mode = 5

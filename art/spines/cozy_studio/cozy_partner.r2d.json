@@ -1,0 +1,1308 @@
+{
+  "format": "rev2d",
+  "version": 1,
+  "meta": {
+    "name": "cozy_partner",
+    "width": 576,
+    "height": 920,
+    "background": "rgba(0,0,0,0)",
+    "fps": 30,
+    "author": "Slacker Survivors AI Cutout + Rev2D Pipeline",
+    "description": "2.5D Cozy Studio sleepy indie-artist companion rigged from AI-generated Spine cutout parts."
+  },
+  "textures": [
+    {
+      "id": "partnerAtlas",
+      "path": "textures/tex_partner_parts.png"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "EyeBlink",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "group": "Face",
+      "description": "0=open eyes, 1=sleepy closed blink"
+    },
+    {
+      "id": "Breath",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "group": "Body",
+      "description": "Hoodie chest breathing"
+    },
+    {
+      "id": "BodyBounce",
+      "min": -16,
+      "max": 16,
+      "default": 0,
+      "group": "Body",
+      "description": "Hip vertical breathing bob"
+    },
+    {
+      "id": "BodySway",
+      "min": -10,
+      "max": 10,
+      "default": 0,
+      "group": "Body",
+      "description": "Sleepy torso sway"
+    },
+    {
+      "id": "HeadTilt",
+      "min": -12,
+      "max": 12,
+      "default": 0,
+      "group": "Head",
+      "description": "Head nod/tilt"
+    },
+    {
+      "id": "StylusStroke",
+      "min": -10,
+      "max": 10,
+      "default": 0,
+      "group": "Arms",
+      "description": "Stylus sketching micro-motion"
+    },
+    {
+      "id": "BobHairSway",
+      "min": -24,
+      "max": 24,
+      "default": 0,
+      "group": "Physics",
+      "description": "Lavender bob hair pendulum sway"
+    }
+  ],
+  "bones": [
+    {
+      "id": "ground",
+      "x": 288,
+      "y": 888,
+      "length": 0
+    },
+    {
+      "id": "p_hip",
+      "parent": "ground",
+      "x": 0,
+      "y": -308,
+      "length": 0
+    },
+    {
+      "id": "p_kneeL",
+      "parent": "p_hip",
+      "x": -40,
+      "y": 146,
+      "rotation": 90,
+      "length": 140
+    },
+    {
+      "id": "p_kneeR",
+      "parent": "p_hip",
+      "x": 40,
+      "y": 146,
+      "rotation": 90,
+      "length": 140
+    },
+    {
+      "id": "p_torsoBone",
+      "parent": "p_hip",
+      "x": 0,
+      "y": -96,
+      "length": 0
+    },
+    {
+      "id": "p_tabletBone",
+      "parent": "p_torsoBone",
+      "x": 0,
+      "y": -12,
+      "length": 0
+    },
+    {
+      "id": "p_stylusArm",
+      "parent": "p_torsoBone",
+      "x": -64,
+      "y": -24,
+      "rotation": 0,
+      "length": 110
+    },
+    {
+      "id": "p_head",
+      "parent": "p_torsoBone",
+      "x": 0,
+      "y": -118,
+      "length": 0
+    },
+    {
+      "id": "p_hairBack",
+      "parent": "p_head",
+      "x": 0,
+      "y": -104,
+      "rotation": 90,
+      "length": 130
+    },
+    {
+      "id": "p_sideLockL",
+      "parent": "p_head",
+      "x": -76,
+      "y": -82,
+      "rotation": 90,
+      "length": 105
+    },
+    {
+      "id": "p_sideLockR",
+      "parent": "p_head",
+      "x": 76,
+      "y": -82,
+      "rotation": 90,
+      "length": 105
+    }
+  ],
+  "warps": [
+    {
+      "id": "p_torsoWarp",
+      "parent": "p_torsoBone",
+      "rect": [
+        174,
+        308,
+        228,
+        334
+      ],
+      "cols": 4,
+      "rows": 4
+    }
+  ],
+  "physics": [
+    {
+      "id": "bobHairPendulum",
+      "inputs": [
+        {
+          "param": "BodyBounce",
+          "type": "y",
+          "weight": 0.45
+        },
+        {
+          "param": "BodySway",
+          "type": "x",
+          "weight": 0.9
+        },
+        {
+          "param": "HeadTilt",
+          "type": "x",
+          "weight": 1
+        }
+      ],
+      "outputs": [
+        {
+          "param": "BobHairSway",
+          "type": "angle",
+          "segment": 0,
+          "scale": 0.85
+        }
+      ],
+      "segments": [
+        {
+          "length": 52,
+          "mass": 1.1
+        }
+      ],
+      "damping": 0.18,
+      "stiffness": 12
+    }
+  ],
+  "parts": [
+    {
+      "id": "p_hair_back",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          458,
+          8,
+          213,
+          202
+        ],
+        "x": 180,
+        "y": 194,
+        "w": 216,
+        "h": 204,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 2,
+      "parent": "p_hairBack"
+    },
+    {
+      "id": "p_leg_l",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          8,
+          8,
+          97,
+          336
+        ],
+        "x": 202,
+        "y": 566,
+        "w": 92,
+        "h": 322,
+        "cols": 6,
+        "rows": 10
+      },
+      "opacity": 1,
+      "z": 4,
+      "skin": {
+        "bones": [
+          "p_hip",
+          "p_kneeL"
+        ],
+        "weights": "auto",
+        "falloff": 2
+      }
+    },
+    {
+      "id": "p_leg_r",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          113,
+          8,
+          121,
+          336
+        ],
+        "x": 284,
+        "y": 566,
+        "w": 112,
+        "h": 322,
+        "cols": 6,
+        "rows": 10
+      },
+      "opacity": 1,
+      "z": 4.1,
+      "skin": {
+        "bones": [
+          "p_hip",
+          "p_kneeR"
+        ],
+        "weights": "auto",
+        "falloff": 2
+      }
+    },
+    {
+      "id": "p_torso",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          242,
+          8,
+          208,
+          314
+        ],
+        "x": 184,
+        "y": 318,
+        "w": 208,
+        "h": 314,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 8,
+      "parent": "p_torsoWarp"
+    },
+    {
+      "id": "p_arm_upper_l",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          1731,
+          8,
+          155,
+          125
+        ],
+        "x": 166,
+        "y": 368,
+        "w": 126,
+        "h": 104,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 9,
+      "parent": "p_torsoBone"
+    },
+    {
+      "id": "p_arm_upper_r",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          1568,
+          8,
+          155,
+          125
+        ],
+        "x": 284,
+        "y": 368,
+        "w": 126,
+        "h": 104,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 9.1,
+      "parent": "p_torsoBone"
+    },
+    {
+      "id": "p_tablet",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          1101,
+          8,
+          134,
+          157
+        ],
+        "x": 204,
+        "y": 400,
+        "w": 132,
+        "h": 154,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 11,
+      "parent": "p_tabletBone"
+    },
+    {
+      "id": "p_arm_cradle",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          200,
+          352,
+          216,
+          122
+        ],
+        "x": 266,
+        "y": 432,
+        "w": 154,
+        "h": 96,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 12,
+      "parent": "p_tabletBone"
+    },
+    {
+      "id": "p_arm_stylus",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          8,
+          352,
+          184,
+          123
+        ],
+        "x": 170,
+        "y": 416,
+        "w": 168,
+        "h": 112,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 13,
+      "parent": "p_stylusArm"
+    },
+    {
+      "id": "p_headphones",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          1243,
+          8,
+          164,
+          155
+        ],
+        "x": 224,
+        "y": 312,
+        "w": 128,
+        "h": 118,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 14,
+      "parent": "p_torsoBone"
+    },
+    {
+      "id": "p_hair_side_l",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          1415,
+          8,
+          61,
+          140
+        ],
+        "x": 186,
+        "y": 278,
+        "w": 58,
+        "h": 134,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 15,
+      "parent": "p_sideLockL"
+    },
+    {
+      "id": "p_hair_side_r",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          1484,
+          8,
+          76,
+          140
+        ],
+        "x": 332,
+        "y": 278,
+        "w": 68,
+        "h": 134,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 15.1,
+      "parent": "p_sideLockR"
+    },
+    {
+      "id": "p_head_open",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          890,
+          8,
+          203,
+          195
+        ],
+        "x": 186,
+        "y": 190,
+        "w": 204,
+        "h": 196,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 16,
+      "parent": "p_head"
+    },
+    {
+      "id": "p_head_blink",
+      "shape": {
+        "type": "image",
+        "texture": "partnerAtlas",
+        "crop": [
+          679,
+          8,
+          203,
+          195
+        ],
+        "x": 186,
+        "y": 190,
+        "w": 204,
+        "h": 196,
+        "cols": 6,
+        "rows": 8
+      },
+      "opacity": 1,
+      "z": 16.1,
+      "parent": "p_head"
+    }
+  ],
+  "bindings": [
+    {
+      "target": "part:p_head_open.opacity",
+      "params": [
+        "EyeBlink"
+      ],
+      "interpolation": "step",
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 1
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 0
+        }
+      ]
+    },
+    {
+      "target": "part:p_head_blink.opacity",
+      "params": [
+        "EyeBlink"
+      ],
+      "interpolation": "step",
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 1
+        }
+      ]
+    },
+    {
+      "target": "bone:p_hip.y",
+      "params": [
+        "BodyBounce"
+      ],
+      "keys": [
+        {
+          "at": [
+            -16
+          ],
+          "value": -324
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -308
+        },
+        {
+          "at": [
+            16
+          ],
+          "value": -292
+        }
+      ]
+    },
+    {
+      "target": "bone:p_torsoBone.rotation",
+      "params": [
+        "BodySway"
+      ],
+      "keys": [
+        {
+          "at": [
+            -10
+          ],
+          "value": -4.2
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            10
+          ],
+          "value": 4.2
+        }
+      ]
+    },
+    {
+      "target": "bone:p_tabletBone.y",
+      "params": [
+        "Breath"
+      ],
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": -12
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": -16
+        }
+      ]
+    },
+    {
+      "target": "bone:p_stylusArm.rotation",
+      "params": [
+        "StylusStroke"
+      ],
+      "keys": [
+        {
+          "at": [
+            -10
+          ],
+          "value": -5.5
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            10
+          ],
+          "value": 5.5
+        }
+      ]
+    },
+    {
+      "target": "bone:p_head.rotation",
+      "params": [
+        "HeadTilt"
+      ],
+      "keys": [
+        {
+          "at": [
+            -12
+          ],
+          "value": -7.5
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            12
+          ],
+          "value": 7.5
+        }
+      ]
+    },
+    {
+      "target": "bone:p_hairBack.rotation",
+      "params": [
+        "BobHairSway"
+      ],
+      "keys": [
+        {
+          "at": [
+            -24
+          ],
+          "value": 82
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 90
+        },
+        {
+          "at": [
+            24
+          ],
+          "value": 98
+        }
+      ]
+    },
+    {
+      "target": "bone:p_sideLockL.rotation",
+      "params": [
+        "BobHairSway"
+      ],
+      "keys": [
+        {
+          "at": [
+            -24
+          ],
+          "value": 82
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 90
+        },
+        {
+          "at": [
+            24
+          ],
+          "value": 98
+        }
+      ]
+    },
+    {
+      "target": "bone:p_sideLockR.rotation",
+      "params": [
+        "BobHairSway"
+      ],
+      "keys": [
+        {
+          "at": [
+            -24
+          ],
+          "value": 82
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 90
+        },
+        {
+          "at": [
+            24
+          ],
+          "value": 98
+        }
+      ]
+    },
+    {
+      "target": "warp:p_torsoWarp.offsets",
+      "params": [
+        "Breath"
+      ],
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": {}
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": {
+            "0": [
+              0,
+              -4.5
+            ],
+            "1": [
+              0,
+              -4.5
+            ],
+            "2": [
+              0,
+              -4.5
+            ],
+            "3": [
+              0,
+              -4.5
+            ],
+            "4": [
+              0,
+              -4.5
+            ],
+            "5": [
+              -2.55,
+              -3.77
+            ],
+            "6": [
+              -1.28,
+              -3.77
+            ],
+            "7": [
+              0,
+              -3.77
+            ],
+            "8": [
+              1.28,
+              -3.77
+            ],
+            "9": [
+              2.55,
+              -3.77
+            ],
+            "10": [
+              -3.16,
+              -3.04
+            ],
+            "11": [
+              -1.58,
+              -3.04
+            ],
+            "12": [
+              0,
+              -3.04
+            ],
+            "13": [
+              1.58,
+              -3.04
+            ],
+            "14": [
+              3.16,
+              -3.04
+            ],
+            "15": [
+              -1.36,
+              -2.31
+            ],
+            "16": [
+              -0.68,
+              -2.31
+            ],
+            "17": [
+              0,
+              -2.31
+            ],
+            "18": [
+              0.68,
+              -2.31
+            ],
+            "19": [
+              1.36,
+              -2.31
+            ],
+            "20": [
+              0,
+              -1.57
+            ],
+            "21": [
+              0,
+              -1.57
+            ],
+            "22": [
+              0,
+              -1.57
+            ],
+            "23": [
+              0,
+              -1.57
+            ],
+            "24": [
+              0,
+              -1.57
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "animations": [
+    {
+      "id": "idle",
+      "duration": 3.2,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:EyeBlink",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "step"
+            },
+            {
+              "t": 1.55,
+              "v": 1,
+              "ease": "step"
+            },
+            {
+              "t": 1.76,
+              "v": 0,
+              "ease": "step"
+            },
+            {
+              "t": 3.2,
+              "v": 0,
+              "ease": "step"
+            }
+          ]
+        },
+        {
+          "target": "param:Breath",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.2667,
+              "v": 0.067,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.5333,
+              "v": 0.25,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.8,
+              "v": 0.5,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.0667,
+              "v": 0.75,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.3333,
+              "v": 0.933,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.6,
+              "v": 1,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.8667,
+              "v": 0.933,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.1333,
+              "v": 0.75,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.4,
+              "v": 0.5,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.6667,
+              "v": 0.25,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.9333,
+              "v": 0.067,
+              "ease": "smooth"
+            },
+            {
+              "t": 3.2,
+              "v": 0,
+              "ease": "smooth"
+            }
+          ]
+        },
+        {
+          "target": "param:BodyBounce",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.2667,
+              "v": 1.1,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.5333,
+              "v": 1.905,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.8,
+              "v": 2.2,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.0667,
+              "v": 1.905,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.3333,
+              "v": 1.1,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.6,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.8667,
+              "v": -1.1,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.1333,
+              "v": -1.905,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.4,
+              "v": -2.2,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.6667,
+              "v": -1.905,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.9333,
+              "v": -1.1,
+              "ease": "smooth"
+            },
+            {
+              "t": 3.2,
+              "v": 0,
+              "ease": "smooth"
+            }
+          ]
+        },
+        {
+          "target": "param:BodySway",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.2667,
+              "v": 1.3,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.5333,
+              "v": 2.252,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.8,
+              "v": 2.6,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.0667,
+              "v": 2.252,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.3333,
+              "v": 1.3,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.6,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.8667,
+              "v": -1.3,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.1333,
+              "v": -2.252,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.4,
+              "v": -2.6,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.6667,
+              "v": -2.252,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.9333,
+              "v": -1.3,
+              "ease": "smooth"
+            },
+            {
+              "t": 3.2,
+              "v": 0,
+              "ease": "smooth"
+            }
+          ]
+        },
+        {
+          "target": "param:HeadTilt",
+          "keys": [
+            {
+              "t": 0,
+              "v": -3.8,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.2667,
+              "v": -2.397,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.5333,
+              "v": -0.351,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.8,
+              "v": 1.788,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.0667,
+              "v": 3.449,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.3333,
+              "v": 4.185,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.6,
+              "v": 3.8,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.8667,
+              "v": 2.397,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.1333,
+              "v": 0.351,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.4,
+              "v": -1.788,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.6667,
+              "v": -3.449,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.9333,
+              "v": -4.185,
+              "ease": "smooth"
+            },
+            {
+              "t": 3.2,
+              "v": -3.8,
+              "ease": "smooth"
+            }
+          ]
+        },
+        {
+          "target": "param:StylusStroke",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.2,
+              "v": 4.435,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.4,
+              "v": 3.394,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.6,
+              "v": -1.837,
+              "ease": "smooth"
+            },
+            {
+              "t": 0.8,
+              "v": -4.8,
+              "ease": "smooth"
+            },
+            {
+              "t": 1,
+              "v": -1.837,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.2,
+              "v": 3.394,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.4,
+              "v": 4.435,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.6,
+              "v": 0,
+              "ease": "smooth"
+            },
+            {
+              "t": 1.8,
+              "v": -4.435,
+              "ease": "smooth"
+            },
+            {
+              "t": 2,
+              "v": -3.394,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.2,
+              "v": 1.837,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.4,
+              "v": 4.8,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.6,
+              "v": 1.837,
+              "ease": "smooth"
+            },
+            {
+              "t": 2.8,
+              "v": -3.394,
+              "ease": "smooth"
+            },
+            {
+              "t": 3,
+              "v": -4.435,
+              "ease": "smooth"
+            },
+            {
+              "t": 3.2,
+              "v": 0,
+              "ease": "smooth"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="latteCloud" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFEFA"/>
+      <stop offset="100%" stop-color="#FAEBCD"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="33" cy="29" rx="24" ry="19" fill="#593A27" fill-opacity="0.16"/>
+  <circle cx="25" cy="57" r="3.2" fill="#FFFDF8" stroke="#593A27" stroke-width="2"/>
+  <circle cx="29.5" cy="49.5" r="5.0" fill="#FFFDF8" stroke="#593A27" stroke-width="2"/>
+  <rect x="8" y="8" width="48" height="36" rx="18" fill="url(#latteCloud)" stroke="#593A27" stroke-width="2.3"/>
+  <!-- Steaming Latte Cup inside bubble -->
+  <ellipse cx="31" cy="36.2" rx="12" ry="3.2" fill="#B8D4B8" stroke="#593A27" stroke-width="1.8"/>
+  <path d="M22 24.5 L40 24.5 L38.2 34.2 C37.8 36.2, 24.2 36.2, 23.8 34.2 Z" fill="#FFF8EC" stroke="#593A27" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M40 26.5 C44.2 26.5, 44.2 32.2, 39.2 32.2" fill="none" stroke="#593A27" stroke-width="2" stroke-linecap="round"/>
+  <ellipse cx="31" cy="24.5" rx="8.8" ry="2.4" fill="#C98A5B" stroke="#593A27" stroke-width="1.6"/>
+  <!-- Steam wisps + sparkle -->
+  <path d="M27.5 20.5 C26.0 18.0, 29.0 16.0, 27.5 13.5" fill="none" stroke="#D1885C" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M34.0 20.2 C32.5 17.7, 35.5 15.7, 34.0 13.2" fill="none" stroke="#D1885C" stroke-width="1.9" stroke-linecap="round"/>
+  <circle cx="45.5" cy="17.5" r="2.2" fill="#F5CA69" stroke="#593A27" stroke-width="1.2"/>
+</svg>

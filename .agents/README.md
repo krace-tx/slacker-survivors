@@ -40,6 +40,17 @@
             ├── render_lookdev_card.py         # 多视角 LookDev 审视卡渲染器
             ├── run_pipeline_gate.sh           # 一键执行 Blender 资产体检与导出门禁
             └── verify_blender_asset.py        # 网格流形、法线、UV、材质与轴心自动化校验器
+    │
+    ├── godot-scene-pipeline/                  # [技能 3] Godot 4 声明式场景装配与多模态视觉验收管线
+    │   ├── SKILL.md                           # MCP-First 双通道装配与六步视觉验收闭环
+    │   ├── references/                        # 预制体拆分、UI 设计系统与 2D/3D 世界舞台规范
+    │   └── scripts/                           # Headless 场景结构审计器与多分辨率截图器
+    │
+    └── spine-character-pipeline/              # [技能 4] 《明日方舟》级 2.5D Spine 角色自动化生产管线
+        ├── SKILL.md                           # 2.8头身人台约束生图 ➔ 去内描边补帽 ➔ 17环蒙皮 ➔ 五道门禁闭环
+        ├── references/                        # 方舟比例与12槽规约、连续网格与瞬斩刀光补帧规范、垫图生图指南
+        ├── examples/                          # operator_spec.json 声明式蓝图与正反范式对照
+        └── scripts/                           # 确定性人台生成、OpenCV补帽拆件、Rev2D自动绑骨导出与五门禁审计
 ```
 
 ---

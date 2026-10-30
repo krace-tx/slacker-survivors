@@ -1,66 +1,62 @@
-[gd_scene format=3 uid="uid://cbex4h8cb57a6"]
+[gd_scene format=3]
 
-[ext_resource type="PackedScene" uid="uid://bmchrax5hdt1b" path="res://src/test/cozy_studio/view/component/studio_stage/cozy_studio_stage_3d.tscn" id="1_07jbs"]
-[ext_resource type="Script" uid="uid://cv1dn08h28kio" path="res://src/test/cozy_studio/view/scene/studio/cozy_studio_scene.gd" id="1_rj0ci"]
-[ext_resource type="PackedScene" path="res://src/test/cozy_studio/view/component/standee_actor/cozy_standee_actor_3d.tscn" id="2_edvc7"]
-[ext_resource type="PackedScene" uid="uid://dfriugej7fenj" path="res://src/test/cozy_studio/view/component/camera_rig/cozy_camera_rig_3d.tscn" id="3_bp0lw"]
-[ext_resource type="Texture2D" uid="uid://b0fmyemubfb2j" path="res://src/test/cozy_studio/assets/textures/spr_cozy_studio_partner_idle.png" id="4_bp0lw"]
-[ext_resource type="Texture2D" uid="uid://s0eyn527n7cg" path="res://src/test/cozy_studio/assets/textures/spr_cozy_studio_slacker_sheet.png" id="5_5a3qt"]
-[ext_resource type="PackedScene" uid="uid://ctsf5nwpxjun5" path="res://src/test/cozy_studio/view/component/hud/cozy_studio_hud_bar.tscn" id="5_8h6ye"]
-[ext_resource type="Script" uid="uid://cfl37ysyki18a" path="res://src/test/cozy_studio/view/scene/studio/cozy_studio_view.gd" id="6_edvc7"]
+[ext_resource type="Script" path="res://src/test/cozy_studio/view/scene/studio/cozy_studio_scene.gd" id="1_8h6ye"]
+[ext_resource type="PackedScene" path="res://src/test/cozy_studio/view/component/studio_stage/cozy_studio_stage_3d.tscn" id="2_5a3qt"]
+[ext_resource type="PackedScene" path="res://src/test/cozy_studio/view/component/camera_rig/cozy_camera_rig_3d.tscn" id="3_n10ph"]
+[ext_resource type="PackedScene" path="res://src/test/cozy_studio/view/component/standee_actor/cozy_standee_actor_3d.tscn" id="4_lbpjn"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/spr_cozy_studio_slacker_sheet.png" id="5_v8yb3"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/spr_cozy_studio_partner_idle.png" id="6_25dmw"]
+[ext_resource type="Script" path="res://src/test/cozy_studio/view/scene/studio/cozy_studio_view.gd" id="7_duha6"]
+[ext_resource type="PackedScene" path="res://src/test/cozy_studio/view/component/interact_overlay/cozy_interact_overlay.tscn" id="8_vcfky"]
+[ext_resource type="PackedScene" path="res://src/test/cozy_studio/view/component/hud/cozy_studio_hud_bar.tscn" id="9_totyu"]
 
-[node name="CozyStudioScene" type="Node" unique_id=1541342654]
-script = ExtResource("1_rj0ci")
+[node name="CozyStudioScene" type="Node" unique_id=1344129590]
+script = ExtResource("1_8h6ye")
 
-[node name="World3D" type="Node3D" parent="." unique_id=1341610320]
+[node name="World3D" type="Node3D" parent="." unique_id=2044683418]
 unique_name_in_owner = true
 
-[node name="StudioStage3D" parent="World3D" unique_id=1718878904 instance=ExtResource("1_07jbs")]
+[node name="StudioStage3D" parent="World3D" unique_id=233812333 instance=ExtResource("2_5a3qt")]
 unique_name_in_owner = true
 
-[node name="CameraRig" parent="World3D" unique_id=1805177257 instance=ExtResource("3_bp0lw")]
+[node name="CameraRig" parent="World3D" unique_id=1805177257 instance=ExtResource("3_n10ph")]
 unique_name_in_owner = true
 
-[node name="Actors" type="Node3D" parent="World3D" unique_id=1611622318]
+[node name="Actors" type="Node3D" parent="World3D" unique_id=831088764]
 unique_name_in_owner = true
 
-[node name="SlackerActor" parent="World3D/Actors" unique_id=431412553 instance=ExtResource("2_edvc7")]
+[node name="SlackerActor" parent="World3D/Actors" unique_id=1525180763 instance=ExtResource("4_lbpjn")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0, 0.68)
-sprite_texture = ExtResource("5_5a3qt")
-sheet_hframes = 4.0
-sheet_vframes = 6.0
+sprite_texture = ExtResource("5_v8yb3")
+sheet_hframes = 4
+sheet_vframes = 9
 world_height = 1.62
 
-[node name="PartnerActor" parent="World3D/Actors" unique_id=525086245 instance=ExtResource("2_edvc7")]
+[node name="PartnerActor" parent="World3D/Actors" unique_id=1696991102 instance=ExtResource("4_lbpjn")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 0, -1.02)
-sprite_texture = ExtResource("4_bp0lw")
+sprite_texture = ExtResource("6_25dmw")
 world_height = 1.54
 
-[node name="HudLayer" type="CanvasLayer" parent="." unique_id=1291154446]
+[node name="HudLayer" type="CanvasLayer" parent="." unique_id=1496787099]
 layer = 10
 
-[node name="UI" type="Control" parent="HudLayer" unique_id=1857474906]
+[node name="UI" type="Control" parent="HudLayer" unique_id=1535605518]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -1920.0
-offset_bottom = -1080.0
 mouse_filter = 2
-script = ExtResource("6_edvc7")
+script = ExtResource("7_duha6")
 
-[node name="TopMargin" type="MarginContainer" parent="HudLayer/UI" unique_id=1912914683]
-layout_mode = 0
-anchor_right = 1.0
-mouse_filter = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 0
-
-[node name="HudBar" parent="HudLayer/UI/TopMargin" unique_id=1276094680 instance=ExtResource("5_8h6ye")]
+[node name="InteractOverlay" parent="HudLayer/UI" unique_id=391122605 instance=ExtResource("8_vcfky")]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+
+[node name="HudBar" parent="HudLayer/UI" unique_id=475393884 instance=ExtResource("9_totyu")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15

@@ -1,90 +1,228 @@
-[gd_scene format=3 uid="uid://ctsf5nwpxjun5"]
+[gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://bygnmwnhxwp2q" path="res://src/test/cozy_studio/view/component/hud/cozy_studio_hud_bar.gd" id="1_4rkdi"]
+[ext_resource type="Script" path="res://src/test/cozy_studio/view/component/hud/cozy_studio_hud_bar.gd" id="1_4qjh3"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_plaque_card.tres" id="2_ay6mf"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ico_cozy_studio_latte.svg" id="3_dqdu6"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_pill_active.tres" id="4_gj5yo"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_pill_pressed.tres" id="5_funsi"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_pill_hover.tres" id="6_mdio7"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ico_cozy_studio_follow.svg" id="7_k3mss"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_pill_normal.tres" id="8_t0sq6"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ico_cozy_studio_camera.svg" id="9_57kgr"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ico_cozy_studio_sun.svg" id="10_wfgiy"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ico_cozy_studio_palette.svg" id="11_3qg6x"]
+[ext_resource type="Texture2D" path="res://src/test/cozy_studio/assets/textures/hud/ico_cozy_studio_reset.svg" id="12_btpi6"]
+[ext_resource type="StyleBox" path="res://src/test/cozy_studio/assets/themes/sbx_cozy_studio_bookmark_pill.tres" id="13_2ek5d"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4rkdi"]
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-bg_color = Color(0.23921569, 0.18431373, 0.14117648, 0.8509804)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.9019608, 0.79607844, 0.65882355, 0.6)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_s6ree"]
 
-[node name="CozyStudioHudBar" type="PanelContainer" unique_id=1276094680]
-anchors_preset = 10
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_520o5"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mkk30"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ci2l8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_muqne"]
+
+[node name="CozyStudioHudBar" type="Control" unique_id=475393884]
+layout_mode = 3
+anchors_preset = 0
 anchor_right = 1.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_4rkdi")
-script = ExtResource("1_4rkdi")
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_4qjh3")
 
-[node name="MainCol" type="VBoxContainer" parent="." unique_id=728539171]
+[node name="SafeMargin" type="MarginContainer" parent="." unique_id=1293079670]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 18
+
+[node name="HudLayout" type="VBoxContainer" parent="SafeMargin" unique_id=1297493973]
 layout_mode = 2
-theme_override_constants/separation = 6
+mouse_filter = 2
 
-[node name="TopRow" type="HBoxContainer" parent="MainCol" unique_id=1263862492]
+[node name="TopBarRow" type="HBoxContainer" parent="SafeMargin/HudLayout" unique_id=1197742485]
 layout_mode = 2
-theme_override_constants/separation = 8
+mouse_filter = 2
+theme_override_constants/separation = 12
 
-[node name="TitleBadge" type="Label" parent="MainCol/TopRow" unique_id=1386561467]
+[node name="TitlePlaque" type="PanelContainer" parent="SafeMargin/HudLayout/TopBarRow" unique_id=1506813653]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9607843, 0.89411765, 1)
-theme_override_font_sizes/font_size = 16
-text = "2.5D 温馨摸鱼工作室 · 测试台"
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("2_ay6mf")
 
-[node name="Spacer" type="Control" parent="MainCol/TopRow" unique_id=64258512]
+[node name="PlaqueRow" type="HBoxContainer" parent="SafeMargin/HudLayout/TopBarRow/TitlePlaque" unique_id=985542843]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="LatteIcon" type="TextureRect" parent="SafeMargin/HudLayout/TopBarRow/TitlePlaque/PlaqueRow" unique_id=421780847]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_dqdu6")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PlaqueTextCol" type="VBoxContainer" parent="SafeMargin/HudLayout/TopBarRow/TitlePlaque/PlaqueRow" unique_id=1501945705]
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 1
+
+[node name="TitleLabel" type="Label" parent="SafeMargin/HudLayout/TopBarRow/TitlePlaque/PlaqueRow/PlaqueTextCol" unique_id=902222950]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+text = "温馨摸鱼画室"
+
+[node name="FacingBadgeLabel" type="Label" parent="SafeMargin/HudLayout/TopBarRow/TitlePlaque/PlaqueRow/PlaqueTextCol" unique_id=1318971248]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.34509805, 0.45882353, 0.32156864, 1)
+text = "立绘 · 正视图 (Front)"
+
+[node name="TopSpacer" type="Control" parent="SafeMargin/HudLayout/TopBarRow" unique_id=1687199963]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
-[node name="FollowToggleBtn" type="Button" parent="MainCol/TopRow" unique_id=1694237335]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(124, 32)
+[node name="PillActionsRow" type="HBoxContainer" parent="SafeMargin/HudLayout/TopBarRow" unique_id=1795911914]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="FollowToggleBtn" type="Button" parent="SafeMargin/HudLayout/TopBarRow/PillActionsRow" unique_id=1820779743]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 38)
+layout_mode = 2
+theme_override_styles/normal = ExtResource("4_gj5yo")
+theme_override_styles/pressed = ExtResource("5_funsi")
+theme_override_styles/hover = ExtResource("6_mdio7")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_s6ree")
+theme_override_colors/font_color = Color(0.17254902, 0.27450982, 0.15686275, 1)
+theme_override_colors/font_focus_color = Color(0.17254902, 0.27450982, 0.15686275, 1)
+theme_override_colors/font_pressed_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
+theme_override_colors/font_hover_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
 theme_override_font_sizes/font_size = 13
-text = "跟随: 开启 [F]"
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.9607843, 0.91764706, 0.84705883, 1)
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_constants/h_separation = 7
+text = "镜头跟随 [F]"
+icon = ExtResource("7_k3mss")
 
-[node name="CameraModeBtn" type="Button" parent="MainCol/TopRow" unique_id=972177163]
+[node name="CameraModeBtn" type="Button" parent="SafeMargin/HudLayout/TopBarRow/PillActionsRow" unique_id=1702400335]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(196, 32)
+custom_minimum_size = Vector2(154, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_styles/normal = ExtResource("8_t0sq6")
+theme_override_styles/pressed = ExtResource("5_funsi")
+theme_override_styles/hover = ExtResource("6_mdio7")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_520o5")
+theme_override_colors/font_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+theme_override_colors/font_focus_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+theme_override_colors/font_pressed_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
+theme_override_colors/font_hover_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
 theme_override_font_sizes/font_size = 13
-text = "视角: 24.5° 长焦透视 [1/2/3]"
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.9607843, 0.91764706, 0.84705883, 1)
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_constants/h_separation = 7
+text = "24.5° 长焦 [1-3]"
+icon = ExtResource("9_57kgr")
 
-[node name="LightMoodBtn" type="Button" parent="MainCol/TopRow" unique_id=1890811846]
+[node name="LightMoodBtn" type="Button" parent="SafeMargin/HudLayout/TopBarRow/PillActionsRow" unique_id=1404654421]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(146, 32)
+custom_minimum_size = Vector2(132, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_styles/normal = ExtResource("8_t0sq6")
+theme_override_styles/pressed = ExtResource("5_funsi")
+theme_override_styles/hover = ExtResource("6_mdio7")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_mkk30")
+theme_override_colors/font_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+theme_override_colors/font_focus_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+theme_override_colors/font_pressed_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
+theme_override_colors/font_hover_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
 theme_override_font_sizes/font_size = 13
-text = "光影: 午后暖阳 [L]"
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.9607843, 0.91764706, 0.84705883, 1)
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_constants/h_separation = 7
+text = "午后暖阳 [L]"
+icon = ExtResource("10_wfgiy")
 
-[node name="GlueToggleBtn" type="Button" parent="MainCol/TopRow" unique_id=1443084043]
+[node name="GlueToggleBtn" type="Button" parent="SafeMargin/HudLayout/TopBarRow/PillActionsRow" unique_id=1652043717]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(132, 32)
+custom_minimum_size = Vector2(144, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_styles/normal = ExtResource("4_gj5yo")
+theme_override_styles/pressed = ExtResource("5_funsi")
+theme_override_styles/hover = ExtResource("6_mdio7")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ci2l8")
+theme_override_colors/font_color = Color(0.17254902, 0.27450982, 0.15686275, 1)
+theme_override_colors/font_focus_color = Color(0.17254902, 0.27450982, 0.15686275, 1)
+theme_override_colors/font_pressed_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
+theme_override_colors/font_hover_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
 theme_override_font_sizes/font_size = 13
-text = "融合层: 开启 [G]"
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.9607843, 0.91764706, 0.84705883, 1)
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_constants/h_separation = 7
+text = "赛璐璐线稿 [G]"
+icon = ExtResource("11_3qg6x")
 
-[node name="ResetBtn" type="Button" parent="MainCol/TopRow" unique_id=1616788443]
+[node name="ResetBtn" type="Button" parent="SafeMargin/HudLayout/TopBarRow/PillActionsRow" unique_id=569995072]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(76, 32)
+custom_minimum_size = Vector2(96, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_styles/normal = ExtResource("8_t0sq6")
+theme_override_styles/pressed = ExtResource("5_funsi")
+theme_override_styles/hover = ExtResource("6_mdio7")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_muqne")
+theme_override_colors/font_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+theme_override_colors/font_focus_color = Color(0.30588236, 0.19215687, 0.12941177, 1)
+theme_override_colors/font_pressed_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
+theme_override_colors/font_hover_color = Color(0.22745098, 0.13333334, 0.078431375, 1)
 theme_override_font_sizes/font_size = 13
-text = "重置 [R]"
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.9607843, 0.91764706, 0.84705883, 1)
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_constants/h_separation = 6
+text = "复位 [R]"
+icon = ExtResource("12_btpi6")
 
-[node name="HintLabel" type="Label" parent="MainCol" unique_id=694365028]
+[node name="CenterAirSpacer" type="Control" parent="SafeMargin/HudLayout" unique_id=1204185608]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="BottomBookmarkCenter" type="CenterContainer" parent="SafeMargin/HudLayout" unique_id=809075383]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BookmarkPill" type="PanelContainer" parent="SafeMargin/HudLayout/BottomBookmarkCenter" unique_id=1124069865]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("13_2ek5d")
+
+[node name="HintLabel" type="Label" parent="SafeMargin/HudLayout/BottomBookmarkCenter/BookmarkPill" unique_id=214666360]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.92156863, 0.84313726, 0.74509805, 1)
 theme_override_font_sizes/font_size = 12
-text = "当前角色立绘: 正视图 (Front)  |  WASD: 正/侧/背 3 视图序列帧走动  |  Q / E: 旋转镜头(自动切换相对 3 视图并保持同面)  |  滚轮: 推拉"
+theme_override_colors/font_color = Color(0.34901962, 0.22745098, 0.15294118, 1)
+text = "WASD 3视图走动  ·  点按 E 互动(冲拿铁/入座摸鱼/撸猫)  ·  长按 Q/E 旋转镜头  ·  滚轮特写"

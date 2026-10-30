@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <defs>
+    <linearGradient id="keyTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFEFA"/>
+      <stop offset="100%" stop-color="#F7E4C6"/>
+    </linearGradient>
+  </defs>
+  <!-- 3D Mechanical Keycap Base Skirt -->
+  <rect x="2" y="3.5" width="24" height="22.5" rx="6.5" fill="#D5A068" stroke="#593A27" stroke-width="1.8"/>
+  <!-- Sculpted Keycap Top Dish -->
+  <rect x="3.2" y="2" width="21.6" height="19.8" rx="5.5" fill="url(#keyTop)" stroke="#593A27" stroke-width="1.6"/>
+  <rect x="4.8" y="3.5" width="18.4" height="16.5" rx="4.2" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1"/>
+</svg>

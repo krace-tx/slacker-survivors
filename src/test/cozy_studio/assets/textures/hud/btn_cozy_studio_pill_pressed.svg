@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="44" viewBox="0 0 96 44">
+  <defs>
+    <linearGradient id="pillPrs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EAD8BE" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#F6E8D3" stop-opacity="0.98"/>
+    </linearGradient>
+  </defs>
+  <!-- Depressed tactile pill -->
+  <rect x="2.5" y="4.5" width="90" height="35" rx="17.5" fill="url(#pillPrs)" stroke="#593A27" stroke-width="2.0"/>
+  <rect x="4.5" y="6.3" width="86" height="31" rx="15.5" fill="none" stroke="#C9A882" stroke-opacity="0.65" stroke-width="1.1"/>
+</svg>

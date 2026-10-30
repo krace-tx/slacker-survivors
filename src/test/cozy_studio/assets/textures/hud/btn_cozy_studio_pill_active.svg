@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="44" viewBox="0 0 96 44">
+  <defs>
+    <linearGradient id="pillAct" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F2F9EE" stop-opacity="0.97"/>
+      <stop offset="100%" stop-color="#D7EAD0" stop-opacity="0.97"/>
+    </linearGradient>
+  </defs>
+  <!-- Soft drop shadow -->
+  <rect x="3" y="5" width="90" height="37" rx="18.5" fill="#463626" fill-opacity="0.15"/>
+  <!-- Tactile sage-olive bottom lip -->
+  <rect x="2.5" y="4.5" width="90" height="36" rx="18" fill="#8AA981" stroke="#485E42" stroke-width="1.9"/>
+  <!-- Pastel sage-matcha pill top face -->
+  <rect x="2.5" y="2.5" width="90" height="33.5" rx="16.75" fill="url(#pillAct)" stroke="#485E42" stroke-width="1.9"/>
+  <!-- Subtle inner mint-cream highlight -->
+  <rect x="4.5" y="4.3" width="86" height="29.5" rx="14.75" fill="none" stroke="#FFFFFF" stroke-opacity="0.78" stroke-width="1.1"/>
+</svg>
