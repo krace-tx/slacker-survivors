@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://dfriugej7fenj"]
+
+[ext_resource type="Script" uid="uid://mblea51qao0p" path="res://src/test/cozy_studio/view/component/camera_rig/cozy_camera_rig_3d.gd" id="1_6o6ya"]
+
+[node name="CozyCameraRig3D" type="Node3D" unique_id=1805177257]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0, 0.68)
+script = ExtResource("1_6o6ya")
+
+[node name="YawPivot" type="Node3D" parent="." unique_id=1524256253]
+unique_name_in_owner = true
+transform = Transform3D(0.79863554, 0, 0.601815, 0, 1, 0, -0.601815, 0, 0.79863554, 0, 1.18, 0)
+
+[node name="PitchPivot" type="Node3D" parent="YawPivot" unique_id=1485094822]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.87881714, 0.47715876, 0, -0.47715876, 0.87881714, 0, 0, 0)
+
+[node name="MainCamera" type="Camera3D" parent="YawPivot/PitchPivot" unique_id=1648745755]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 13.6)
+current = true
+fov = 24.5
+
+[node name="AnimeInkOutlineQuad" type="MeshInstance3D" parent="YawPivot/PitchPivot/MainCamera" unique_id=628609000]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.6)

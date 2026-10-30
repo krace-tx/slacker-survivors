@@ -1,0 +1,90 @@
+[gd_scene format=3 uid="uid://ctsf5nwpxjun5"]
+
+[ext_resource type="Script" uid="uid://bygnmwnhxwp2q" path="res://src/test/cozy_studio/view/component/hud/cozy_studio_hud_bar.gd" id="1_4rkdi"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4rkdi"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.23921569, 0.18431373, 0.14117648, 0.8509804)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9019608, 0.79607844, 0.65882355, 0.6)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="CozyStudioHudBar" type="PanelContainer" unique_id=1276094680]
+anchors_preset = 10
+anchor_right = 1.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_4rkdi")
+script = ExtResource("1_4rkdi")
+
+[node name="MainCol" type="VBoxContainer" parent="." unique_id=728539171]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopRow" type="HBoxContainer" parent="MainCol" unique_id=1263862492]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleBadge" type="Label" parent="MainCol/TopRow" unique_id=1386561467]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9607843, 0.89411765, 1)
+theme_override_font_sizes/font_size = 16
+text = "2.5D 温馨摸鱼工作室 · 测试台"
+
+[node name="Spacer" type="Control" parent="MainCol/TopRow" unique_id=64258512]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FollowToggleBtn" type="Button" parent="MainCol/TopRow" unique_id=1694237335]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(124, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_font_sizes/font_size = 13
+text = "跟随: 开启 [F]"
+
+[node name="CameraModeBtn" type="Button" parent="MainCol/TopRow" unique_id=972177163]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(196, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_font_sizes/font_size = 13
+text = "视角: 24.5° 长焦透视 [1/2/3]"
+
+[node name="LightMoodBtn" type="Button" parent="MainCol/TopRow" unique_id=1890811846]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(146, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_font_sizes/font_size = 13
+text = "光影: 午后暖阳 [L]"
+
+[node name="GlueToggleBtn" type="Button" parent="MainCol/TopRow" unique_id=1443084043]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(132, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_font_sizes/font_size = 13
+text = "融合层: 开启 [G]"
+
+[node name="ResetBtn" type="Button" parent="MainCol/TopRow" unique_id=1616788443]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(76, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.98039216, 0.9411765, 1)
+theme_override_font_sizes/font_size = 13
+text = "重置 [R]"
+
+[node name="HintLabel" type="Label" parent="MainCol" unique_id=694365028]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92156863, 0.84313726, 0.74509805, 1)
+theme_override_font_sizes/font_size = 12
+text = "当前角色立绘: 正视图 (Front)  |  WASD: 正/侧/背 3 视图序列帧走动  |  Q / E: 旋转镜头(自动切换相对 3 视图并保持同面)  |  滚轮: 推拉"

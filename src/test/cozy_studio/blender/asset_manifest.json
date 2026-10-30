@@ -1,0 +1,57 @@
+{
+  "scene_id": "cozy_studio",
+  "style": "High-Craft Cozy Anime Loft Atelier (Subdivided 3D Venue + Cel-Shaded Warm Brown Ink Lineart + 2D 3-View Standee)",
+  "unit_scale": "1.0 Blender Unit = 1.0 Meter",
+  "coordinate_contract": {
+    "blender_up": "+Z",
+    "blender_forward_to_camera": "-Y",
+    "blender_back_wall": "+Y (Godot -Z)",
+    "blender_left_window_wall": "-X (Godot -X)",
+    "floor_top_z": 0.0
+  },
+  "palette": {
+    "wall_cream": "#FCF3E4",
+    "wood_oak_warm": "#D4985F",
+    "wood_walnut_trim": "#8E5730",
+    "sage_green": "#9AB493",
+    "sage_dark": "#6F8B6B",
+    "cushion_cream": "#FDF7EC",
+    "rug_oat": "#F1E4CD",
+    "brass_lamp": "#E5B254",
+    "leaf_fresh": "#6DA85B",
+    "cat_ginger": "#EC994C",
+    "terracotta_soft": "#DF896A",
+    "blossom_peach": "#F4B49E",
+    "curtain_sheer": "#FFFDF9"
+  },
+  "zones": [
+    {
+      "id": "GRP_01_Building_Shell",
+      "bbox_m": [8.8, 7.8, 4.15],
+      "primary": ["Staggered honey-oak plank floor", "4.15m tall left French window cutaway wall", "4.15m tall back cutaway wall", "Exposed timber ceiling rafters & corbels"],
+      "secondary": ["Recessed oak wainscoting panels & chair rail", "Tall multi-pane French studio windows", "Sinusoidal draped sheer curtains with tie-backs", "Exterior terracotta planter boxes & peach blossoms"],
+      "tertiary": ["Baseboard & cornice crown moldings", "Brass curtain rods, finials & rings", "Window sill ceramic mini succulents"]
+    },
+    {
+      "id": "ZONE_Workstation",
+      "bbox_m": [3.0, 2.1, 1.55],
+      "primary": ["Rounded L-shaped oak desk with beveled drawers", "Subdivided tufted ergonomic swivel chair (PIVOT_*)"],
+      "secondary": ["Dual slim-bezel monitors on articulated VESA arms", "Wood-slat SFF PC tower", "Artist pen display tablet & stylus", "Articulated brass studio lamp"],
+      "tertiary": ["Mechanical keyboard with pastel keycap clusters", "Ceramic coffee cup, saucer & brass spoon", "Lumbar pillow & caster wheels"]
+    },
+    {
+      "id": "ZONE_Bookshelf_Decor",
+      "bbox_m": [2.6, 0.7, 3.2],
+      "primary": ["3.18m tall dual-bay archival oak bookcase with lower cabinet doors"],
+      "secondary": ["Brass library rail & leaning wooden ladder", "Cork pinboard with pastel notes & brass pins", "Analog wall clock & framed anime art", "Floating wall shelves"],
+      "tertiary": ["48+ multi-color pastel book clusters & slanted stacks", "Brass desktop globe", "Cascading pothos ivy vines"]
+    },
+    {
+      "id": "ZONE_Coffee_Lounge",
+      "bbox_m": [4.2, 5.4, 3.4],
+      "primary": ["Sage wainscoted cafe counter with open walnut+brass suspended rack", "Plump subdivided cream & sage modular L-sofa", "1.72m braided torus circular rug"],
+      "secondary": ["Retro 2-group espresso machine & bean grinder", "3 ceramic cone pendant lamps", "Oval oak coffee table", "Knitted round pouf"],
+      "tertiary": ["Sculpted sleeping ginger cat with ears & curled tail", "Croissant under glass cloche", "Throw blanket & cushions", "4 phyllotaxis sculpted-leaf botanical plants"]
+    }
+  ]
+}
