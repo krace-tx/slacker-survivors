@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "inputsHash": "bcb9816fd81a2e89",
+  "image": { "width": 896, "height": 1200 },
+  "layers": [
+    { "id": "base", "file": "textures/base.png", "rect": [0, 0, 896, 1200] },
+    { "id": "eyeR_ball", "file": "textures/eyeR_ball.png", "rect": [340, 301, 84, 44] },
+    { "id": "eyeR_lower", "file": "textures/eyeR_lower.png", "rect": [334, 295, 86, 47] },
+    { "id": "eyeR_lowerRim", "file": "textures/eyeR_lowerRim.png", "rect": [334, 295, 86, 47] },
+    { "id": "eyeR_crease", "file": "textures/eyeR_crease.png", "rect": [334, 295, 86, 47] },
+    { "id": "eyeR_upper", "file": "textures/eyeR_upper.png", "rect": [334, 295, 86, 47] },
+    { "id": "eyeR_upperRim", "file": "textures/eyeR_upperRim.png", "rect": [334, 295, 86, 47] },
+    { "id": "eyeR_front", "file": "textures/eyeR_front.png", "rect": [334, 295, 85, 36] },
+    { "id": "eyeL_ball", "file": "textures/eyeL_ball.png", "rect": [472, 301, 84, 44] },
+    { "id": "eyeL_lower", "file": "textures/eyeL_lower.png", "rect": [476, 295, 85, 47] },
+    { "id": "eyeL_lowerRim", "file": "textures/eyeL_lowerRim.png", "rect": [476, 295, 85, 47] },
+    { "id": "eyeL_crease", "file": "textures/eyeL_crease.png", "rect": [476, 295, 85, 47] },
+    { "id": "eyeL_upper", "file": "textures/eyeL_upper.png", "rect": [476, 295, 85, 47] },
+    { "id": "eyeL_upperRim", "file": "textures/eyeL_upperRim.png", "rect": [476, 295, 85, 47] },
+    { "id": "eyeL_front", "file": "textures/eyeL_front.png", "rect": [533, 295, 28, 39] },
+    { "id": "mouth", "file": "textures/mouth.png", "rect": [399, 417, 98, 42] },
+    { "id": "hair", "file": "textures/hair.png", "rect": [232, 30, 432, 525] },
+    { "id": "hair_mask", "file": "textures/hair_mask.png", "rect": [232, 30, 432, 525] },
+    { "id": "hair_brows", "file": "textures/hair_brows.png", "rect": [347, 273, 202, 20] }
+  ],
+  "variants": [],
+  "eyes": {
+    "version": 1,
+    "imageLeft": {
+      "id": "eyeR",
+      "center": [382.72, 323.19],
+      "angle": 0,
+      "u": [
+        -32.9, -31.97, -30.35, -28.26, -23.61, -18.96, -14.31, -9.67, -5.02, -0.37, 4.27, 8.92,
+        13.57, 18.22, 22.86, 27.51, 29.6, 31.23, 32.16
+      ],
+      "upper": [
+        -4.67, -5.2, -6.13, -7.33, -9.75, -10.79, -11.75, -12.26, -12.69, -12.69, -12.69, -11.7,
+        -10.67, -8.4, -5.91, -2.59, -0.93, 3.14, 5.46
+      ],
+      "lower": [
+        -4.67, -3.37, -1.09, 1.83, 6.16, 9.29, 10.22, 11.15, 11.65, 12.07, 12.31, 12.31, 12.28,
+        11.35, 10.42, 8.12, 6.92, 5.99, 5.46
+      ],
+      "top": [
+        -21.46, -21.82, -22.45, -23.26, -25.07, -26.18, -26.19, -26.19, -26.19, -26.19, -25.94,
+        -25.01, -24.03, -23.05, -21.23, -15.4, -12.68, -10.36, -8.2
+      ],
+      "bottom": [
+        14.79, 15.27, 15.69, 16.24, 17.47, 18.69, 19.7, 19.81, 19.81, 19.81, 19.81, 19.72, 18.95,
+        18.02, 17.09, 16.16, 14.54, 12.47, 10.87
+      ],
+      "grow": 1.5,
+      "lash": 8,
+      "lowerLash": 1,
+      "shift": [5.19, 3.11],
+      "rect": [334, 295, 86, 47],
+      "colors": { "skin": "#fad2bc", "white": "#f3d8b7", "iris": "#c09370", "lash": "#311612" },
+      "occluded": 0.02
+    },
+    "imageRight": {
+      "id": "eyeL",
+      "center": [513.28, 323.19],
+      "angle": 0,
+      "u": [
+        -32.16, -31.23, -29.6, -27.51, -22.86, -18.22, -13.57, -8.92, -4.27, 0.37, 5.02, 9.67, 14.31,
+        18.96, 23.61, 28.26, 30.35, 31.97, 32.9
+      ],
+      "upper": [
+        5.46, 3.14, -0.93, -2.59, -5.91, -8.4, -10.67, -11.7, -12.69, -12.69, -12.69, -12.26, -11.75,
+        -10.79, -9.75, -7.33, -6.13, -5.2, -4.67
+      ],
+      "lower": [
+        5.46, 5.99, 6.92, 8.12, 10.42, 11.35, 12.28, 12.31, 12.31, 12.07, 11.65, 11.15, 10.22, 9.29,
+        6.16, 1.83, -1.09, -3.37, -4.67
+      ],
+      "top": [
+        -8.22, -10.42, -12.68, -15.4, -21.14, -23.05, -24.03, -25.01, -25.93, -26.19, -26.19, -26.19,
+        -26.19, -26.19, -25.07, -23.26, -22.45, -21.82, -21.46
+      ],
+      "bottom": [
+        10.87, 12.47, 14.58, 16.16, 17.09, 18.02, 18.95, 19.71, 19.81, 19.81, 19.81, 19.81, 19.69,
+        18.69, 17.47, 16.24, 15.69, 15.26, 15.01
+      ],
+      "grow": 1.5,
+      "lash": 8,
+      "lowerLash": 2,
+      "shift": [5.19, 3.11],
+      "rect": [476, 295, 85, 47],
+      "colors": { "skin": "#f9d3bd", "white": "#f3dcbf", "iris": "#c1926b", "lash": "#3a1b15" },
+      "occluded": 0.03
+    }
+  },
+  "mouth": {
+    "version": 1,
+    "line": 2,
+    "colors": { "line": "#845e47", "inside": "#582c2b", "tongue": "#8e4e44" }
+  },
+  "brows": { "version": 1 },
+  "cheeks": { "version": 1, "color": "#ffac9d" },
+  "hair": {
+    "layer": "hair",
+    "mask": "hair_mask",
+    "coverage": 0.6488,
+    "reach": {
+      "ahoge": 11.2,
+      "bang_center": 14.4,
+      "bang_l": 12.8,
+      "bang_r": 12.8,
+      "side_l_upper": 14.4,
+      "side_r_upper": 14.4,
+      "side_l_lower": 12.8,
+      "side_r_lower": 12.8,
+      "nape_l": 9.6,
+      "nape_r": 9.6
+    },
+    "brows": "hair_brows"
+  }
+}

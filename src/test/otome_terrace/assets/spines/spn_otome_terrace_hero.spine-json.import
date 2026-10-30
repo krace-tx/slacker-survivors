@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://cbn1kakmhx38"
+path="res://.godot/imported/spn_otome_terrace_hero.spine-json-9eeed5ef582d41c2416af5722844fbb7.spjson"
+
+[deps]
+
+source_file="res://src/test/otome_terrace/assets/spines/spn_otome_terrace_hero.spine-json"
+dest_files=["res://.godot/imported/spn_otome_terrace_hero.spine-json-9eeed5ef582d41c2416af5722844fbb7.spjson"]
+
+[params]
+

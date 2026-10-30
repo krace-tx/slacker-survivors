@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/otome_terrace/view/component/pill/otome_action_pill.gd" id="1_qd7os"]
+
+[node name="OtomeActionPill" type="Button" unique_id=162189510]
+custom_minimum_size = Vector2(136, 38)
+focus_mode = 0
+text = "快捷操作"
+script = ExtResource("1_qd7os")

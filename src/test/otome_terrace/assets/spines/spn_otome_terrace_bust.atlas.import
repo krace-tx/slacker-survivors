@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://iroojfvbrie5"
+path="res://.godot/imported/spn_otome_terrace_bust.atlas-bb6afd820e837ae89777f19980a8d703.spatlas"
+
+[deps]
+
+source_file="res://src/test/otome_terrace/assets/spines/spn_otome_terrace_bust.atlas"
+dest_files=["res://.godot/imported/spn_otome_terrace_bust.atlas-bb6afd820e837ae89777f19980a8d703.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

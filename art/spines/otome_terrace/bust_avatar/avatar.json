@@ -1,0 +1,341 @@
+{
+  "format": "rev2d-avatar",
+  "version": 1,
+  "name": "lu_xingye_bust",
+  "image": {
+    "file": "source.png",
+    "width": 896,
+    "height": 1200
+  },
+  "head": {
+    "center": [448, 268],
+    "radius": [242, 255],
+    "pivot": [448, 535],
+    "neck": [509, 575],
+    "turn": { "x": 22, "y": 15 },
+    "tilt": 6.5
+  },
+  "face": {
+    "center": [448, 345],
+    "radius": [132, 160],
+    "eyes": {
+      "imageLeft": {
+        "iris": { "center": [384, 322], "radius": 17 },
+        "opening": [
+          352, 319,
+          359, 315,
+          368, 313,
+          377, 312,
+          387, 312,
+          396, 314,
+          404, 318,
+          411, 323,
+          413, 328,
+          406, 332,
+          396, 334,
+          385, 334,
+          374, 333,
+          364, 331,
+          357, 326
+        ],
+        "region": [
+          335, 318,
+          344, 304,
+          362, 297,
+          386, 297,
+          405, 301,
+          415, 314,
+          419, 327,
+          412, 339,
+          392, 343,
+          368, 343,
+          349, 338,
+          338, 327
+        ]
+      },
+      "imageRight": {
+        "iris": { "center": [512, 322], "radius": 17 },
+        "opening": [
+          544, 319,
+          537, 315,
+          528, 313,
+          519, 312,
+          509, 312,
+          500, 314,
+          492, 318,
+          485, 323,
+          483, 328,
+          490, 332,
+          500, 334,
+          511, 334,
+          522, 333,
+          532, 331,
+          539, 326
+        ],
+        "region": [
+          477, 327,
+          481, 314,
+          491, 301,
+          510, 297,
+          534, 297,
+          552, 304,
+          560, 318,
+          558, 327,
+          547, 338,
+          528, 343,
+          504, 343,
+          484, 339
+        ]
+      }
+    },
+    "brows": {
+      "imageLeft": [354, 286, 378, 280, 404, 282, 418, 285],
+      "imageRight": [478, 285, 492, 282, 518, 280, 542, 286]
+    },
+    "nose": [448, 405],
+    "mouth": {
+      "imageLeft": [408, 431],
+      "imageRight": [488, 431],
+      "bow": 4,
+      "area": { "center": [448, 438], "radius": [48, 20], "rotation": 0 }
+    },
+    "cheeks": {
+      "imageLeft": [375, 366],
+      "imageRight": [521, 366],
+      "radius": 30
+    },
+    "ears": {
+      "imageLeft": [316, 355],
+      "imageRight": [580, 355]
+    },
+    "chin": [448, 506]
+  },
+  "hair": {
+    "strands": [
+      {
+        "id": "ahoge",
+        "nodes": [482, 95, 480, 62, 456, 46],
+        "width": 28,
+        "swing": 7,
+        "group": "front"
+      },
+      {
+        "id": "bang_center",
+        "nodes": [450, 140, 440, 220, 448, 290, 462, 322],
+        "width": 44,
+        "swing": 9,
+        "group": "front"
+      },
+      {
+        "id": "bang_l",
+        "nodes": [395, 135, 365, 195, 348, 255],
+        "width": 46,
+        "swing": 8,
+        "group": "front"
+      },
+      {
+        "id": "bang_r",
+        "nodes": [505, 135, 535, 195, 552, 255],
+        "width": 46,
+        "swing": 8,
+        "group": "front"
+      },
+      {
+        "id": "side_l_upper",
+        "nodes": [325, 180, 302, 245, 295, 298],
+        "width": 38,
+        "swing": 9,
+        "group": "side"
+      },
+      {
+        "id": "side_r_upper",
+        "nodes": [570, 180, 594, 245, 600, 298],
+        "width": 38,
+        "swing": 9,
+        "group": "side"
+      },
+      {
+        "id": "side_l_lower",
+        "nodes": [334, 260, 336, 325, 355, 368],
+        "width": 32,
+        "swing": 8,
+        "group": "side"
+      },
+      {
+        "id": "side_r_lower",
+        "nodes": [562, 260, 560, 325, 542, 368],
+        "width": 32,
+        "swing": 8,
+        "group": "side"
+      },
+      {
+        "id": "nape_l",
+        "nodes": [358, 415, 365, 455, 362, 488],
+        "width": 24,
+        "swing": 6,
+        "group": "back"
+      },
+      {
+        "id": "nape_r",
+        "nodes": [538, 415, 531, 455, 534, 488],
+        "width": 24,
+        "swing": 6,
+        "group": "back"
+      }
+    ]
+  },
+  "attachments": [],
+  "body": {
+    "pivot": [448, 1230],
+    "fade": [760, 1185],
+    "sway": 1.8,
+    "chest": { "center": [448, 760], "radius": [210, 150] },
+    "shoulders": [[235, 625], [661, 625]]
+  },
+  "build": {
+    "cell": {
+      "body": 54,
+      "head": 30,
+      "detail": 9
+    }
+  },
+  "post": [
+    { "op": "key", "animation": "gentle_idle", "target": "param:Breath", "t": 0, "v": 0, "duration": 6.0, "loop": true },
+    { "op": "key", "animation": "gentle_idle", "target": "param:Breath", "t": 1.5, "v": 0.9, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:Breath", "t": 3.0, "v": 0.0, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:Breath", "t": 4.5, "v": 0.85, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:Breath", "t": 6.0, "v": 0.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "gentle_idle", "target": "param:BodyAngleX", "t": 0, "v": 0.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:BodyAngleX", "t": 2.0, "v": 3.2, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:BodyAngleX", "t": 4.2, "v": -2.6, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:BodyAngleX", "t": 6.0, "v": 0.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleX", "t": 0, "v": 0.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleX", "t": 2.2, "v": 7.5, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleX", "t": 4.4, "v": -6.0, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleX", "t": 6.0, "v": 0.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleZ", "t": 0, "v": 0.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleZ", "t": 2.4, "v": 4.2, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleZ", "t": 4.6, "v": -3.2, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:AngleZ", "t": 6.0, "v": 0.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeBallX", "t": 0, "v": 0.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeBallX", "t": 2.0, "v": 0.22, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeBallX", "t": 4.2, "v": -0.18, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeBallX", "t": 6.0, "v": 0.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "gentle_idle", "target": "param:MouthForm", "t": 0, "v": 0.25 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:MouthForm", "t": 3.0, "v": 0.45, "ease": "inOutSine" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:MouthForm", "t": 6.0, "v": 0.25, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 0, "v": 1.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 1.85, "v": 1.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 1.98, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 2.15, "v": 1.0, "ease": "outQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 4.85, "v": 1.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 4.98, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 5.15, "v": 1.0, "ease": "outQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeLOpen", "t": 6.0, "v": 1.0 },
+
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 0, "v": 1.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 1.85, "v": 1.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 1.98, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 2.15, "v": 1.0, "ease": "outQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 4.85, "v": 1.0 },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 4.98, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 5.15, "v": 1.0, "ease": "outQuad" },
+    { "op": "key", "animation": "gentle_idle", "target": "param:EyeROpen", "t": 6.0, "v": 1.0 },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:Breath", "t": 0, "v": 0.1, "duration": 3.6, "loop": true },
+    { "op": "key", "animation": "happy_talk", "target": "param:Breath", "t": 1.8, "v": 0.95, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:Breath", "t": 3.6, "v": 0.1, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:AngleX", "t": 0, "v": 2.0 },
+    { "op": "key", "animation": "happy_talk", "target": "param:AngleX", "t": 1.2, "v": 9.0, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:AngleX", "t": 2.5, "v": -4.5, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:AngleX", "t": 3.6, "v": 2.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:AngleZ", "t": 0, "v": 3.0 },
+    { "op": "key", "animation": "happy_talk", "target": "param:AngleZ", "t": 1.8, "v": 7.5, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:AngleZ", "t": 3.6, "v": 3.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:Cheek", "t": 0, "v": 0.28 },
+    { "op": "key", "animation": "happy_talk", "target": "param:Cheek", "t": 1.8, "v": 0.42, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:Cheek", "t": 3.6, "v": 0.28, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthForm", "t": 0, "v": 0.72 },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthForm", "t": 1.8, "v": 0.92, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthForm", "t": 3.6, "v": 0.72, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 0, "v": 0.05 },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 0.32, "v": 0.58, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 0.65, "v": 0.14, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 1.05, "v": 0.66, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 1.48, "v": 0.08, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 1.95, "v": 0.46, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 2.40, "v": 0.04, "ease": "inOutSine" },
+    { "op": "key", "animation": "happy_talk", "target": "param:MouthOpen", "t": 3.6, "v": 0.05 },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeLOpen", "t": 0, "v": 0.92 },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeLOpen", "t": 2.55, "v": 0.92 },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeLOpen", "t": 2.68, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeLOpen", "t": 2.86, "v": 0.92, "ease": "outQuad" },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeLOpen", "t": 3.6, "v": 0.92 },
+
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeROpen", "t": 0, "v": 0.92 },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeROpen", "t": 2.55, "v": 0.92 },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeROpen", "t": 2.68, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeROpen", "t": 2.86, "v": 0.92, "ease": "outQuad" },
+    { "op": "key", "animation": "happy_talk", "target": "param:EyeROpen", "t": 3.6, "v": 0.92 },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:Cheek", "t": 0, "v": 0.85, "duration": 4.8, "loop": true },
+    { "op": "key", "animation": "shy_blush", "target": "param:Cheek", "t": 2.4, "v": 1.0, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:Cheek", "t": 4.8, "v": 0.85, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:Breath", "t": 0, "v": 0.1 },
+    { "op": "key", "animation": "shy_blush", "target": "param:Breath", "t": 1.2, "v": 0.92, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:Breath", "t": 2.4, "v": 0.1, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:Breath", "t": 3.6, "v": 0.92, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:Breath", "t": 4.8, "v": 0.1, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleX", "t": 0, "v": -9.5 },
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleX", "t": 2.2, "v": -3.0, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleX", "t": 4.8, "v": -9.5, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleY", "t": 0, "v": -6.0 },
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleY", "t": 2.4, "v": -2.0, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleY", "t": 4.8, "v": -6.0, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleZ", "t": 0, "v": -5.5 },
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleZ", "t": 2.4, "v": -2.5, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:AngleZ", "t": 4.8, "v": -5.5, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeBallX", "t": 0, "v": -0.42 },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeBallX", "t": 2.0, "v": 0.08, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeBallX", "t": 4.8, "v": -0.42, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:MouthOpen", "t": 0, "v": 0.16 },
+    { "op": "key", "animation": "shy_blush", "target": "param:MouthOpen", "t": 2.4, "v": 0.04, "ease": "inOutSine" },
+    { "op": "key", "animation": "shy_blush", "target": "param:MouthOpen", "t": 4.8, "v": 0.16, "ease": "inOutSine" },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 0, "v": 0.88 },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 1.35, "v": 0.88 },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 1.48, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 1.66, "v": 0.88, "ease": "outQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 3.55, "v": 0.88 },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 3.68, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 3.86, "v": 0.88, "ease": "outQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeLOpen", "t": 4.8, "v": 0.88 },
+
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 0, "v": 0.88 },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 1.35, "v": 0.88 },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 1.48, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 1.66, "v": 0.88, "ease": "outQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 3.55, "v": 0.88 },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 3.68, "v": 0.0, "ease": "inQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 3.86, "v": 0.88, "ease": "outQuad" },
+    { "op": "key", "animation": "shy_blush", "target": "param:EyeROpen", "t": 4.8, "v": 0.88 }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "scene_id": "otome_terrace",
+  "style": "Open-Air Cozy Lakeside Blossom Terrace (2.5D Otome Stage: Warm Stylized 3D Park + Shimmering Lake & Distant Hills + Rev2D/Spine 4.2 6.5-Head Male Lead)",
+  "unit_scale": "1.0 Blender Unit = 1.0 Meter",
+  "coordinate_contract": {
+    "blender_up": "+Z (Godot +Y)",
+    "blender_forward_to_camera": "-Y (Godot +Z)",
+    "blender_back_to_lake": "+Y (Godot -Z)",
+    "blender_right": "+X (Godot +X)",
+    "floor_top_z": 0.0,
+    "cedar_deck_top_z": 0.16
+  },
+  "palette": {
+    "grass_fresh": "#6DB857",
+    "grass_soft": "#83C968",
+    "hedge_deep": "#457E3B",
+    "cobble_warm_a": "#E5DAC9",
+    "cobble_warm_b": "#D8C9B4",
+    "cobble_curb": "#EFE6D8",
+    "cedar_plank_a": "#CC8E59",
+    "cedar_plank_b": "#DA9E69",
+    "balustrade_cream": "#F4ECDD",
+    "blossom_pink": "#FAD2DF",
+    "blossom_ivory": "#FFF1F5",
+    "cart_cream": "#FDF6E9",
+    "parasol_stripe_taupe": "#D8BEA2",
+    "hydrangea_blue": "#88A8F2",
+    "hydrangea_lavender": "#B69DF0",
+    "fountain_water": "#6ED4EC",
+    "iron_lamp": "#34373C",
+    "bulb_warm": "#FFD88A"
+  },
+  "zones": [
+    {
+      "id": "GRP_01_OpenAir_Terrain",
+      "bbox_m": [13.6, 9.6, 1.15],
+      "primary": ["Lush emerald grass park base", "Curved multi-tone beveled cobblestone walkway", "Raised cedar-plank lakeside coffee deck with steps", "Classical turned-baluster lakeside stone balustrade"],
+      "secondary": ["Scenic shimmering lake plane", "Layered distant rolling green hills across the water", "Soft perimeter flowering hedges"],
+      "tertiary": ["Individual cobblestone border curbs", "Scattered fallen pink cherry petals on grass and stones"]
+    },
+    {
+      "id": "ZONE_01_Blossom_Bench",
+      "bbox_m": [4.2, 4.0, 4.4],
+      "primary": ["Large sculpted cherry/apricot blossom tree with spreading branches & fluffy pink-ivory canopy clusters", "Ornate wrought-iron & honey-oak park bench"],
+      "secondary": ["Scrollwork cast-iron armrests", "Root flare & flower tuft base"],
+      "tertiary": ["Open poetry book & folded cashmere throw on bench", "Drifted blossom petals"]
+    },
+    {
+      "id": "ZONE_02_OpenAir_CoffeeCart",
+      "bbox_m": [4.4, 3.2, 3.1],
+      "primary": ["Vintage cream-and-walnut wheeled coffee cart (PIVOT_Cart_Wheel_*)", "8-rib striped canvas sun parasol", "Round lakeside bistro table & chairs"],
+      "secondary": ["Retro brass-trimmed espresso machine", "Glass pastry showcase with croissants", "Gooseneck pour-over kettle & ceramic dripper"],
+      "tertiary": ["Tabletop blossom bud vase", "Stacked latte cups & chalkboard sign"]
+    },
+    {
+      "id": "ZONE_03_Lakeside_Fountain",
+      "bbox_m": [3.4, 3.4, 1.65],
+      "primary": ["Two-tier classical limestone water fountain with turquoise water basins"],
+      "secondary": ["Carved lotus spout & cascading water rim", "Lush periwinkle/lavender hydrangea & white daisy flowerbeds"],
+      "tertiary": ["Sculpted curved botanical leaves & golden flower centers"]
+    },
+    {
+      "id": "GRP_03_Lighting_And_Foliage",
+      "bbox_m": [11.5, 8.0, 3.5],
+      "primary": ["4 tapered vintage wrought-iron park lampposts with glowing glass lanterns"],
+      "secondary": ["3 catenary overhead festoon string-light cables spanning the terrace"],
+      "tertiary": ["28 warm glowing vintage Edison bulbs"]
+    }
+  ]
+}

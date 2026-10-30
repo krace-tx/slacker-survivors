@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/otome_terrace/view/component/bubble/otome_hotspot_bubble.gd" id="1_70div"]
+
+[node name="OtomeHotspotBubble" type="Button" unique_id=1479242162]
+custom_minimum_size = Vector2(168, 36)
+focus_mode = 0
+text = "[E] 走近互动"
+script = ExtResource("1_70div")

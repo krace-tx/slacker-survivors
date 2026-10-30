@@ -1,0 +1,2409 @@
+{
+  "format": "rev2d",
+  "version": 1,
+  "meta": {
+    "name": "lu_xingye",
+    "width": 640,
+    "height": 840,
+    "background": "rgba(0,0,0,0)",
+    "fps": 30
+  },
+  "textures": [
+    {
+      "id": "neck",
+      "path": "chibi_textures/neck.png"
+    },
+    {
+      "id": "pelvis",
+      "path": "chibi_textures/pelvis.png"
+    },
+    {
+      "id": "thigh_l",
+      "path": "chibi_textures/thigh_l.png"
+    },
+    {
+      "id": "shin_shoe_l",
+      "path": "chibi_textures/shin_shoe_l.png"
+    },
+    {
+      "id": "thigh_r",
+      "path": "chibi_textures/thigh_r.png"
+    },
+    {
+      "id": "shin_shoe_r",
+      "path": "chibi_textures/shin_shoe_r.png"
+    },
+    {
+      "id": "torso_cardigan",
+      "path": "chibi_textures/torso_cardigan.png"
+    },
+    {
+      "id": "torso_barista",
+      "path": "chibi_textures/torso_barista.png"
+    },
+    {
+      "id": "torso_trench",
+      "path": "chibi_textures/torso_trench.png"
+    },
+    {
+      "id": "arm_cardigan_upper_l",
+      "path": "chibi_textures/arm_cardigan_upper_l.png"
+    },
+    {
+      "id": "arm_cardigan_lower_l",
+      "path": "chibi_textures/arm_cardigan_lower_l.png"
+    },
+    {
+      "id": "arm_cardigan_upper_r",
+      "path": "chibi_textures/arm_cardigan_upper_r.png"
+    },
+    {
+      "id": "arm_cardigan_lower_r",
+      "path": "chibi_textures/arm_cardigan_lower_r.png"
+    },
+    {
+      "id": "arm_barista_upper_l",
+      "path": "chibi_textures/arm_barista_upper_l.png"
+    },
+    {
+      "id": "arm_barista_lower_l",
+      "path": "chibi_textures/arm_barista_lower_l.png"
+    },
+    {
+      "id": "arm_barista_upper_r",
+      "path": "chibi_textures/arm_barista_upper_r.png"
+    },
+    {
+      "id": "arm_barista_lower_r",
+      "path": "chibi_textures/arm_barista_lower_r.png"
+    },
+    {
+      "id": "arm_trench_upper_l",
+      "path": "chibi_textures/arm_trench_upper_l.png"
+    },
+    {
+      "id": "arm_trench_lower_l",
+      "path": "chibi_textures/arm_trench_lower_l.png"
+    },
+    {
+      "id": "arm_trench_upper_r",
+      "path": "chibi_textures/arm_trench_upper_r.png"
+    },
+    {
+      "id": "arm_trench_lower_r",
+      "path": "chibi_textures/arm_trench_lower_r.png"
+    },
+    {
+      "id": "head_gentle",
+      "path": "chibi_textures/head_gentle.png"
+    },
+    {
+      "id": "head_happy",
+      "path": "chibi_textures/head_happy.png"
+    },
+    {
+      "id": "head_blush",
+      "path": "chibi_textures/head_blush.png"
+    },
+    {
+      "id": "head_blink",
+      "path": "chibi_textures/head_blink.png"
+    },
+    {
+      "id": "prop_coffee_cup",
+      "path": "chibi_textures/prop_coffee_cup.png"
+    },
+    {
+      "id": "prop_poetry_book",
+      "path": "chibi_textures/prop_poetry_book.png"
+    },
+    {
+      "id": "prop_flower_sprig",
+      "path": "chibi_textures/prop_flower_sprig.png"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "HipBob",
+      "group": "Body",
+      "min": -24,
+      "max": 24,
+      "default": 0,
+      "description": "Vertical hip bob (+ down, - up)"
+    },
+    {
+      "id": "BodyLean",
+      "group": "Body",
+      "min": -16,
+      "max": 16,
+      "default": 0,
+      "description": "Torso sway/lean in degrees"
+    },
+    {
+      "id": "Breath",
+      "group": "Body",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "description": "Breathing chest expansion 0..1"
+    },
+    {
+      "id": "HeadTilt",
+      "group": "Face",
+      "min": -16,
+      "max": 16,
+      "default": 0,
+      "description": "Affectionate head tilt in degrees"
+    },
+    {
+      "id": "HeadNod",
+      "group": "Face",
+      "min": -16,
+      "max": 16,
+      "default": 0,
+      "description": "Vertical head nod (+ down, - up)"
+    },
+    {
+      "id": "EyeBlink",
+      "group": "Face",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "description": "0 = open, 1 = hand-drawn closed blink"
+    },
+    {
+      "id": "FootRX",
+      "group": "LegIK",
+      "min": -55,
+      "max": 55,
+      "default": 0,
+      "description": "Image-left leg horizontal stride"
+    },
+    {
+      "id": "FootRY",
+      "group": "LegIK",
+      "min": -44,
+      "max": 14,
+      "default": 0,
+      "description": "Image-left leg vertical lift (- = up)"
+    },
+    {
+      "id": "FootLX",
+      "group": "LegIK",
+      "min": -55,
+      "max": 55,
+      "default": 0,
+      "description": "Image-right leg horizontal stride"
+    },
+    {
+      "id": "FootLY",
+      "group": "LegIK",
+      "min": -44,
+      "max": 14,
+      "default": 0,
+      "description": "Image-right leg vertical lift (- = up)"
+    },
+    {
+      "id": "ArmRUpper",
+      "group": "Arms",
+      "min": -120,
+      "max": 95,
+      "default": 0,
+      "description": "Image-left upper arm rotation"
+    },
+    {
+      "id": "ArmRFore",
+      "group": "Arms",
+      "min": -135,
+      "max": 95,
+      "default": 0,
+      "description": "Image-left forearm rotation"
+    },
+    {
+      "id": "ArmLUpper",
+      "group": "Arms",
+      "min": -95,
+      "max": 120,
+      "default": 0,
+      "description": "Image-right upper arm rotation"
+    },
+    {
+      "id": "ArmLFore",
+      "group": "Arms",
+      "min": -95,
+      "max": 135,
+      "default": 0,
+      "description": "Image-right forearm rotation"
+    },
+    {
+      "id": "CoatSway",
+      "group": "Physics",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "description": "Pendulum coat/apron hem sway"
+    },
+    {
+      "id": "HairSway",
+      "group": "Physics",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "description": "Pendulum hair sway"
+    }
+  ],
+  "bones": [
+    {
+      "id": "ground",
+      "parent": null,
+      "x": 320,
+      "y": 772,
+      "rotation": 0,
+      "length": 40
+    },
+    {
+      "id": "hip",
+      "parent": "ground",
+      "x": 0,
+      "y": -284,
+      "rotation": 0,
+      "length": 36
+    },
+    {
+      "id": "torso",
+      "parent": "hip",
+      "x": 0,
+      "y": -8,
+      "rotation": -90,
+      "length": 190
+    },
+    {
+      "id": "coatHem",
+      "parent": "torso",
+      "x": -18,
+      "y": 0,
+      "rotation": 180,
+      "length": 95
+    },
+    {
+      "id": "neckBone",
+      "parent": "torso",
+      "x": 196,
+      "y": 0,
+      "rotation": 0,
+      "length": 24
+    },
+    {
+      "id": "head",
+      "parent": "neckBone",
+      "x": 22,
+      "y": 0,
+      "rotation": 0,
+      "length": 140
+    },
+    {
+      "id": "hairCrown",
+      "parent": "head",
+      "x": 135,
+      "y": 0,
+      "rotation": 0,
+      "length": 48
+    },
+    {
+      "id": "armR_upper",
+      "parent": "torso",
+      "x": 166,
+      "y": -52,
+      "rotation": 180,
+      "length": 80.6
+    },
+    {
+      "id": "armR_fore",
+      "parent": "armR_upper",
+      "x": 80.6,
+      "y": 0,
+      "rotation": 0,
+      "length": 94
+    },
+    {
+      "id": "armR_hand",
+      "parent": "armR_fore",
+      "x": 94,
+      "y": 0,
+      "rotation": 0,
+      "length": 22
+    },
+    {
+      "id": "prop_hold_r",
+      "parent": "armR_hand",
+      "x": 8,
+      "y": 0,
+      "rotation": 0,
+      "length": 18
+    },
+    {
+      "id": "armL_upper",
+      "parent": "torso",
+      "x": 166,
+      "y": 52,
+      "rotation": 180,
+      "length": 80.6
+    },
+    {
+      "id": "armL_fore",
+      "parent": "armL_upper",
+      "x": 80.6,
+      "y": 0,
+      "rotation": 0,
+      "length": 94
+    },
+    {
+      "id": "armL_hand",
+      "parent": "armL_fore",
+      "x": 94,
+      "y": 0,
+      "rotation": 0,
+      "length": 22
+    },
+    {
+      "id": "thighR",
+      "parent": "hip",
+      "x": -28.5,
+      "y": 16.2,
+      "rotation": 94.5,
+      "length": 111.2
+    },
+    {
+      "id": "shinR",
+      "parent": "thighR",
+      "x": 111.2,
+      "y": 0,
+      "rotation": -0.5,
+      "length": 105.7
+    },
+    {
+      "id": "thighL",
+      "parent": "hip",
+      "x": 28.5,
+      "y": 16.2,
+      "rotation": 85.5,
+      "length": 111.2
+    },
+    {
+      "id": "shinL",
+      "parent": "thighL",
+      "x": 111.2,
+      "y": 0,
+      "rotation": 0.5,
+      "length": 105.7
+    },
+    {
+      "id": "ik_foot_r",
+      "parent": "ground",
+      "x": -44.6,
+      "y": -51.5,
+      "rotation": 0,
+      "length": 22
+    },
+    {
+      "id": "ik_foot_l",
+      "parent": "ground",
+      "x": 44.6,
+      "y": -51.5,
+      "rotation": 0,
+      "length": 22
+    }
+  ],
+  "ik": [
+    {
+      "id": "legR_ik",
+      "bones": [
+        "thighR",
+        "shinR"
+      ],
+      "target": "ik_foot_r",
+      "bendPositive": true,
+      "softness": 10,
+      "mix": 1
+    },
+    {
+      "id": "legL_ik",
+      "bones": [
+        "thighL",
+        "shinL"
+      ],
+      "target": "ik_foot_l",
+      "bendPositive": true,
+      "softness": 10,
+      "mix": 1
+    }
+  ],
+  "physics": [
+    {
+      "id": "coatHemPhys",
+      "inputs": [
+        {
+          "param": "HipBob",
+          "type": "y",
+          "weight": 0.55
+        },
+        {
+          "param": "BodyLean",
+          "type": "angle",
+          "weight": 1.25
+        }
+      ],
+      "segments": [
+        {
+          "length": 75,
+          "mass": 1
+        }
+      ],
+      "outputs": [
+        {
+          "param": "CoatSway",
+          "type": "angle",
+          "scale": 0.06
+        }
+      ]
+    },
+    {
+      "id": "hairPhys",
+      "inputs": [
+        {
+          "param": "HeadTilt",
+          "type": "angle",
+          "weight": 1.35
+        },
+        {
+          "param": "HeadNod",
+          "type": "y",
+          "weight": 0.75
+        },
+        {
+          "param": "HipBob",
+          "type": "y",
+          "weight": 0.35
+        }
+      ],
+      "segments": [
+        {
+          "length": 52,
+          "mass": 1
+        }
+      ],
+      "outputs": [
+        {
+          "param": "HairSway",
+          "type": "angle",
+          "scale": 0.065
+        }
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "id": "legRShinShoe",
+      "parent": "shinR",
+      "z": 14,
+      "shape": {
+        "type": "image",
+        "texture": "shin_shoe_l",
+        "x": 228.2,
+        "y": 594.7,
+        "w": 86.8,
+        "h": 181,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "legRThigh",
+      "parent": "thighR",
+      "z": 16,
+      "shape": {
+        "type": "image",
+        "texture": "thigh_l",
+        "x": 251.8,
+        "y": 481.8,
+        "w": 69.4,
+        "h": 155,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "pelvisBase",
+      "parent": "hip",
+      "z": 18,
+      "shape": {
+        "type": "image",
+        "texture": "pelvis",
+        "x": 265.4,
+        "y": 424,
+        "w": 109.1,
+        "h": 86.8,
+        "cols": 2,
+        "rows": 2
+      }
+    },
+    {
+      "id": "legLShinShoe",
+      "parent": "shinL",
+      "z": 20,
+      "shape": {
+        "type": "image",
+        "texture": "shin_shoe_r",
+        "x": 325,
+        "y": 594.7,
+        "w": 86.8,
+        "h": 181,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "legLThigh",
+      "parent": "thighL",
+      "z": 22,
+      "shape": {
+        "type": "image",
+        "texture": "thigh_r",
+        "x": 318.8,
+        "y": 481.8,
+        "w": 69.4,
+        "h": 155,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "neckBase",
+      "parent": "neckBone",
+      "z": 26,
+      "shape": {
+        "type": "image",
+        "texture": "neck",
+        "x": 297.7,
+        "y": 248,
+        "w": 44.6,
+        "h": 39.7,
+        "cols": 2,
+        "rows": 2
+      }
+    },
+    {
+      "id": "cardiganTorso",
+      "parent": "torso",
+      "z": 30,
+      "shape": {
+        "type": "image",
+        "texture": "torso_cardigan",
+        "x": 251.8,
+        "y": 268.6,
+        "w": 136.4,
+        "h": 235.6,
+        "cols": 4,
+        "rows": 5
+      }
+    },
+    {
+      "id": "baristaTorso",
+      "skin": {
+        "bones": [
+          "torso",
+          "coatHem"
+        ],
+        "weights": "auto"
+      },
+      "z": 30,
+      "shape": {
+        "type": "image",
+        "texture": "torso_barista",
+        "x": 251.2,
+        "y": 267.5,
+        "w": 137.6,
+        "h": 291.4,
+        "cols": 3,
+        "rows": 5
+      }
+    },
+    {
+      "id": "trenchTorso",
+      "skin": {
+        "bones": [
+          "torso",
+          "coatHem"
+        ],
+        "weights": "auto"
+      },
+      "z": 30,
+      "shape": {
+        "type": "image",
+        "texture": "torso_trench",
+        "x": 245.6,
+        "y": 265.5,
+        "w": 148.8,
+        "h": 319.9,
+        "cols": 3,
+        "rows": 5
+      }
+    },
+    {
+      "id": "propFlowerSprig",
+      "parent": "armL_hand",
+      "z": 33,
+      "shape": {
+        "type": "image",
+        "texture": "prop_flower_sprig",
+        "x": 356,
+        "y": 446,
+        "w": 72,
+        "h": 112,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "cardiganArmLUpper",
+      "parent": "armL_upper",
+      "z": 34,
+      "shape": {
+        "type": "image",
+        "texture": "arm_cardigan_upper_r",
+        "x": 333.6,
+        "y": 288,
+        "w": 76.9,
+        "h": 127.1,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "cardiganArmLLower",
+      "parent": "armL_fore",
+      "z": 35,
+      "shape": {
+        "type": "image",
+        "texture": "arm_cardigan_lower_r",
+        "x": 333.6,
+        "y": 376,
+        "w": 76.9,
+        "h": 163.7,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "baristaArmLUpper",
+      "parent": "armL_upper",
+      "z": 34,
+      "shape": {
+        "type": "image",
+        "texture": "arm_barista_upper_r",
+        "x": 333.6,
+        "y": 288,
+        "w": 76.9,
+        "h": 127.1,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "baristaArmLLower",
+      "parent": "armL_fore",
+      "z": 35,
+      "shape": {
+        "type": "image",
+        "texture": "arm_barista_lower_r",
+        "x": 333.6,
+        "y": 376,
+        "w": 76.9,
+        "h": 163.7,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "trenchArmLUpper",
+      "parent": "armL_upper",
+      "z": 34,
+      "shape": {
+        "type": "image",
+        "texture": "arm_trench_upper_r",
+        "x": 333.6,
+        "y": 288,
+        "w": 76.9,
+        "h": 127.1,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "trenchArmLLower",
+      "parent": "armL_fore",
+      "z": 35,
+      "shape": {
+        "type": "image",
+        "texture": "arm_trench_lower_r",
+        "x": 333.6,
+        "y": 376,
+        "w": 76.9,
+        "h": 163.7,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "expGentleHead",
+      "parent": "head",
+      "z": 42,
+      "shape": {
+        "type": "image",
+        "texture": "head_gentle",
+        "x": 206,
+        "y": 55,
+        "w": 228,
+        "h": 224,
+        "cols": 2,
+        "rows": 2
+      }
+    },
+    {
+      "id": "expGentleBlink",
+      "parent": "head",
+      "z": 43,
+      "opacity": 0,
+      "shape": {
+        "type": "image",
+        "texture": "head_blink",
+        "x": 206,
+        "y": 55,
+        "w": 228,
+        "h": 224,
+        "cols": 2,
+        "rows": 2
+      }
+    },
+    {
+      "id": "expHappyHead",
+      "parent": "head",
+      "z": 42,
+      "shape": {
+        "type": "image",
+        "texture": "head_happy",
+        "x": 206,
+        "y": 55,
+        "w": 228,
+        "h": 224,
+        "cols": 2,
+        "rows": 2
+      }
+    },
+    {
+      "id": "expBlushHead",
+      "parent": "head",
+      "z": 42,
+      "shape": {
+        "type": "image",
+        "texture": "head_blush",
+        "x": 206,
+        "y": 55,
+        "w": 228,
+        "h": 224,
+        "cols": 2,
+        "rows": 2
+      }
+    },
+    {
+      "id": "cardiganArmRUpper",
+      "parent": "armR_upper",
+      "z": 50,
+      "shape": {
+        "type": "image",
+        "texture": "arm_cardigan_upper_l",
+        "x": 229.6,
+        "y": 288,
+        "w": 76.9,
+        "h": 127.1,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "cardiganArmRLower",
+      "parent": "armR_fore",
+      "z": 52,
+      "shape": {
+        "type": "image",
+        "texture": "arm_cardigan_lower_l",
+        "x": 229.6,
+        "y": 376,
+        "w": 76.9,
+        "h": 163.7,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "baristaArmRUpper",
+      "parent": "armR_upper",
+      "z": 50,
+      "shape": {
+        "type": "image",
+        "texture": "arm_barista_upper_l",
+        "x": 229.6,
+        "y": 288,
+        "w": 76.9,
+        "h": 127.1,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "baristaArmRLower",
+      "parent": "armR_fore",
+      "z": 52,
+      "shape": {
+        "type": "image",
+        "texture": "arm_barista_lower_l",
+        "x": 229.6,
+        "y": 376,
+        "w": 76.9,
+        "h": 163.7,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "trenchArmRUpper",
+      "parent": "armR_upper",
+      "z": 50,
+      "shape": {
+        "type": "image",
+        "texture": "arm_trench_upper_l",
+        "x": 229.6,
+        "y": 288,
+        "w": 76.9,
+        "h": 127.1,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "trenchArmRLower",
+      "parent": "armR_fore",
+      "z": 52,
+      "shape": {
+        "type": "image",
+        "texture": "arm_trench_lower_l",
+        "x": 229.6,
+        "y": 376,
+        "w": 76.9,
+        "h": 163.7,
+        "cols": 2,
+        "rows": 3
+      }
+    },
+    {
+      "id": "propCoffeeCup",
+      "parent": "prop_hold_r",
+      "z": 54,
+      "shape": {
+        "type": "image",
+        "texture": "prop_coffee_cup",
+        "x": 230,
+        "y": 454,
+        "w": 78,
+        "h": 44,
+        "cols": 2,
+        "rows": 2
+      }
+    },
+    {
+      "id": "propPoetryBook",
+      "parent": "armR_hand",
+      "z": 54,
+      "shape": {
+        "type": "image",
+        "texture": "prop_poetry_book",
+        "x": 236,
+        "y": 444,
+        "w": 56,
+        "h": 82,
+        "cols": 2,
+        "rows": 2
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "params": [
+        "HipBob"
+      ],
+      "target": "bone:hip.y",
+      "keys": [
+        {
+          "at": [
+            -24
+          ],
+          "value": -308
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -284
+        },
+        {
+          "at": [
+            24
+          ],
+          "value": -260
+        }
+      ]
+    },
+    {
+      "params": [
+        "BodyLean"
+      ],
+      "target": "bone:torso.rotation",
+      "keys": [
+        {
+          "at": [
+            -16
+          ],
+          "value": -106
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -90
+        },
+        {
+          "at": [
+            16
+          ],
+          "value": -74
+        }
+      ]
+    },
+    {
+      "params": [
+        "Breath"
+      ],
+      "target": "bone:torso.scaleX",
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 1
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 1.018
+        }
+      ]
+    },
+    {
+      "params": [
+        "Breath"
+      ],
+      "target": "bone:torso.scaleY",
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 1
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 1.016
+        }
+      ]
+    },
+    {
+      "params": [
+        "HeadTilt"
+      ],
+      "target": "bone:head.rotation",
+      "keys": [
+        {
+          "at": [
+            -16
+          ],
+          "value": -16
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            16
+          ],
+          "value": 16
+        }
+      ]
+    },
+    {
+      "params": [
+        "HeadNod"
+      ],
+      "target": "bone:head.x",
+      "keys": [
+        {
+          "at": [
+            -16
+          ],
+          "value": 29
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 22
+        },
+        {
+          "at": [
+            16
+          ],
+          "value": 14
+        }
+      ]
+    },
+    {
+      "params": [
+        "EyeBlink"
+      ],
+      "target": "part:expGentleBlink.opacity",
+      "keys": [
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            0.25
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            0.85
+          ],
+          "value": 1
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 1
+        }
+      ]
+    },
+    {
+      "params": [
+        "FootRX"
+      ],
+      "target": "bone:ik_foot_r.x",
+      "keys": [
+        {
+          "at": [
+            -55
+          ],
+          "value": -99.6
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -44.6
+        },
+        {
+          "at": [
+            55
+          ],
+          "value": 10.4
+        }
+      ]
+    },
+    {
+      "params": [
+        "FootRY"
+      ],
+      "target": "bone:ik_foot_r.y",
+      "keys": [
+        {
+          "at": [
+            -44
+          ],
+          "value": -95.5
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -51.5
+        },
+        {
+          "at": [
+            14
+          ],
+          "value": -37.5
+        }
+      ]
+    },
+    {
+      "params": [
+        "FootLX"
+      ],
+      "target": "bone:ik_foot_l.x",
+      "keys": [
+        {
+          "at": [
+            -55
+          ],
+          "value": -10.4
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 44.6
+        },
+        {
+          "at": [
+            55
+          ],
+          "value": 99.6
+        }
+      ]
+    },
+    {
+      "params": [
+        "FootLY"
+      ],
+      "target": "bone:ik_foot_l.y",
+      "keys": [
+        {
+          "at": [
+            -44
+          ],
+          "value": -95.5
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": -51.5
+        },
+        {
+          "at": [
+            14
+          ],
+          "value": -37.5
+        }
+      ]
+    },
+    {
+      "params": [
+        "ArmRUpper"
+      ],
+      "target": "bone:armR_upper.rotation",
+      "keys": [
+        {
+          "at": [
+            -120
+          ],
+          "value": 60
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 180
+        },
+        {
+          "at": [
+            95
+          ],
+          "value": 275
+        }
+      ]
+    },
+    {
+      "params": [
+        "ArmRFore"
+      ],
+      "target": "bone:armR_fore.rotation",
+      "keys": [
+        {
+          "at": [
+            -135
+          ],
+          "value": -135
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            95
+          ],
+          "value": 95
+        }
+      ]
+    },
+    {
+      "params": [
+        "ArmLUpper"
+      ],
+      "target": "bone:armL_upper.rotation",
+      "keys": [
+        {
+          "at": [
+            -95
+          ],
+          "value": 85
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 180
+        },
+        {
+          "at": [
+            120
+          ],
+          "value": 300
+        }
+      ]
+    },
+    {
+      "params": [
+        "ArmLFore"
+      ],
+      "target": "bone:armL_fore.rotation",
+      "keys": [
+        {
+          "at": [
+            -95
+          ],
+          "value": -95
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            135
+          ],
+          "value": 135
+        }
+      ]
+    },
+    {
+      "params": [
+        "ArmRUpper",
+        "ArmRFore"
+      ],
+      "target": "bone:prop_hold_r.rotation",
+      "keys": [
+        {
+          "at": [
+            -120,
+            -135
+          ],
+          "value": 255
+        },
+        {
+          "at": [
+            0,
+            -135
+          ],
+          "value": 135
+        },
+        {
+          "at": [
+            95,
+            -135
+          ],
+          "value": 40
+        },
+        {
+          "at": [
+            -120,
+            0
+          ],
+          "value": 120
+        },
+        {
+          "at": [
+            0,
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            95,
+            0
+          ],
+          "value": -95
+        },
+        {
+          "at": [
+            -120,
+            95
+          ],
+          "value": 25
+        },
+        {
+          "at": [
+            0,
+            95
+          ],
+          "value": -95
+        },
+        {
+          "at": [
+            95,
+            95
+          ],
+          "value": -190
+        }
+      ]
+    },
+    {
+      "params": [
+        "CoatSway"
+      ],
+      "target": "bone:coatHem.rotation",
+      "keys": [
+        {
+          "at": [
+            -1
+          ],
+          "value": 168
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 180
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 192
+        }
+      ]
+    },
+    {
+      "params": [
+        "HairSway"
+      ],
+      "target": "bone:neckBone.rotation",
+      "keys": [
+        {
+          "at": [
+            -1
+          ],
+          "value": -2.5
+        },
+        {
+          "at": [
+            0
+          ],
+          "value": 0
+        },
+        {
+          "at": [
+            1
+          ],
+          "value": 2.5
+        }
+      ]
+    }
+  ],
+  "animations": [
+    {
+      "id": "idle",
+      "duration": 3.6,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:Breath",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 1,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:HipBob",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 2.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": -1.2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 1.6,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": -1.2
+            }
+          ]
+        },
+        {
+          "target": "param:HeadTilt",
+          "keys": [
+            {
+              "t": 0,
+              "v": -2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 3.2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": -2
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": 11,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 14.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": 11
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": -11,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": -14.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": -11
+            }
+          ]
+        },
+        {
+          "target": "param:EyeBlink",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0
+            },
+            {
+              "t": 2.1,
+              "v": 0,
+              "ease": "inQuad"
+            },
+            {
+              "t": 2.22,
+              "v": 1,
+              "ease": "outQuad"
+            },
+            {
+              "t": 2.38,
+              "v": 0
+            },
+            {
+              "t": 3.6,
+              "v": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "walk",
+      "duration": 0.96,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:HipBob",
+          "keys": [
+            {
+              "t": 0,
+              "v": 8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.24,
+              "v": 3,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": 8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.72,
+              "v": 3,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": 8
+            }
+          ]
+        },
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": 2.8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -1.2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": 2.8
+            }
+          ]
+        },
+        {
+          "target": "param:HeadTilt",
+          "keys": [
+            {
+              "t": 0,
+              "v": 2.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": 2.5
+            }
+          ]
+        },
+        {
+          "target": "param:FootLX",
+          "keys": [
+            {
+              "t": 0,
+              "v": 24,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -24,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": 24
+            }
+          ]
+        },
+        {
+          "target": "param:FootLY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0
+            },
+            {
+              "t": 0.48,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.72,
+              "v": -22,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.96,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:FootRX",
+          "keys": [
+            {
+              "t": 0,
+              "v": -24,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": 24,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": -24
+            }
+          ]
+        },
+        {
+          "target": "param:FootRY",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.24,
+              "v": -22,
+              "ease": "inQuad"
+            },
+            {
+              "t": 0.48,
+              "v": 0
+            },
+            {
+              "t": 0.96,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": 18,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": 18
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRFore",
+          "keys": [
+            {
+              "t": 0,
+              "v": -8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -18,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": -8
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": 8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -18,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": 8
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLFore",
+          "keys": [
+            {
+              "t": 0,
+              "v": -18,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.48,
+              "v": -8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.96,
+              "v": -18
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interact_coffee",
+      "duration": 3.2,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:Breath",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0.2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": 1,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.2,
+              "v": 0.2
+            }
+          ]
+        },
+        {
+          "target": "param:HeadTilt",
+          "keys": [
+            {
+              "t": 0,
+              "v": 4.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": 8.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.2,
+              "v": 4.5
+            }
+          ]
+        },
+        {
+          "target": "param:HeadNod",
+          "keys": [
+            {
+              "t": 0,
+              "v": 2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": 7.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.2,
+              "v": 2
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": -26,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": -34,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.2,
+              "v": -26
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRFore",
+          "keys": [
+            {
+              "t": 0,
+              "v": -58,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": -68,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.2,
+              "v": -58
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": -10,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.6,
+              "v": -14,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.2,
+              "v": -10
+            }
+          ]
+        },
+        {
+          "target": "param:EyeBlink",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0
+            },
+            {
+              "t": 1.45,
+              "v": 0,
+              "ease": "inQuad"
+            },
+            {
+              "t": 1.58,
+              "v": 1,
+              "ease": "outQuad"
+            },
+            {
+              "t": 1.78,
+              "v": 0
+            },
+            {
+              "t": 3.2,
+              "v": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interact_book",
+      "duration": 3.4,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:Breath",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.7,
+              "v": 0.9,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.4,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:HeadNod",
+          "keys": [
+            {
+              "t": 0,
+              "v": 8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.7,
+              "v": 3,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.4,
+              "v": 8
+            }
+          ]
+        },
+        {
+          "target": "param:HeadTilt",
+          "keys": [
+            {
+              "t": 0,
+              "v": -5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.7,
+              "v": 2,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.4,
+              "v": -5
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": -20,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.7,
+              "v": -26,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.4,
+              "v": -20
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRFore",
+          "keys": [
+            {
+              "t": 0,
+              "v": -48,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.7,
+              "v": -55,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.4,
+              "v": -48
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": -12,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.7,
+              "v": -8,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.4,
+              "v": -12
+            }
+          ]
+        },
+        {
+          "target": "param:EyeBlink",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0
+            },
+            {
+              "t": 2.2,
+              "v": 0,
+              "ease": "inQuad"
+            },
+            {
+              "t": 2.34,
+              "v": 1,
+              "ease": "outQuad"
+            },
+            {
+              "t": 2.52,
+              "v": 0
+            },
+            {
+              "t": 3.4,
+              "v": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interact_breeze",
+      "duration": 3.6,
+      "loop": true,
+      "tracks": [
+        {
+          "target": "param:Breath",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0.1,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 1,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": 0.1
+            }
+          ]
+        },
+        {
+          "target": "param:BodyLean",
+          "keys": [
+            {
+              "t": 0,
+              "v": -3.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 3.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": -3.5
+            }
+          ]
+        },
+        {
+          "target": "param:HeadTilt",
+          "keys": [
+            {
+              "t": 0,
+              "v": -6.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 5.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": -6.5
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": -32,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": -42,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": -32
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLFore",
+          "keys": [
+            {
+              "t": 0,
+              "v": -42,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": -54,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": -42
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": 10,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.8,
+              "v": 15,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 3.6,
+              "v": 10
+            }
+          ]
+        },
+        {
+          "target": "param:EyeBlink",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0
+            },
+            {
+              "t": 1.65,
+              "v": 0,
+              "ease": "inQuad"
+            },
+            {
+              "t": 1.8,
+              "v": 1,
+              "ease": "outQuad"
+            },
+            {
+              "t": 2.02,
+              "v": 0
+            },
+            {
+              "t": 3.6,
+              "v": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interact_greet",
+      "duration": 1.5,
+      "loop": false,
+      "tracks": [
+        {
+          "target": "param:HipBob",
+          "keys": [
+            {
+              "t": 0,
+              "v": 2,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.25,
+              "v": 0.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.2,
+              "v": 3,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.5,
+              "v": 2
+            }
+          ]
+        },
+        {
+          "target": "param:HeadTilt",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outQuad"
+            },
+            {
+              "t": 0.35,
+              "v": 8.5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.85,
+              "v": 5,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.5,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": -9,
+              "ease": "outCubic"
+            },
+            {
+              "t": 0.28,
+              "v": -76,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.15,
+              "v": -72,
+              "ease": "inCubic"
+            },
+            {
+              "t": 1.5,
+              "v": -9
+            }
+          ]
+        },
+        {
+          "target": "param:ArmLFore",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "outCubic"
+            },
+            {
+              "t": 0.28,
+              "v": -68,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.52,
+              "v": -36,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.78,
+              "v": -72,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.04,
+              "v": -40,
+              "ease": "inCubic"
+            },
+            {
+              "t": 1.5,
+              "v": 0
+            }
+          ]
+        },
+        {
+          "target": "param:ArmRUpper",
+          "keys": [
+            {
+              "t": 0,
+              "v": 9,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 0.6,
+              "v": 14,
+              "ease": "inOutSine"
+            },
+            {
+              "t": 1.5,
+              "v": 9
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

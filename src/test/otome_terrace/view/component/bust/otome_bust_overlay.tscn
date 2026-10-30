@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://bv662h23p3giv"]
+
+[ext_resource type="Script" uid="uid://b2fqcyq3uqbyd" path="res://src/test/otome_terrace/view/component/bust/otome_bust_overlay.gd" id="1_5k1uh"]
+[ext_resource type="SpineSkeletonDataResource" path="res://src/test/otome_terrace/assets/spines/spn_otome_terrace_bust_data.tres" id="2_sihi5"]
+
+[node name="OtomeBustOverlay" type="Control" unique_id=1457134763]
+custom_minimum_size = Vector2(664, 890)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 664.0
+offset_bottom = 890.0
+mouse_filter = 2
+script = ExtResource("1_5k1uh")
+bust_skeleton_data = ExtResource("2_sihi5")
+
+[node name="BustViewport" type="SubViewport" parent="." unique_id=13097163]
+unique_name_in_owner = true
+transparent_bg = true
+size = Vector2i(896, 1200)
+render_target_update_mode = 4
+
+[node name="BustSpineRoot" type="Node2D" parent="BustViewport" unique_id=806220907]
+unique_name_in_owner = true
+
+[node name="BustGlowBackdrop" type="TextureRect" parent="." unique_id=640659197]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="BustTextureRect" type="TextureRect" parent="." unique_id=1934250828]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5

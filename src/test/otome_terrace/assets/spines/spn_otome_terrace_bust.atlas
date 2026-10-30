@@ -1,0 +1,52 @@
+spn_otome_terrace_bust.png
+	size: 1024, 2048
+	filter: Linear, Linear
+	pma: true
+base
+	bounds: 2, 2, 900, 1204
+cheekR
+	bounds: 904, 869, 65, 42
+cheekL
+	bounds: 904, 825, 65, 42
+eyeR_white
+	bounds: 904, 793, 72, 30
+eyeL_white
+	bounds: 904, 761, 72, 30
+eyeR_ball
+	bounds: 904, 711, 88, 48
+eyeL_ball
+	bounds: 904, 661, 88, 48
+eyeR_lower
+	bounds: 904, 142, 90, 51
+eyeL_lower
+	bounds: 904, 407, 89, 51
+eyeR_lowerRim
+	bounds: 904, 195, 90, 51
+eyeL_lowerRim
+	bounds: 904, 460, 89, 51
+eyeR_crease
+	bounds: 904, 89, 90, 51
+eyeL_crease
+	bounds: 904, 354, 89, 51
+eyeR_upper
+	bounds: 904, 248, 90, 51
+eyeL_upper
+	bounds: 904, 513, 89, 51
+eyeR_upperRim
+	bounds: 904, 301, 90, 51
+eyeL_upperRim
+	bounds: 904, 566, 89, 51
+eyeR_front
+	bounds: 904, 619, 89, 40
+eyeL_front
+	bounds: 978, 761, 32, 43
+mouth
+	bounds: 904, 2, 102, 46
+mouthInner
+	bounds: 904, 50, 102, 17
+mouthTongue
+	bounds: 904, 69, 100, 18
+hair
+	bounds: 2, 1208, 436, 529
+hair_brows
+	bounds: 2, 1739, 206, 24

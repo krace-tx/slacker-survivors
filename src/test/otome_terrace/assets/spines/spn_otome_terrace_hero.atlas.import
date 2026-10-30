@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://pj1pgpdovlt8"
+path="res://.godot/imported/spn_otome_terrace_hero.atlas-14077ebfc7eac0ded82cac8e91ca50eb.spatlas"
+
+[deps]
+
+source_file="res://src/test/otome_terrace/assets/spines/spn_otome_terrace_hero.atlas"
+dest_files=["res://.godot/imported/spn_otome_terrace_hero.atlas-14077ebfc7eac0ded82cac8e91ca50eb.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

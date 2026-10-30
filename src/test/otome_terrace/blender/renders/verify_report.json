@@ -1,0 +1,98 @@
+{
+  "passed": true,
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "stats": {
+    "blender_version": "5.2.2 LTS",
+    "mesh_object_count": 732,
+    "total_vertices": 51424,
+    "total_polygons": 56784,
+    "zero_area_faces": 0,
+    "loose_vertices": 0,
+    "unweighted_skinned_vertices": 0,
+    "material_count": 33,
+    "armatures": [],
+    "hierarchy": {
+      "max_hierarchy_depth": 5,
+      "collection_count": 4,
+      "collections": [
+        "01_Export_Hierarchy",
+        "02_Work_Helpers",
+        "03_Studio_LookDev",
+        "COL_Asset_OtomeTerrace"
+      ],
+      "unparented_mesh_count": 0,
+      "empty_group_nodes": [
+        "CLUSTER_Canvas_Parasol",
+        "CLUSTER_Cherry_BlossomTree",
+        "CLUSTER_FestoonSpan_00",
+        "CLUSTER_FestoonSpan_01",
+        "CLUSTER_FestoonSpan_02",
+        "CLUSTER_Hydrangea_Flowerbeds",
+        "CLUSTER_Lakeside_BistroTable",
+        "CLUSTER_Lamppost_DeckBackLeft",
+        "CLUSTER_Lamppost_DeckCenter",
+        "CLUSTER_Lamppost_DeckRight",
+        "CLUSTER_Lamppost_WalkwayLeft",
+        "CLUSTER_Park_Bench",
+        "CLUSTER_Tiered_Fountain",
+        "CLUSTER_Vintage_CoffeeCart",
+        "GRP_01_OpenAir_Terrain",
+        "GRP_02_Interactive_Zones",
+        "GRP_03_Lighting_And_Foliage",
+        "GRP_04_Gameplay_Anchors",
+        "GRP_Balustrade_BackLeft",
+        "GRP_Balustrade_DeckLeftSide",
+        "GRP_Balustrade_DeckRightSide",
+        "GRP_Balustrade_DeckWaterfront",
+        "GRP_Balustrade_RightPromenade",
+        "GRP_Lakeside_Balustrade",
+        "GRP_Lakeside_CedarDeck",
+        "GRP_Lawn_And_Walkway",
+        "GRP_Scenic_Lake_And_Hills",
+        "PIVOT_Cart_Wheel_Back",
+        "PIVOT_Cart_Wheel_Front",
+        "ROOT_Venue_OtomeTerrace",
+        "SOCKET_Spawn_Hero",
+        "SOCKET_Spot_BlossomBench",
+        "SOCKET_Spot_CoffeeCart",
+        "SOCKET_Spot_LakesideFountain",
+        "ZONE_01_Blossom_Bench",
+        "ZONE_02_OpenAir_CoffeeCart",
+        "ZONE_03_Lakeside_Fountain"
+      ]
+    },
+    "aabb": {
+      "min": [
+        -38.0,
+        -6.35,
+        -2.2
+      ],
+      "max": [
+        38.0,
+        50.0,
+        6.05
+      ],
+      "size": [
+        76.0,
+        56.35,
+        8.25
+      ],
+      "center": [
+        0.0,
+        21.825,
+        1.925
+      ]
+    }
+  },
+  "glb_verification": {
+    "checked": true,
+    "exists": true,
+    "path": "src/test/otome_terrace/assets/models/mdl_otome_terrace_stage.glb",
+    "size_bytes": 9198900,
+    "gltf_version": 2
+  },
+  "diagnostic_renders": []
+}

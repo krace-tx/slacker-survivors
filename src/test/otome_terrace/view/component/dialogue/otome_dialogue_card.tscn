@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/otome_terrace/view/component/dialogue/otome_dialogue_card.gd" id="1_1uq3q"]
+
+[node name="OtomeDialogueCard" type="PanelContainer" unique_id=1770680826]
+custom_minimum_size = Vector2(880, 122)
+script = ExtResource("1_1uq3q")
+
+[node name="ContentVBox" type="VBoxContainer" parent="." unique_id=1385725697]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderHBox" type="HBoxContainer" parent="ContentVBox" unique_id=1038715469]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SpeakerNameLabel" type="Label" parent="ContentVBox/HeaderHBox" unique_id=2008604133]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✦ 陆星野"
+
+[node name="SpotTagBadge" type="PanelContainer" parent="ContentVBox/HeaderHBox" unique_id=777842342]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SpotTagLabel" type="Label" parent="ContentVBox/HeaderHBox/SpotTagBadge" unique_id=572294142]
+unique_name_in_owner = true
+layout_mode = 2
+text = "晴风初遇"
+
+[node name="HeaderSpacer" type="Control" parent="ContentVBox/HeaderHBox" unique_id=590261100]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="DialogueBodyLabel" type="Label" parent="ContentVBox" unique_id=1917915365]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(780, 42)
+layout_mode = 2
+text = "「你来啦。湖畔的风刚刚吹开第一批春樱——想先去树下读诗，还是来露台尝一杯手冲拿铁？」"
+autowrap_mode = 3
+
+[node name="ChoicesRow" type="HBoxContainer" parent="ContentVBox" unique_id=1185181816]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="ChoiceAButton" type="Button" parent="ContentVBox/ChoicesRow" unique_id=1107445005]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+focus_mode = 0
+text = "♡  靠近他肩侧轻声共读 (+18 ♥)"
+
+[node name="ChoiceBButton" type="Button" parent="ContentVBox/ChoicesRow" unique_id=992487862]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+focus_mode = 0
+text = "✦  调侃他藏了书签秘密 (+22 ♥)"

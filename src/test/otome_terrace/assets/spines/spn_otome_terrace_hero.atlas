@@ -1,0 +1,60 @@
+spn_otome_terrace_hero.png
+	size: 2048, 2048
+	filter: Linear, Linear
+	pma: true
+legRShinShoe
+	bounds: 1103, 2, 215, 443
+legRThigh
+	bounds: 1036, 1401, 173, 381
+pelvisBase
+	bounds: 369, 510, 269, 215
+legLShinShoe
+	bounds: 886, 2, 215, 443
+legLThigh
+	bounds: 1036, 1018, 173, 381
+neckBase
+	bounds: 1196, 447, 113, 101
+cardiganTorso
+	bounds: 342, 783, 335, 575
+baristaTorso
+	bounds: 2, 783, 338, 710
+trenchTorso
+	bounds: 2, 2, 365, 779
+propFlowerSprig
+	bounds: 679, 1018, 207, 320
+cardiganArmLUpper
+	bounds: 1405, 808, 192, 313
+baristaArmLUpper
+	bounds: 1211, 808, 192, 313
+trenchArmLUpper
+	bounds: 1599, 808, 192, 313
+cardiganArmLLower
+	bounds: 1706, 2, 191, 401
+baristaArmLLower
+	bounds: 1320, 2, 191, 401
+trenchArmLLower
+	bounds: 1513, 405, 191, 401
+expGentleHead
+	bounds: 369, 2, 515, 506
+expHappyHead
+	bounds: 679, 510, 515, 506
+expBlushHead
+	bounds: 2, 1495, 515, 506
+expGentleBlink
+	bounds: 519, 1360, 515, 506
+cardiganArmRUpper
+	bounds: 1211, 1123, 191, 313
+baristaArmRUpper
+	bounds: 1793, 808, 191, 313
+trenchArmRUpper
+	bounds: 1211, 1438, 191, 313
+cardiganArmRLower
+	bounds: 1320, 405, 191, 401
+baristaArmRLower
+	bounds: 1513, 2, 191, 401
+trenchArmRLower
+	bounds: 1706, 405, 191, 401
+propCoffeeCup
+	bounds: 519, 1868, 202, 117
+propPoetryBook
+	bounds: 888, 1018, 143, 208

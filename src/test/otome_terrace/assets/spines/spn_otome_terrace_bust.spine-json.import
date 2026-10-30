@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://b0msllmn5c8dk"
+path="res://.godot/imported/spn_otome_terrace_bust.spine-json-e1674df8440c9d14e9626407ff519e8a.spjson"
+
+[deps]
+
+source_file="res://src/test/otome_terrace/assets/spines/spn_otome_terrace_bust.spine-json"
+dest_files=["res://.godot/imported/spn_otome_terrace_bust.spine-json-e1674df8440c9d14e9626407ff519e8a.spjson"]
+
+[params]
+

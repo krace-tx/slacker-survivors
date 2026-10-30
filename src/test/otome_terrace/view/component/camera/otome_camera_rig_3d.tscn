@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/otome_terrace/view/component/camera/otome_camera_rig_3d.gd" id="1_8rijy"]
+
+[node name="OtomeCameraRig3D" type="Node3D" unique_id=439008689]
+script = ExtResource("1_8rijy")
+
+[node name="MainCamera3D" type="Camera3D" parent="." unique_id=2055603371]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7.45)
+current = true
+fov = 39.5

@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/test/otome_terrace/view/component/stage/otome_terrace_stage_3d.gd" id="1_j8kg4"]
+[ext_resource type="PackedScene" path="res://src/test/otome_terrace/assets/models/mdl_otome_terrace_stage.glb" id="2_s33md"]
+
+[node name="OtomeTerraceStage3D" type="Node3D" unique_id=814493630]
+script = ExtResource("1_j8kg4")
+
+[node name="EnvironmentRig" type="Node3D" parent="." unique_id=2116418613]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="EnvironmentRig" unique_id=336412021]
+unique_name_in_owner = true
+
+[node name="SunLight" type="DirectionalLight3D" parent="EnvironmentRig" unique_id=1473277097]
+unique_name_in_owner = true
+transform = Transform3D(0.8290376, -0.41556132, 0.37417305, 0, 0.66913056, 0.74314487, -0.5591929, -0.61609507, 0.5547344, 0, 0, 0)
+shadow_enabled = true
+
+[node name="SkyFillLight" type="DirectionalLight3D" parent="EnvironmentRig" unique_id=523410039]
+unique_name_in_owner = true
+transform = Transform3D(-0.7880108, 0.32625085, -0.5221105, 0, 0.8480481, 0.52991927, 0.61566144, 0.4175821, -0.668271, 0, 0, 0)
+
+[node name="LampLight0" type="OmniLight3D" parent="EnvironmentRig" unique_id=160056884]
+unique_name_in_owner = true
+
+[node name="LampLight1" type="OmniLight3D" parent="EnvironmentRig" unique_id=822778950]
+unique_name_in_owner = true
+
+[node name="LampLight2" type="OmniLight3D" parent="EnvironmentRig" unique_id=1346007165]
+unique_name_in_owner = true
+
+[node name="LampLight3" type="OmniLight3D" parent="EnvironmentRig" unique_id=1804880047]
+unique_name_in_owner = true
+
+[node name="TerraceModel" parent="." unique_id=1007996253 instance=ExtResource("2_s33md")]
+unique_name_in_owner = true
+
+[node name="HotspotRingsRoot" type="Node3D" parent="." unique_id=281603915]
+unique_name_in_owner = true
+
+[node name="BlossomParticles" type="GPUParticles3D" parent="." unique_id=516282156]
+unique_name_in_owner = true

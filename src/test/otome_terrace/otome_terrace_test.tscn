@@ -1,0 +1,54 @@
+[gd_scene format=3 uid="uid://cbhc3fud4otv6"]
+
+[ext_resource type="Script" uid="uid://wh5f2fwnjl3e" path="res://src/test/otome_terrace/view/scene/terrace/otome_terrace_scene.gd" id="1_id6q2"]
+[ext_resource type="SpineSkeletonDataResource" path="res://src/test/otome_terrace/assets/spines/spn_otome_terrace_hero_data.tres" id="2_x0s1m"]
+[ext_resource type="PackedScene" path="res://src/test/otome_terrace/view/component/stage/otome_terrace_stage_3d.tscn" id="3_755oi"]
+[ext_resource type="SpineSkeletonDataResource" path="res://src/test/otome_terrace/assets/spines/spn_otome_terrace_bust_data.tres" id="3_x0s1m"]
+[ext_resource type="PackedScene" path="res://src/test/otome_terrace/view/component/camera/otome_camera_rig_3d.tscn" id="4_5yico"]
+[ext_resource type="PackedScene" uid="uid://dbt6g87uw6xpp" path="res://src/test/otome_terrace/view/component/actor/otome_actor_3d.tscn" id="5_ryspv"]
+[ext_resource type="Script" uid="uid://c4xd6voa4mjtx" path="res://src/test/otome_terrace/view/scene/terrace/otome_terrace_view.gd" id="6_hceka"]
+[ext_resource type="PackedScene" uid="uid://dqftsubkyv3fa" path="res://src/test/otome_terrace/view/component/hud/otome_hud_panel.tscn" id="7_vliey"]
+
+[node name="OtomeTerraceTest" type="Node" unique_id=469516515]
+script = ExtResource("1_id6q2")
+hero_skeleton_data = ExtResource("2_x0s1m")
+bust_skeleton_data = ExtResource("3_x0s1m")
+
+[node name="World3D" type="Node3D" parent="." unique_id=2116362294]
+
+[node name="TerraceStage3D" parent="World3D" unique_id=814493630 instance=ExtResource("3_755oi")]
+unique_name_in_owner = true
+
+[node name="CameraRig3D" parent="World3D" unique_id=2143218034 instance=ExtResource("4_5yico")]
+unique_name_in_owner = true
+transform = Transform3D(0.9975641, -0.029480357, 0.06322083, 0, 0.9063077, 0.42261827, -0.06975647, -0.42158878, 0.90410006, -0.35, 0.95, -0.25)
+closeup_pitch_deg = -11.5
+closeup_distance = 2.58
+closeup_fov = 32.0
+
+[node name="Actors" type="Node3D" parent="World3D" unique_id=1808736611]
+
+[node name="HeroActor" parent="World3D/Actors" unique_id=1238705331 instance=ExtResource("5_ryspv")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0.02, 1.15)
+viewport_size = Vector2i(560, 840)
+ground_offset_y = 364.0
+pixel_size_3d = 0.00265
+
+[node name="HudLayer" type="CanvasLayer" parent="." unique_id=1431768147]
+layer = 10
+
+[node name="UI" type="Control" parent="HudLayer" unique_id=491299705]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_hceka")
+
+[node name="HudPanel" parent="HudLayer/UI" unique_id=2054323764 instance=ExtResource("7_vliey")]
+unique_name_in_owner = true
+layout_mode = 1

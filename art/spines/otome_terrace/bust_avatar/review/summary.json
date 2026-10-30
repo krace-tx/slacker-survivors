@@ -1,0 +1,397 @@
+{
+  "name": "lu_xingye_bust",
+  "model": "lu_xingye_bust.r2d.json",
+  "canvas": [896, 1200],
+  "parameters": [
+    "AngleX", "AngleY", "AngleZ", "EyeLOpen", "EyeROpen", "EyeBallX", "EyeBallY", "MouthOpen",
+    "MouthForm", "Cheek", "BodyAngleX", "Breath", "Hair_ahoge", "Hair_bang_center", "Hair_bang_l",
+    "Hair_bang_r", "Hair_side_l_upper", "Hair_side_r_upper", "Hair_side_l_lower",
+    "Hair_side_r_lower", "Hair_nape_l", "Hair_nape_r"
+  ],
+  "sheets": [
+    {
+      "kind": "poses",
+      "file": "review/poses.png",
+      "width": 2018,
+      "height": 2113,
+      "cells": 29,
+      "columns": 6,
+      "scale": 0.314,
+      "viewBox": [-72, -72, 1040, 1272],
+      "captions": [
+        "rest", "eyes half", "eyes closed", "mouth open", "turn left (AngleX -30)",
+        "turn right (AngleX 30)", "look up (AngleY 30)", "look down (AngleY -30)",
+        "tilt left (AngleZ -30)", "tilt right (AngleZ 30)", "sway left (BodyAngleX -10)",
+        "sway right (BodyAngleX 10)", "eyes 0.25", "wink (EyeLOpen 0)", "gaze right (EyeBallX 1)",
+        "gaze left (EyeBallX -1)", "gaze up (EyeBallY 1)", "gaze down (EyeBallY -1)",
+        "\"a\" (open 1, form 0)", "\"i\" (open 0.35, form 1)", "\"u\" (open 0.35, form -1)",
+        "\"e\" (open 0.6, form 0.5)", "\"o\" (open 0.75, form -1)", "\"n\" (open 0, form 0)",
+        "smile (MouthForm 1)", "narrow (MouthForm -1)", "blush (Cheek 1)",
+        "hair swung (all strands -1)", "hair swung (all strands 1)"
+      ],
+      "ms": 1313.2
+    },
+    {
+      "kind": "turn",
+      "file": "review/turn.png",
+      "width": 1112,
+      "height": 1400,
+      "cells": 9,
+      "columns": 3,
+      "scale": 0.346,
+      "viewBox": [-72, -72, 1040, 1272],
+      "captions": [
+        "AngleX=-30 AngleY=30", "AngleX=0 AngleY=30", "AngleX=30 AngleY=30", "AngleX=-30 AngleY=0",
+        "AngleX=0 AngleY=0", "AngleX=30 AngleY=0", "AngleX=-30 AngleY=-30", "AngleX=0 AngleY=-30",
+        "AngleX=30 AngleY=-30"
+      ],
+      "ms": 429.9
+    },
+    {
+      "kind": "eyes",
+      "file": "review/eyes.png",
+      "width": 1264,
+      "height": 768,
+      "cells": 9,
+      "columns": 2,
+      "scale": 1.968,
+      "viewBox": [290, 287, 315, 66],
+      "captions": [
+        "rest", "eyes half", "eyes closed", "eyes 0.25", "wink (EyeLOpen 0)",
+        "gaze right (EyeBallX 1)", "gaze left (EyeBallX -1)", "gaze up (EyeBallY 1)",
+        "gaze down (EyeBallY -1)"
+      ],
+      "ms": 380.1
+    },
+    {
+      "kind": "mouth",
+      "file": "review/mouth.png",
+      "width": 1292,
+      "height": 1779,
+      "cells": 10,
+      "columns": 3,
+      "scale": 1.981,
+      "viewBox": [342, 332, 212, 212],
+      "captions": [
+        "rest", "mouth open", "\"a\" (open 1, form 0)", "\"i\" (open 0.35, form 1)",
+        "\"u\" (open 0.35, form -1)", "\"e\" (open 0.6, form 0.5)", "\"o\" (open 0.75, form -1)",
+        "\"n\" (open 0, form 0)", "smile (MouthForm 1)", "narrow (MouthForm -1)"
+      ],
+      "ms": 479.8
+    }
+  ],
+  "poses": [
+    {
+      "id": "rest",
+      "label": "rest",
+      "params": {},
+      "moves": {}
+    },
+    {
+      "id": "eyes_half",
+      "label": "eyes half",
+      "params": { "EyeLOpen": 0.5, "EyeROpen": 0.5 },
+      "moves": {}
+    },
+    {
+      "id": "eyes_closed",
+      "label": "eyes closed",
+      "params": { "EyeLOpen": 0, "EyeROpen": 0 },
+      "moves": {}
+    },
+    {
+      "id": "mouth_open",
+      "label": "mouth open",
+      "params": { "MouthOpen": 1 },
+      "moves": {}
+    },
+    {
+      "id": "turn_left",
+      "label": "turn left (AngleX -30)",
+      "params": { "AngleX": -30 },
+      "moves": {
+        "headTop": [-0.3, 0],
+        "faceCenter": [-21.4, 0],
+        "eyeImageLeft": [-14.2, 0],
+        "eyeImageRight": [-17.6, 0],
+        "earImageLeft": [-3.2, 0],
+        "earImageRight": [-4.8, 0],
+        "nose": [-19.2, 0],
+        "mouthImageLeft": [-11.5, 0],
+        "mouthImageRight": [-13.6, 0],
+        "chin": [-1.1, 0],
+        "neckPivot": [-0.2, 0]
+      }
+    },
+    {
+      "id": "turn_right",
+      "label": "turn right (AngleX 30)",
+      "params": { "AngleX": 30 },
+      "moves": {
+        "headTop": [0.3, 0],
+        "faceCenter": [21.4, 0],
+        "eyeImageLeft": [17.6, 0],
+        "eyeImageRight": [14.2, 0],
+        "earImageLeft": [4.8, 0],
+        "earImageRight": [3.2, 0],
+        "nose": [19.2, 0],
+        "mouthImageLeft": [13.6, 0],
+        "mouthImageRight": [11.5, 0],
+        "chin": [1.1, 0],
+        "neckPivot": [0.2, 0]
+      }
+    },
+    {
+      "id": "look_up",
+      "label": "look up (AngleY 30)",
+      "params": { "AngleY": 30 },
+      "moves": {
+        "headTop": [0, -0.3],
+        "faceCenter": [0, -14.6],
+        "eyeImageLeft": [0, -11],
+        "eyeImageRight": [0, -11],
+        "earImageLeft": [0, -3],
+        "earImageRight": [0, -3],
+        "nose": [0, -13.2],
+        "mouthImageLeft": [0, -8.8],
+        "mouthImageRight": [0, -8.8],
+        "chin": [0, -0.9],
+        "neckPivot": [0, -0.1]
+      }
+    },
+    {
+      "id": "look_down",
+      "label": "look down (AngleY -30)",
+      "params": { "AngleY": -30 },
+      "moves": {
+        "headTop": [0, 0.3],
+        "faceCenter": [0, 14.7],
+        "eyeImageLeft": [0, 11.5],
+        "eyeImageRight": [0, 11.5],
+        "earImageLeft": [0, 2.9],
+        "earImageRight": [0, 2.9],
+        "nose": [0, 12.3],
+        "mouthImageLeft": [0, 7.6],
+        "mouthImageRight": [0, 7.6],
+        "chin": [0, 0.6],
+        "neckPivot": [0, 0.1]
+      }
+    },
+    {
+      "id": "tilt_left",
+      "label": "tilt left (AngleZ -30)",
+      "params": { "AngleZ": -30 },
+      "moves": {
+        "headTop": [-56.2, 3.2],
+        "faceCenter": [-21.5, 1.2],
+        "eyeImageLeft": [-23.6, 8.7],
+        "eyeImageRight": [-24.5, -6],
+        "earImageLeft": [-19.5, 16.1],
+        "earImageRight": [-21.2, -13.8],
+        "nose": [-14.7, 0.8],
+        "mouthImageLeft": [-11.5, 5.2],
+        "mouthImageRight": [-12, -3.9],
+        "chin": [-3.3, 0.2],
+        "neckPivot": [-0.8, 0]
+      }
+    },
+    {
+      "id": "tilt_right",
+      "label": "tilt right (AngleZ 30)",
+      "params": { "AngleZ": 30 },
+      "moves": {
+        "headTop": [56.2, 3.2],
+        "faceCenter": [21.5, 1.2],
+        "eyeImageLeft": [24.5, -6],
+        "eyeImageRight": [23.6, 8.7],
+        "earImageLeft": [21.2, -13.8],
+        "earImageRight": [19.5, 16.1],
+        "nose": [14.7, 0.8],
+        "mouthImageLeft": [12, -3.9],
+        "mouthImageRight": [11.5, 5.2],
+        "chin": [3.3, 0.2],
+        "neckPivot": [0.8, 0]
+      }
+    },
+    {
+      "id": "sway_left",
+      "label": "sway left (BodyAngleX -10)",
+      "params": { "BodyAngleX": -10 },
+      "moves": {
+        "headTop": [-37.4, 0.6],
+        "faceCenter": [-27.8, 0.4],
+        "eyeImageLeft": [-28.5, 2.5],
+        "eyeImageRight": [-28.5, -1.6],
+        "earImageLeft": [-27.4, 4.6],
+        "earImageRight": [-27.6, -3.7],
+        "nose": [-25.9, 0.4],
+        "mouthImageLeft": [-25.1, 1.6],
+        "mouthImageRight": [-25.1, -0.9],
+        "chin": [-22.7, 0.4],
+        "neckPivot": [-21.8, 0.3],
+        "shoulderImageLeft": [-18.9, 7],
+        "shoulderImageRight": [-19.1, -6.4],
+        "chest": [-14.8, 0.2]
+      }
+    },
+    {
+      "id": "sway_right",
+      "label": "sway right (BodyAngleX 10)",
+      "params": { "BodyAngleX": 10 },
+      "moves": {
+        "headTop": [37.4, 0.6],
+        "faceCenter": [27.8, 0.4],
+        "eyeImageLeft": [28.5, -1.6],
+        "eyeImageRight": [28.5, 2.5],
+        "earImageLeft": [27.6, -3.7],
+        "earImageRight": [27.4, 4.6],
+        "nose": [25.9, 0.4],
+        "mouthImageLeft": [25.1, -0.9],
+        "mouthImageRight": [25.1, 1.6],
+        "chin": [22.7, 0.4],
+        "neckPivot": [21.8, 0.3],
+        "shoulderImageLeft": [19.1, -6.4],
+        "shoulderImageRight": [18.9, 7],
+        "chest": [14.8, 0.2]
+      }
+    },
+    {
+      "id": "eyes_quarter",
+      "label": "eyes 0.25",
+      "params": { "EyeLOpen": 0.25, "EyeROpen": 0.25 },
+      "moves": {}
+    },
+    {
+      "id": "wink",
+      "label": "wink (EyeLOpen 0)",
+      "params": { "EyeLOpen": 0 },
+      "moves": {}
+    },
+    {
+      "id": "gaze_right",
+      "label": "gaze right (EyeBallX 1)",
+      "params": { "EyeBallX": 1 },
+      "moves": {}
+    },
+    {
+      "id": "gaze_left",
+      "label": "gaze left (EyeBallX -1)",
+      "params": { "EyeBallX": -1 },
+      "moves": {}
+    },
+    {
+      "id": "gaze_up",
+      "label": "gaze up (EyeBallY 1)",
+      "params": { "EyeBallY": 1 },
+      "moves": {}
+    },
+    {
+      "id": "gaze_down",
+      "label": "gaze down (EyeBallY -1)",
+      "params": { "EyeBallY": -1 },
+      "moves": {}
+    },
+    {
+      "id": "viseme_a",
+      "label": "\"a\" (open 1, form 0)",
+      "params": { "MouthOpen": 1, "MouthForm": 0 },
+      "moves": {}
+    },
+    {
+      "id": "viseme_i",
+      "label": "\"i\" (open 0.35, form 1)",
+      "params": { "MouthOpen": 0.35, "MouthForm": 1 },
+      "moves": {}
+    },
+    {
+      "id": "viseme_u",
+      "label": "\"u\" (open 0.35, form -1)",
+      "params": { "MouthOpen": 0.35, "MouthForm": -1 },
+      "moves": {}
+    },
+    {
+      "id": "viseme_e",
+      "label": "\"e\" (open 0.6, form 0.5)",
+      "params": { "MouthOpen": 0.6, "MouthForm": 0.5 },
+      "moves": {}
+    },
+    {
+      "id": "viseme_o",
+      "label": "\"o\" (open 0.75, form -1)",
+      "params": { "MouthOpen": 0.75, "MouthForm": -1 },
+      "moves": {}
+    },
+    {
+      "id": "viseme_n",
+      "label": "\"n\" (open 0, form 0)",
+      "params": { "MouthOpen": 0, "MouthForm": 0 },
+      "moves": {}
+    },
+    {
+      "id": "mouth_smile",
+      "label": "smile (MouthForm 1)",
+      "params": { "MouthForm": 1 },
+      "moves": {}
+    },
+    {
+      "id": "mouth_narrow",
+      "label": "narrow (MouthForm -1)",
+      "params": { "MouthForm": -1 },
+      "moves": {}
+    },
+    {
+      "id": "brows_up",
+      "label": "brows up (BrowLY / BrowRY 1)",
+      "params": {},
+      "skipped": "the model has no BrowLY / BrowRY parameter"
+    },
+    {
+      "id": "brows_down",
+      "label": "brows down (BrowLY / BrowRY -1)",
+      "params": {},
+      "skipped": "the model has no BrowLY / BrowRY parameter"
+    },
+    {
+      "id": "blush",
+      "label": "blush (Cheek 1)",
+      "params": { "Cheek": 1 },
+      "moves": {}
+    },
+    {
+      "id": "hair_left",
+      "label": "hair swung (all strands -1)",
+      "params": {
+        "Hair_ahoge": -1,
+        "Hair_bang_center": -1,
+        "Hair_bang_l": -1,
+        "Hair_bang_r": -1,
+        "Hair_side_l_upper": -1,
+        "Hair_side_r_upper": -1,
+        "Hair_side_l_lower": -1,
+        "Hair_side_r_lower": -1,
+        "Hair_nape_l": -1,
+        "Hair_nape_r": -1
+      },
+      "moves": {}
+    },
+    {
+      "id": "hair_right",
+      "label": "hair swung (all strands 1)",
+      "params": {
+        "Hair_ahoge": 1,
+        "Hair_bang_center": 1,
+        "Hair_bang_l": 1,
+        "Hair_bang_r": 1,
+        "Hair_side_l_upper": 1,
+        "Hair_side_r_upper": 1,
+        "Hair_side_l_lower": 1,
+        "Hair_side_r_lower": 1,
+        "Hair_nape_l": 1,
+        "Hair_nape_r": 1
+      },
+      "moves": {}
+    }
+  ],
+  "notes": ["2 review poses are skipped, the model lacks the parameters: brows_up, brows_down"],
+  "timings": { "loadMs": 97.2, "renderMs": 2603.2, "writeMs": 716, "totalMs": 3416.9 }
+}
